@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Grady</title>
+<meta name="theme-color" content="#eef0f5">
+<meta name="description" content="Sledenje šolskim ocenam, testom in analizi uspeha.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Grady">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!--HEAD-END-->
+<script>try{var _s=(JSON.parse(localStorage.getItem('gradient-v1')||'{}').settings)||{};var _d=_s.theme==='dark'||(_s.theme!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=_d?'dark':'light';if(_s.accent)document.documentElement.style.setProperty('--accent',_s.accent)}catch(e){}</script>
+<style>
+/* Plavajoči stekleni sloji nad mehkim barvnim ozadjem; testi so vedno na vrhu. */
+:root{--accent:#007aff;--bg:#eef0f5;--text:#1c1c1e;--muted:#6e6e76;--sep:rgba(60,60,67,.13);
+--glass:rgba(255,255,255,.6);--glass2:rgba(250,250,252,.9);--glass-b:rgba(255,255,255,.8);--glass-hi:rgba(255,255,255,.55);--sh:rgba(30,35,70,.08);--fill:rgba(120,120,128,.12);
+--b2:#5ac8fa;--b3:#ffb3c8;
+--g1:#ff3b30;--g2:#ff9500;--g3:#ffcc00;--g4:#8fd14f;--g5:#34c759;
+--u1:#ff3b30;--u2:#ff5a36;--u3:#ff9f0a;--u4:#34c759;--u0:#8e8e93;--r:24px}
+[data-theme=dark]{--bg:#09090c;--text:#f5f5f7;--muted:#98989f;--sep:rgba(255,255,255,.09);
+--glass:rgba(42,42,48,.55);--glass2:rgba(36,36,42,.94);--glass-b:rgba(255,255,255,.1);--glass-hi:rgba(255,255,255,.06);--sh:rgba(0,0,0,.4);--fill:rgba(120,120,128,.24);
+--b2:#0a6cff;--b3:#9b4dff;
+--g1:#ff453a;--g2:#ff9f0a;--g3:#ffd60a;--g4:#9be15d;--g5:#30d158;
+--u1:#ff453a;--u2:#ff6b4a;--u3:#ffb340;--u4:#30d158;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;font-size:16px;line-height:1.4;-webkit-font-smoothing:antialiased}
+body{padding-bottom:calc(118px + env(safe-area-inset-bottom));min-height:100vh}
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bg i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5}
+.bg i:nth-child(1){width:70vmax;height:70vmax;left:-28vmax;top:-30vmax;background:var(--accent);opacity:.32}
+.bg i:nth-child(2){width:55vmax;height:55vmax;right:-25vmax;top:18vh;background:var(--b2);opacity:.3}
+.bg i:nth-child(3){width:50vmax;height:50vmax;left:-10vmax;bottom:-25vmax;background:var(--b3);opacity:.28}
+[data-theme=dark] .bg i{opacity:.22!important}
+#app{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left))}
+h1{font-size:34px;line-height:1.1;letter-spacing:-.025em;margin:2px 0 0;font-weight:700;text-wrap:balance}
+h2{font-size:21px;margin:0;font-weight:700;letter-spacing:-.015em}
+h3{margin:0;font-size:18px;font-weight:650}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sub{color:var(--muted);font-size:14px}
+.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.wrap{flex-wrap:wrap}.grow{flex:1;min-width:0}
+.mt{margin-top:12px}
+section{margin-top:26px}
+.sh{display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px}
+.sh a,.link{color:var(--accent);text-decoration:none;font-weight:600;font-size:15px;cursor:pointer;background:none;border:none;font-family:inherit}
+.top{display:flex;align-items:flex-end;gap:12px;margin:6px 0 16px}
+.card{position:relative;background:linear-gradient(180deg,var(--glass-hi),transparent 50%),var(--glass);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid var(--glass-b);border-radius:var(--r);padding:16px;box-shadow:0 10px 30px var(--sh)}
+.card+.card{margin-top:10px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid>.card{margin:0}
+.kpi{padding:14px}.kpi .v{font-size:24px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kpi .l{font-size:12px;color:var(--muted);font-weight:500}
+.kpi .v.sm{font-size:17px}
+.ov{display:flex;gap:18px;align-items:center}
+.big{font-size:52px;font-weight:700;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.ring{width:96px;height:96px;flex:none}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;font-size:13px;font-weight:600;background:var(--fill);color:var(--text);white-space:nowrap}
+.pill.up{color:var(--g5)}.pill.down{color:var(--g1)}
+.chart{position:relative;height:220px}.chart.sm{height:190px}
+.list{padding:4px 16px}
+.list>.li+.li{border-top:1px solid var(--sep)}
+.li{display:flex;align-items:center;gap:12px;padding:12px 0;cursor:pointer}
+.li .t{font-weight:600}
+.badge{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;font-weight:700;flex:none;font-size:17px;font-variant-numeric:tabular-nums}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.bar{height:6px;border-radius:9px;background:var(--fill);overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;border-radius:9px}
+.btn{border:1px solid var(--glass-b);background:var(--glass);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:var(--text);padding:12px 18px;border-radius:99px;font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff}
+.btn.danger{color:var(--g1)}.btn.full{width:100%;margin-top:12px}.btn.sm{padding:8px 14px;font-size:14px}
+.btn:focus-visible,.icon-btn:focus-visible,nav a:focus-visible,.day:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.icon-btn{border:1px solid var(--glass-b);background:var(--glass);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:var(--text);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none}
+.icon-btn svg{width:20px;height:20px}
+/* plavajoči dock */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;justify-content:center;align-items:center;gap:10px;padding:0 max(14px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));pointer-events:none}
+nav,.fab{pointer-events:auto;background:linear-gradient(180deg,var(--glass-hi),transparent 60%),var(--glass2);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid var(--glass-b);box-shadow:0 12px 34px var(--sh)}
+nav{flex:1;max-width:460px;display:flex;padding:6px;border-radius:99px}
+nav a{flex:1;color:var(--muted);text-decoration:none;font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;border-radius:99px;transition:background .2s,color .2s}
+nav a svg{width:23px;height:23px}nav a.on{color:var(--accent);background:var(--fill)}
+.fab{width:62px;height:62px;border-radius:50%;color:var(--accent);display:grid;place-items:center;cursor:pointer;flex:none}
+.fab svg{width:28px;height:28px}
+/* opozorilo */
+.alert{--uc:var(--u1);background:linear-gradient(140deg,color-mix(in srgb,var(--uc) 26%,transparent),color-mix(in srgb,var(--uc) 6%,transparent) 70%),var(--glass);border-color:color-mix(in srgb,var(--uc) 35%,var(--glass-b));cursor:pointer;padding:18px}
+.alert .count{display:flex;flex-direction:column;align-items:center;justify-content:center;width:92px;height:92px;border-radius:26px;background:var(--uc);color:#fff;flex:none;box-shadow:0 10px 28px color-mix(in srgb,var(--uc) 45%,transparent)}
+.alert .count b{font-size:40px;line-height:1;font-weight:750;letter-spacing:-.03em}
+.alert .count b.w{font-size:22px}
+.alert .count span{font-size:13px;font-weight:600;opacity:.9}
+.alert .subj{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.live{width:8px;height:8px;border-radius:50%;background:var(--uc);display:inline-block}
+.alert.now .live{animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--uc) 60%,transparent)}100%{box-shadow:0 0 0 10px transparent}}
+.lbl{color:var(--uc);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.needs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.need{flex:1;min-width:120px;background:var(--fill);border-radius:16px;padding:10px 12px}
+.need span{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.need b{font-size:20px;font-variant-numeric:tabular-nums}
+.need small{color:var(--muted);margin-left:6px;font-size:12px}
+.need.ok b{color:var(--g5)}.need.no b{color:var(--g1);font-size:16px}
+/* dnevni trak */
+.strip{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px;scrollbar-width:none}
+.strip::-webkit-scrollbar{display:none}
+.day{--uc:transparent;scroll-snap-align:start;flex:0 0 46px;height:68px;border:none;border-radius:16px;background:transparent;color:var(--text);font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;position:relative}
+.day span{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase}
+.day b{font-size:18px;font-weight:650;font-variant-numeric:tabular-nums}
+.day.today{background:var(--fill)}
+.day.has{background:color-mix(in srgb,var(--uc) 18%,transparent)}
+.day.has b{color:var(--uc)}
+.day.has::after{content:"";position:absolute;bottom:7px;width:6px;height:6px;border-radius:50%;background:var(--uc)}
+.dbadge{--uc:var(--u4);width:48px;height:48px;border-radius:15px;background:color-mix(in srgb,var(--uc) 16%,transparent);color:var(--uc);display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;line-height:1}
+.dbadge b{font-size:19px;font-weight:750;font-variant-numeric:tabular-nums}.dbadge span{font-size:10px;font-weight:650;margin-top:2px}
+.dbadge.lg{width:58px;height:58px;border-radius:18px}.dbadge.lg b{font-size:23px}
+.tag{--uc:var(--u4);font-size:12px;font-weight:700;color:var(--uc);background:color-mix(in srgb,var(--uc) 14%,transparent);padding:4px 9px;border-radius:99px;white-space:nowrap}
+.banner{display:flex;align-items:center;gap:12px;cursor:pointer}
+/* obrazci */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:10}
+#modal.open{display:flex}
+.sheet{background:var(--glass2);-webkit-backdrop-filter:blur(40px) saturate(180%);backdrop-filter:blur(40px) saturate(180%);border:1px solid var(--glass-b);width:100%;max-width:560px;border-radius:30px 30px 0 0;padding:10px max(18px,env(safe-area-inset-right)) calc(22px + env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));max-height:92vh;overflow:auto;animation:up .28s cubic-bezier(.2,.9,.3,1)}
+.sheet::before{content:"";display:block;width:38px;height:5px;border-radius:9px;background:var(--fill);margin:0 auto 10px}
+@keyframes up{from{transform:translateY(60px);opacity:.4}}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+label,.flabel{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:14px 4px 6px}
+input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:1px solid transparent;background:var(--fill);color:var(--text);font:inherit;font-size:17px;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+input[type=color]{padding:4px;height:46px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips label{margin:0}
+.chips input{display:none}
+.chips span{display:grid;place-items:center;min-width:52px;height:52px;border-radius:16px;background:var(--fill);font-weight:700;font-size:20px;cursor:pointer;border:2px solid transparent}
+.chips input:checked+span{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.seg{display:flex;background:var(--fill);border-radius:12px;padding:3px}
+.seg button{flex:1;border:none;background:none;color:var(--text);padding:8px 6px;border-radius:10px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--glass2);box-shadow:0 2px 8px var(--sh)}
+.conv{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px;border-radius:16px;background:var(--fill)}
+.conv .badge{width:48px;height:48px;font-size:22px}
+.sw{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer}.sw.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--text)}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}th,td{text-align:right;padding:9px 6px;border-bottom:1px solid var(--sep);white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-weight:600;font-size:12px}
+tr:last-child td{border-bottom:none}
+.empty{text-align:center;padding:28px 16px}
+.insight{display:flex;gap:12px;padding:12px 0;align-items:flex-start}.insight .dot{margin-top:6px}
+.what{display:grid;grid-template-columns:repeat(auto-fit,minmax(54px,1fr));gap:6px;margin-top:8px}
+.what div{background:var(--fill);border-radius:14px;padding:8px 4px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}
+.what b{display:block;font-size:17px}.what small{display:block;color:var(--muted);font-size:10px}
+.thr{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+#toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translate(-50%,10px);background:var(--glass2);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);border:1px solid var(--glass-b);color:var(--text);padding:11px 18px;border-radius:99px;font-weight:600;font-size:15px;opacity:0;transition:.25s;pointer-events:none;z-index:20;box-shadow:0 10px 30px var(--sh);white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.scroll-x{overflow-x:auto}
+/* zagonski zaslon */
+#splash{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:opacity .45s ease,transform .45s ease}
+#splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.sp-in{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:14px}
+.sp-logo{width:116px;height:116px;filter:drop-shadow(0 18px 30px rgba(10,79,214,.35));animation:pop .6s cubic-bezier(.2,.9,.3,1.25) both}
+.wordmark{font-size:34px;font-weight:700;letter-spacing:-.035em;animation:fadeUp .5s .45s both}
+.sp-bar{width:150px;height:4px;border-radius:9px;background:var(--fill);overflow:hidden;margin-top:6px;animation:fadeUp .4s .6s both}.sp-bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:9px;transition:width .35s ease}
+.sp-status{font-size:14px;color:var(--muted);min-height:20px;animation:fadeUp .4s .6s both}
+.draw{stroke-dasharray:1 2;stroke-dashoffset:1;animation:draw .7s .25s cubic-bezier(.6,0,.2,1) forwards}.draw.d2{animation-delay:.85s;animation-duration:.4s}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pop{from{transform:scale(.82);opacity:0}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}}
+/* uvod */
+.ob{min-height:calc(100vh - 60px);display:flex;flex-direction:column;justify-content:center;padding-block:20px 40px;max-width:480px;margin:0 auto}
+.ob .logo{width:84px;height:84px;margin-bottom:20px;filter:drop-shadow(0 12px 24px rgba(10,79,214,.3))}
+.ob h1{font-size:34px;margin-bottom:8px}
+.ob .lead{font-size:17px;color:var(--muted);margin:0 0 18px}
+.steps{display:flex;gap:6px;margin-bottom:22px}.steps i{height:4px;flex:1;border-radius:9px;background:var(--fill)}.steps i.on{background:var(--accent)}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice button{text-align:left;padding:16px;border-radius:20px;border:2px solid var(--glass-b);background:var(--glass);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:var(--text);font:inherit;cursor:pointer}
+.choice button.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--glass))}
+.choice b{display:block;font-size:17px;margin-bottom:2px}.choice span{font-size:13px;color:var(--muted)}
+.tchips{display:flex;flex-wrap:wrap;gap:8px}
+.tchip{padding:9px 14px;border-radius:99px;background:var(--fill);border:1.5px solid transparent;font:inherit;font-size:15px;font-weight:600;color:var(--text);cursor:pointer}
+.tchip.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.tchip.soon{opacity:.55;cursor:default}
+.brand{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:26px;color:var(--muted);font-weight:600}
+.brand svg{width:22px;height:22px}
+.enter>*{animation:itemIn .42s cubic-bezier(.2,.85,.25,1) both}
+.enter>*:nth-child(2){animation-delay:.03s}.enter>*:nth-child(3){animation-delay:.06s}.enter>*:nth-child(4){animation-delay:.09s}.enter>*:nth-child(5){animation-delay:.12s}.enter>*:nth-child(6){animation-delay:.15s}.enter>*:nth-child(n+7){animation-delay:.18s}
+@keyframes itemIn{from{opacity:0;transform:translateY(14px) scale(.985)}}
+.enter .ring .arc{animation:ringIn .9s .1s cubic-bezier(.3,.8,.25,1) both}
+@keyframes ringIn{from{stroke-dashoffset:var(--c)}}
+#modal.open{animation:bgIn .22s ease both}
+@keyframes bgIn{from{background:transparent}}
+.sheet{animation:sheetUp .38s cubic-bezier(.2,.9,.25,1.05)!important}
+@keyframes sheetUp{from{transform:translateY(100%)}}
+#toast.show{animation:toastIn .32s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes toastIn{from{transform:translate(-50%,14px) scale(.9);opacity:0}}
+.ck.pop{animation:ckPop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes ckPop{0%{transform:scale(.6)}100%{transform:scale(1)}}
+.bar i{transition:width .5s cubic-bezier(.3,.8,.25,1)}
+.enter .bar i{animation:barIn .7s .15s cubic-bezier(.3,.8,.25,1) both}
+@keyframes barIn{from{width:0}}
+#modal{transition:background .2s,backdrop-filter .2s}
+#modal.closing{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}
+#modal.closing .sheet{animation:down .2s ease forwards!important}
+@keyframes down{to{transform:translateY(70px);opacity:0}}
+.sheet{overscroll-behavior:contain}
+.btn,.icon-btn,.fab,.tchip,.chips span,.day,.choice button{transition:transform .12s ease,background .2s,border-color .2s}
+.btn:active,.icon-btn:active,.fab:active,.tchip:active,.day:active,.choice button:active{transform:scale(.96)}
+.card[onclick]{transition:transform .15s ease}.card[onclick]:active{transform:scale(.985)}
+.li[onclick]:active,.chk:active{opacity:.6}
+.eyebrow svg{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
+.tline{font-size:13px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tline b{color:var(--text);font-weight:600}
+.topics{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.topics span{font-size:12px;font-weight:600;padding:5px 10px;border-radius:99px;background:color-mix(in srgb,var(--uc,var(--accent)) 12%,var(--fill))}
+.tchip.sel::after{content:"  ×";opacity:.65}
+.ck{width:26px;height:26px;border-radius:50%;border:2px solid var(--sep);display:grid;place-items:center;flex:none;color:#fff;font-size:14px;font-weight:800}
+.chk.on .ck{background:var(--g5);border-color:var(--g5)}.chk.on .t{color:var(--muted)}
+.chk:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:12px}
+.ask-d{color:var(--muted);margin:6px 0 4px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.draw{stroke-dashoffset:0!important;stroke-dasharray:none!important}}
+</style>
+</head>
+<body>
+<div class="bg"><i></i><i></i><i></i></div>
+<div id="splash"><div class="bg"><i></i><i></i><i></i></div><div class="sp-in"><div class="sp-logo"><svg viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="spb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a95ff"/><stop offset="1" stop-color="#0a4fd6"/></linearGradient><linearGradient id="sph" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".32"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="512" height="512" rx="115" fill="url(#spb)"/><rect width="512" height="512" rx="115" fill="url(#sph)"/><g fill="none" stroke="#fff" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"><path class="draw" pathLength="1" d="M317.7 165.4A118 118 0 1 0 365.4 286.5"/><path class="draw d2" pathLength="1" d="M214 262L258 306L396 168"/></g></svg></div><div class="wordmark">Grady</div><div class="sp-bar"><i id="spBar"></i></div><div class="sp-status" id="spStatus">Zaganjam</div></div></div>
+<div id="app"></div>
+<div class="dock"><nav id="nav"></nav><button class="fab" id="fab" aria-label="Dodaj"></button></div>
+<div id="modal"></div>
+<div id="toast" role="status"></div>
+<script>
+/* ============ PODATKI ============ */
+const KEY='gradient-v1';
+const TYPES=['Test','Pisno','Ustno','Projekt','Domača naloga','Drugo'];
+const PALETTE=['#007aff','#5856d6','#34c759','#ff9500','#ff2d55','#af52de','#30b0c7','#ffcc00','#8e8e93'];
+const SLO_THR=[50,63,76,89];
+const DEF={subjects:[],grades:[],upcoming:[],log:[],settings:{name:'Grady',user:'',theme:'auto',accent:'#007aff',min:1,max:5,pass:2,defW:1,dec:2,alert:3,thr:SLO_THR.slice(),mode:'grade'},custom:{},matura:null};
+const $=s=>document.querySelector(s);
+const CHART_URL='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+let _mk=0;
+function MARK(bg=true){const i='m'+(++_mk);return`<svg viewBox="0 0 512 512" aria-hidden="true">${bg?`<defs><linearGradient id="${i}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a95ff"/><stop offset="1" stop-color="#0a4fd6"/></linearGradient><linearGradient id="${i}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".32"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="512" height="512" rx="115" fill="url(#${i}a)"/><rect width="512" height="512" rx="115" fill="url(#${i}b)"/>`:''}<g fill="none" stroke="${bg?'#fff':'currentColor'}" stroke-width="${bg?44:52}" stroke-linecap="round" stroke-linejoin="round"><path d="M317.7 165.4A118 118 0 1 0 365.4 286.5"/><path d="M214 262L258 306L396 168"/></g></svg>`}
+const PROGS=['Gimnazija','Strokovna šola','Poklicna šola'];
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const localISO=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today=()=>localISO(new Date());
+let S=load();
+function load(){let s;try{const d=JSON.parse(localStorage.getItem(KEY));if(d)s={...structuredClone(DEF),...d,settings:{...DEF.settings,...d.settings}}}catch(e){}s=s||structuredClone(DEF);if(s.settings.name==='Gradient')s.settings.name='Grady';fixThr(s.settings);return s}
+function fixThr(st){const n=st.max-st.min;if(!Array.isArray(st.thr)||st.thr.length!==n)st.thr=n===4?SLO_THR.slice():Array.from({length:n},(_,i)=>Math.round(50+i*(40/Math.max(1,n-1))))}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Shranjevanje ni uspelo')}}
+function logA(t){S.log.unshift({t,at:new Date().toISOString()});S.log=S.log.slice(0,200)}
+
+/* ============ ANALITIKA ============ */
+const St=()=>S.settings;
+const subj=id=>S.subjects.find(s=>s.id===id);
+const byDate=(a,b)=>a.date.localeCompare(b.date)||(a.at||'').localeCompare(b.at||'');
+const gradesOf=sid=>S.grades.filter(g=>g.sid===sid).sort(byDate);
+function wavg(l){let s=0,w=0;l.forEach(g=>{s+=g.val*g.w;w+=g.w});return w?s/w:null}
+function overall(l=S.grades){const a=S.subjects.map(s=>wavg(l.filter(g=>g.sid===s.id))).filter(v=>v!=null);return a.length?a.reduce((x,y)=>x+y)/a.length:null}
+const clamp=v=>Math.min(St().max,Math.max(St().min,v));
+const pct=v=>v==null?null:(v-St().min)/(St().max-St().min)*100;
+const f=(v,d=St().dec)=>v==null||isNaN(v)?'–':(+v).toFixed(d).replace('.',',');
+const fp=v=>v==null||isNaN(v)?'–':Math.round(v)+' %';
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+function pctToGrade(p){let g=St().min;St().thr.forEach((t,i)=>{if(p>=t)g=St().min+i+1});return g}
+function gradeMinPct(g){return g<=St().min?0:St().thr[g-St().min-1]}
+function regress(y){const n=y.length;if(!n)return{slope:0,next:null,fit:[]};if(n<2)return{slope:0,next:y[0],fit:[y[0]]};let sx=0,sy=0,sxy=0,sxx=0;y.forEach((v,x)=>{sx+=x;sy+=v;sxy+=x*v;sxx+=x*x});const sl=(n*sxy-sx*sy)/((n*sxx-sx*sx)||1),ic=(sy-sl*sx)/n;return{slope:sl,next:clamp(ic+sl*n),fit:y.map((_,x)=>ic+sl*x)}}
+function stdev(v){if(v.length<2)return 0;const m=mean(v);return Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/(v.length-1))}
+const consistency=v=>v.length<2?null:Math.max(0,100-stdev(v)/((St().max-St().min)/2)*100);
+function needed(l,target,w=1){let s=0,W=0;l.forEach(g=>{s+=g.val*g.w;W+=g.w});return(target*(W+w)-s)/w}
+function needInfo(l,target,w){const v=needed(l,target,w);if(v>St().max+1e-9)return null;const g=Math.max(St().min,Math.ceil(v-1e-9));return{g,p:gradeMinPct(g)}}
+function running(l){let s=0,w=0;return l.map(g=>{s+=g.val*g.w;w+=g.w;return s/w})}
+function gkey(v){const p=pct(v);return p<12.5?'--g1':p<37.5?'--g2':p<62.5?'--g3':p<87.5?'--g4':'--g5'}
+const gcol=v=>v==null?'var(--muted)':`var(${gkey(v)})`;
+const gtext=v=>['--g3','--g4'].includes(gkey(v))?'#1c1c1e':'#fff';
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const gcolHex=v=>css(gkey(v));
+function subjStats(s){const l=gradesOf(s.id),vals=l.map(g=>g.val),avg=wavg(l),r=regress(vals);
+ const recent=vals.slice(-3),prev=vals.slice(-6,-3);const trend=recent.length&&prev.length?mean(recent)-mean(prev):r.slope;
+ const up=S.upcoming.filter(u=>u.sid===s.id&&u.exp);const proj=up.length?wavg([...l,...up.map(u=>({val:+u.exp,w:+u.w||1}))]):avg;
+ const pcts=l.filter(g=>g.pct!=null).map(g=>g.pct);
+ return{l,vals,avg,pct:pct(avg),r,trend,final:avg==null?null:Math.round(avg),proj,cons:consistency(vals),avgPct:mean(pcts),pcts}}
+function timeline(){const all=[...S.grades].sort(byDate),dates=[...new Set(all.map(g=>g.date))];return dates.map(d=>({d,v:overall(all.filter(g=>g.date<=d))}))}
+const dObj=d=>new Date(d+'T00:00');
+const fmtD=d=>dObj(d).toLocaleDateString('sl-SI',{day:'numeric',month:'short'});
+const fmtL=d=>dObj(d).toLocaleDateString('sl-SI',{weekday:'long',day:'numeric',month:'long'});
+const daysTo=d=>Math.round((dObj(d)-dObj(today()))/864e5);
+const dniW=n=>n===1?'dan':n===2?'dneva':n<=4?'dnevi':'dni';
+const dniA=n=>n===1?'dan':n===2?'dneva':'dni';
+const dniG=n=>n===1?'dneva':'dni';
+
+/* nujnost testa */
+function urg(d){const a=St().alert;
+ if(d<0)return{c:'var(--u0)',k:'past',t:'čaka vpis'};
+ if(d===0)return{c:'var(--u1)',k:'now',t:'danes'};
+ if(d===1)return{c:'var(--u1)',k:'now',t:'jutri'};
+ if(d<=a)return{c:'var(--u2)',k:'soon',t:`čez ${d} ${dniA(d)}`};
+ if(d<=7)return{c:'var(--u3)',k:'week',t:`čez ${d} ${dniA(d)}`};
+ return{c:'var(--u4)',k:'later',t:`čez ${d} ${dniA(d)}`}}
+const upSorted=()=>[...S.upcoming].sort(byDate);
+function upInfo(u){const s=subj(u.sid),l=s?gradesOf(s.id):[],d=daysTo(u.date),cur=wavg(l),w=+u.w||1,R=cur==null?null:Math.round(cur);
+ const keep=R!=null?needInfo(l,R-0.5,w):null,better=R!=null&&R<St().max?needInfo(l,R+0.5,w):undefined;
+ const what=[];for(let g=St().min;g<=St().max;g++)what.push([g,wavg([...l,{val:g,w}])]);
+ return{s,l,d,cur,R,keep,better,what,ug:urg(d),w}}
+function chip(label,info){if(info===null)return`<div class="need no"><span>${label}</span><b>ni dosegljivo</b></div>`;if(info.g<=St().min)return`<div class="need ok"><span>${label}</span><b>varno</b></div>`;return`<div class="need"><span>${label}</span><b>≥ ${info.p} %</b><small>ocena ${info.g}</small></div>`}
+function needChips(x){if(x.R==null)return'';let h=chip(`Ohraniš ${x.R}`,x.keep);if(x.better!==undefined)h+=chip(`Dvigneš na ${x.R+1}`,x.better);return`<div class="needs">${h}</div>`}
+const badgeIn=d=>d<0?`<b>!</b><span>vpiši</span>`:d===0?`<b>0</b><span>danes</span>`:`<b>${d}</b><span>${dniW(d)}</span>`;
+
+/* ============ GRAFI ============ */
+let charts=[];
+function destroyCharts(){charts.forEach(c=>c.destroy());charts=[]}
+function mk(id,cfg){const el=document.getElementById(id);if(!el)return;if(!window.Chart){el.parentElement.innerHTML='<p class="sub empty">Grafi se prikažejo, ko je naprava povezana z internetom.</p>';return}
+ Chart.defaults.font.family=getComputedStyle(document.body).fontFamily;Chart.defaults.color=css('--muted');Chart.defaults.borderColor=css('--sep');
+ cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},animation:chartAnim?{duration:450}:false},cfg.options||{});charts.push(new Chart(el,cfg))}
+const yScale=()=>({min:St().min,max:St().max,ticks:{stepSize:1},grid:{color:css('--sep')}});
+const xNoGrid={grid:{display:false}};
+
+/* ============ IKONE / NAVIGACIJA ============ */
+const IC={home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+upcoming:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+subjects:'<rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>',
+analysis:'<path d="M5 20V11M12 20V4M19 20v-6"/>',
+gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',matura:'<path d="M2 9.5 12 5l10 4.5L12 14z"/><path d="M6 11.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.5"/><path d="M22 9.5V15"/>',back:'<path d="M15 5l-7 7 7 7"/>'};
+const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>`;
+const tabs=()=>[['home','Pregled'],['upcoming','Testi'],['subjects','Predmeti'],['analysis','Analiza'],...(S.profile?.level==='ss'?[['matura','Matura']]:[])];
+function renderNav(k){$('#nav').innerHTML=tabs().map(([t,n])=>`<a href="#${t}" data-tab="${t}" class="${k===t||(t==='subjects'&&k==='subject')||(t==='matura'&&k==='matura')?'on':''}">${svg(t)}${n}</a>`).join('');
+ $('#nav').querySelectorAll('a').forEach(a=>a.onclick=e=>{if((location.hash.slice(1)||'home')===a.dataset.tab){e.preventDefault();window.scrollTo({top:0,behavior:'smooth'})}})}
+function header(title,eyebrow,extra=''){return`<header class="top"><div class="grow"><div class="eyebrow">${eyebrow||''}</div><h1>${title}</h1></div>${extra}<button class="icon-btn" onclick="location.hash='nastavitve'" aria-label="Nastavitve">${svg('gear')}</button></header>`}
+let curView='home';
+let curRoute=null,chartAnim=true;const scrollMem={};try{history.scrollRestoration='manual'}catch(e){}
+function render(){const v=S.profile?(location.hash.slice(1)||'home'):'__ob',same=v===curRoute,y=window.scrollY;if(curRoute&&!same)scrollMem[curRoute]=y;
+ destroyCharts();applyTheme();$('.dock').hidden=!S.profile;chartAnim=!same;if(!same){const m=$('#modal');clearTimeout(_ct);m.classList.remove('open','closing');m.innerHTML=''}
+ if(!S.profile){vOnboard();if(!same)window.scrollTo(0,0);curRoute=v;return}
+ const [k,id]=v.split(':');curView=k;renderNav(k);const A=$('#app');if(same)A.classList.remove('enter');
+ const views={home:vHome,subjects:vSubjects,subject:()=>vSubject(id),analysis:vAnalysis,upcoming:vUpcoming,nastavitve:vSettings,matura:()=>id?vMaturaSubj(id):vMatura()};(views[k]||vHome)();
+ $('#fab').innerHTML=svg('plus');$('#fab').setAttribute('aria-label',k==='upcoming'?'Dodaj test':'Dodaj oceno');
+ window.scrollTo(0,same?y:(id?0:(scrollMem[v]||0)));
+ if(!same){A.classList.remove('enter');void A.offsetWidth;A.classList.add('enter');countUp()}
+ curRoute=v}
+function countUp(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;document.querySelectorAll('[data-n]').forEach(el=>{const n=+el.dataset.n,d=+el.dataset.d||0,t0=performance.now(),dur=700;if(isNaN(n))return;const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=f(n*e,d);if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)})}
+window.addEventListener('hashchange',render);
+function applyTheme(){S.settings.name='Grady';const t=St().theme,dark=t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches),r=document.documentElement;r.dataset.theme=dark?'dark':'light';r.style.setProperty('--accent',St().accent);const m=$('meta[name=theme-color]');if(m)m.content=dark?'#09090c':'#eef0f5';document.title='Grady'}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>St().theme==='auto'&&render());
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1900)}
+function ringSvg(p,c){const r=41,C=2*Math.PI*r,o=C*(1-Math.max(0,Math.min(100,p||0))/100);return`<svg class="ring" viewBox="0 0 96 96"><circle cx="48" cy="48" r="${r}" fill="none" stroke="var(--fill)" stroke-width="9"/><circle class="arc" style="--c:${C}" cx="48" cy="48" r="${r}" fill="none" stroke="${c}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${o}" transform="rotate(-90 48 48)"/><text x="48" y="54" text-anchor="middle" fill="var(--text)" font-size="18" font-weight="700">${p==null?'–':Math.round(p)+'%'}</text></svg>`}
+const trendPill=t=>t>0.05?`<span class="pill up">▲ ${f(t,2)}</span>`:t<-0.05?`<span class="pill down">▼ ${f(Math.abs(t),2)}</span>`:`<span class="pill">stabilno</span>`;
+const gBadge=(v,label)=>`<div class="badge" style="background:${gcol(v)};color:${gtext(v)}">${label??v}</div>`;
+
+/* ============ PREGLED ============ */
+function alertCard(u,more){const x=upInfo(u),d=x.d;
+ const big=d===0?'<b class="w">Danes</b>':d===1?'<b class="w">Jutri</b>':`<b>${d}</b><span>${dniW(d)}</span>`;
+ return`<div class="card alert ${x.ug.k}" style="--uc:${x.ug.c}" onclick="location.hash='upcoming'">
+ <div class="row" style="margin-bottom:12px"><span class="live"></span><span class="lbl">${d<=1?'Test je tik pred vrati':'Prihaja test'}</span>${more?`<span class="sub" style="margin-left:auto">+${more} ${more===1?'test':more===2?'testa':'testi'}</span>`:''}</div>
+ <div class="row" style="gap:16px;align-items:center"><div class="count">${big}</div><div class="grow"><div class="subj">${esc(x.s?.name||'?')}</div><div class="sub">${esc(u.title||'Test')}</div><div class="sub">${fmtL(u.date)}</div></div></div>
+ ${u.topics&&u.topics.length?`<div class="topics">${u.topics.slice(0,6).map(t=>`<span>${esc(t)}</span>`).join('')}${u.topics.length>6?`<span>+${u.topics.length-6}</span>`:''}</div>`:''}
+ ${x.R!=null?needChips(x):`<p class="sub mt">Prva ocena pri tem predmetu.</p>`}</div>`}
+function stripHtml(){let h='';for(let i=0;i<14;i++){const dt=new Date();dt.setDate(dt.getDate()+i);const iso=localISO(dt),t=S.upcoming.filter(u=>u.date===iso),u=t.length?urg(i):null;
+ h+=`<button class="day ${i===0?'today':''} ${u?'has':''}" style="${u?'--uc:'+u.c:''}" onclick="location.hash='upcoming'" aria-label="${fmtL(iso)}${t.length?', testov: '+t.length:''}"><span>${i===0?'danes':dt.toLocaleDateString('sl-SI',{weekday:'short'}).replace('.','')}</span><b>${dt.getDate()}</b></button>`}return h}
+function upRow(u){const x=upInfo(u);return`<div class="li" onclick="location.hash='upcoming'"><div class="dbadge" style="--uc:${x.ug.c}">${badgeIn(x.d)}</div><div class="grow"><div class="t">${esc(x.s?.name||'?')}</div><div class="sub">${esc(u.title||'Test')} · ${fmtD(u.date)}</div>${topicLine(u.topics)}</div><span class="tag" style="--uc:${x.ug.c}">${x.ug.t}</span></div>`}
+function vHome(){const hello=St().user?`Živjo, ${esc(St().user)}`:'Grady',ds=`${MARK()}${new Date().toLocaleDateString('sl-SI',{weekday:'long',day:'numeric',month:'long'})}`;
+ if(!S.subjects.length){$('#app').innerHTML=header(hello,ds)+`<div class="card" style="padding:22px"><h2>Začni tukaj</h2><p class="sub">Dodaj predmete, vpisuj ocene ali odstotke s testov in spremljaj, kdaj te čaka naslednji test.</p><div class="row wrap mt"><button class="btn primary" onclick="subjectForm()">Dodaj predmet</button><button class="btn" onclick="demo()">Poskusi z demo podatki</button></div></div>`;return}
+ const ups=upSorted(),fut=ups.filter(u=>daysTo(u.date)>=0),past=ups.filter(u=>daysTo(u.date)<0),urgent=fut.filter(u=>daysTo(u.date)<=St().alert);
+ const ov=overall(),tl=timeline(),st=S.subjects.map(s=>({s,...subjStats(s)})).filter(x=>x.avg!=null),sorted=[...st].sort((a,b)=>b.avg-a.avg);
+ const allVals=S.grades.map(g=>g.val),allPct=S.grades.filter(g=>g.pct!=null).map(g=>g.pct);
+ const projOv=st.length?mean(st.map(x=>x.proj??x.avg)):null,trendOv=tl.length>=2?tl[tl.length-1].v-tl[Math.max(0,tl.length-4)].v:0;
+ $('#app').innerHTML=header(hello,ds)+`
+ ${urgent.length?alertCard(urgent[0],urgent.length-1):''}
+ ${past.length?`<div class="card banner" onclick="location.hash='upcoming'"><div class="dbadge" style="--uc:var(--u0)"><b>${past.length}</b><span>${past.length===1?'test':'testi'}</span></div><div class="grow"><div class="t" style="font-weight:600">Vpiši rezultate</div><div class="sub">${past.length===1?'En test je že mimo':'Nekaj testov je že mimo'} in še nima ocene.</div></div><span class="link">Vpiši</span></div>`:''}
+ <section><div class="sh"><h2>Prihajajoči testi</h2><a href="#upcoming">Vsi</a></div>
+ <div class="card" style="padding:0"><div class="strip">${stripHtml()}</div></div>
+ ${fut.length?`<div class="card list">${fut.slice(urgent.length?1:0,urgent.length?4:3).map(upRow).join('')||'<p class="sub" style="padding:8px 0">Drugih testov ni.</p>'}</div>`:`<div class="card empty"><p class="sub" style="margin-top:0">Ni načrtovanih testov.</p><button class="btn primary sm" onclick="upForm()">Dodaj test</button></div>`}
+ </section>
+ ${maturaCard()?`<section>${maturaCard()}</section>`:''}
+ <section><div class="sh"><h2>Uspeh</h2><a href="#analysis">Analiza</a></div>
+ <div class="card ov">${ringSvg(pct(ov),ov==null?'var(--muted)':gcol(ov))}<div class="grow"><div class="eyebrow">Skupno povprečje</div><div class="big" ${ov!=null?`data-n="${ov}" data-d="${St().dec}"`:''}>${f(ov)}</div><div class="row wrap mt" style="gap:6px">${trendPill(trendOv)}<span class="pill">Napoved ${f(projOv)}</span></div></div></div>
+ <div class="grid g3 mt"><div class="card kpi"><div class="l">Ocen</div><div class="v">${S.grades.length}</div></div><div class="card kpi"><div class="l">Ø testi</div><div class="v">${fp(mean(allPct))}</div></div><div class="card kpi"><div class="l">Stabilnost</div><div class="v">${fp(consistency(allVals))}</div></div></div>
+ ${sorted.length>1?`<div class="grid mt"><div class="card kpi"><div class="l">Najboljši</div><div class="v sm">${esc(sorted[0].s.name)}</div><div class="l">${f(sorted[0].avg)}</div></div><div class="card kpi"><div class="l">Za izboljšati</div><div class="v sm">${esc(sorted[sorted.length-1].s.name)}</div><div class="l">${f(sorted[sorted.length-1].avg)}</div></div></div>`:''}
+ </section>
+ ${S.grades.length?`<section><div class="sh"><h2>Vpogledi</h2></div><div class="card list">${insights(st,trendOv).slice(0,3).map(i=>`<div class="insight"><span class="dot" style="background:var(${i[0]})"></span><span>${i[1]}</span></div>`).join('')}</div></section>
+ <section><div class="sh"><h2>Zadnje ocene</h2><a href="#subjects">Vse</a></div><div class="card list">${[...S.grades].sort(byDate).reverse().slice(0,4).map(gradeRow).join('')}</div></section>`
+ :`<section><div class="card empty"><p class="sub" style="margin-top:0">Še ni ocen. Dodaj prvo s tipko +.</p></div></section>`}`;
+ }
+function chartsOverview(tl,sorted,allVals){
+ mk('cTl',{type:'line',data:{labels:tl.map(x=>fmtD(x.d)),datasets:[{data:tl.map(x=>x.v),borderColor:St().accent,backgroundColor:St().accent+'26',fill:true,tension:.35,pointRadius:0,pointHoverRadius:5,borderWidth:2.5}]},options:{scales:{y:yScale(),x:xNoGrid}}});
+ mk('cBar',{type:'bar',data:{labels:sorted.map(x=>x.s.name),datasets:[{data:sorted.map(x=>x.avg),backgroundColor:sorted.map(x=>x.s.color),borderRadius:10,barThickness:18}]},options:{indexAxis:'y',scales:{x:yScale(),y:xNoGrid}}});
+ const rng=[];for(let i=St().min;i<=St().max;i++)rng.push(i);
+ mk('cPie',{type:'doughnut',data:{labels:rng.map(String),datasets:[{data:rng.map(v=>allVals.filter(x=>Math.round(x)===v).length),backgroundColor:rng.map(gcolHex),borderWidth:0}]},options:{cutout:'66%',plugins:{legend:{display:true,position:'right',labels:{usePointStyle:true,boxWidth:8}}}}});
+}
+function insights(st,tr){const o=[],mx=St().max;
+ if(tr>0.05)o.push(['--g5',`Skupno povprečje raste, v zadnjem obdobju za <b>${f(tr)}</b>.`]);else if(tr<-0.05)o.push(['--u1',`Skupno povprečje pada, v zadnjem obdobju za <b>${f(Math.abs(tr))}</b>.`]);
+ st.filter(x=>x.avg<St().pass+0.5).forEach(x=>{const n=needInfo(x.l,St().pass+0.5,St().defW);o.push(['--u1',`<b>${esc(x.s.name)}</b> je blizu negativne (${f(x.avg)}). ${n?`Za ${St().pass+1} rabiš naslednjič vsaj ${n.p} %.`:''}`])});
+ st.filter(x=>x.trend>0.4).forEach(x=>o.push(['--g5',`Pri <b>${esc(x.s.name)}</b> se zadnje ocene izboljšujejo.`]));
+ st.filter(x=>x.trend<-0.4).forEach(x=>o.push(['--u3',`Pri <b>${esc(x.s.name)}</b> zadnje ocene padajo.`]));
+ st.filter(x=>x.s.target).forEach(x=>{const n=needInfo(x.l,x.s.target-0.5,St().defW);o.push(n===null?['--u3',`Cilj ${x.s.target} pri <b>${esc(x.s.name)}</b> zahteva več kot eno dobro oceno.`]:n.g<=St().min?['--g5',`Cilj ${x.s.target} pri <b>${esc(x.s.name)}</b> je dosežen.`]:['--accent',`Za cilj ${x.s.target} pri <b>${esc(x.s.name)}</b> rabiš naslednjič vsaj <b>${n.p} %</b>.`])});
+ if(!o.length)o.push(['--accent','Vse teče po načrtu. Več ocen pomeni natančnejšo analizo.']);return o.slice(0,7)}
+function gradeRow(g){const s=subj(g.sid);return`<div class="li" onclick="gradeForm('${g.id}')">${gBadge(g.val)}<div class="grow"><div class="t">${esc(s?.name||'?')}</div><div class="sub">${esc(g.type)}${g.pct!=null?' · '+f(g.pct,g.pct%1?1:0)+' %':''} · utež ${g.w}${g.note?' · '+esc(g.note):''}</div>${topicLine(g.topics)}</div><span class="sub">${fmtD(g.date)}</span></div>`}
+
+/* ============ TESTI ============ */
+function upCard(u){const x=upInfo(u),c=x.ug;return`<div class="card" style="--uc:${c.c}">
+ <div class="row"><div class="dbadge lg" style="--uc:${c.c}">${badgeIn(x.d)}</div><div class="grow"><div class="row between"><h3>${esc(x.s?.name||'?')}</h3><span class="tag" style="--uc:${c.c}">${c.t}</span></div><div class="sub">${esc(u.title||'Test')} · ${fmtL(u.date)} · utež ${u.w}</div></div></div>
+ ${u.topics&&u.topics.length?`<div class="topics" style="--uc:${c.c}">${u.topics.map(t=>`<span>${esc(t)}</span>`).join('')}</div>`:`<button class="link mt" style="font-size:14px;padding:0" onclick="upForm('${u.id}')">Dodaj snov</button>`}
+ ${x.l.length?`${needChips(x)}<div class="flabel" style="margin-left:0">Zaključna po testu glede na rezultat</div><div class="what">${x.what.map(([g,a])=>`<div><b style="color:${gcol(g)}">${g}</b>${f(a)}<small>${g>St().min?'od '+gradeMinPct(g)+' %':'pod '+St().thr[0]+' %'}</small></div>`).join('')}</div>`:`<p class="sub mt">Prva ocena pri tem predmetu, zato bo določila povprečje.</p>`}
+ <div class="row mt" style="gap:8px">${x.d<=0?`<button class="btn primary sm" onclick="convertUp('${u.id}')">Vpiši rezultat</button>`:''}<button class="btn sm" onclick="upForm('${u.id}')">Uredi</button></div></div>`}
+function vUpcoming(){const up=upSorted(),fut=up.filter(u=>daysTo(u.date)>=0),past=up.filter(u=>daysTo(u.date)<0);
+ $('#app').innerHTML=header('Testi','Prihajajoče ocene')+`
+ <div class="card" style="padding:0"><div class="strip">${stripHtml()}</div></div>
+ <div class="row wrap sub mt" style="gap:12px;margin-left:4px"><span class="row" style="gap:5px"><i class="dot" style="background:var(--u1)"></i>do 1 dan</span><span class="row" style="gap:5px"><i class="dot" style="background:var(--u2)"></i>do ${St().alert} ${dniG(St().alert)}</span><span class="row" style="gap:5px"><i class="dot" style="background:var(--u3)"></i>ta teden</span><span class="row" style="gap:5px"><i class="dot" style="background:var(--u4)"></i>kasneje</span></div>
+ ${past.length?`<section><div class="sh"><h2>Čaka na vpis rezultata</h2></div>${past.map(upCard).join('')}</section>`:''}
+ <section><div class="sh"><h2>Naslednji</h2><button class="link" onclick="upForm()">Dodaj</button></div>${fut.length?fut.map(upCard).join(''):`<div class="card empty"><p class="sub" style="margin-top:0">Ni načrtovanih testov.</p>${S.subjects.length?`<button class="btn primary sm" onclick="upForm()">Dodaj test</button>`:''}</div>`}</section>`}
+
+/* ============ PREDMETI ============ */
+function vSubjects(){$('#app').innerHTML=header('Predmeti',`${S.subjects.length} predmetov`)+`
+ ${S.subjects.length?S.subjects.map(s=>{const x=subjStats(s),nu=S.upcoming.filter(u=>u.sid===s.id&&daysTo(u.date)>=0).sort(byDate)[0];return`<div class="card" style="cursor:pointer" onclick="location.hash='subject:${s.id}'"><div class="row between"><div class="row grow"><span class="dot" style="background:${s.color}"></span><b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name)}</b></div><div class="row" style="gap:8px">${x.l.length>1?trendPill(x.trend):''}<b style="font-size:22px;font-variant-numeric:tabular-nums">${f(x.avg)}</b></div></div>
+ <div class="bar"><i style="width:${x.pct||0}%;background:${s.color}"></i></div><div class="row between mt sub wrap"><span>${x.l.length} ocen${x.avgPct!=null?' · Ø '+fp(x.avgPct):''}</span>${nu?`<span class="tag" style="--uc:${urg(daysTo(nu.date)).c}">test ${urg(daysTo(nu.date)).t}</span>`:`<span>zaključna ≈ ${x.final??'–'}</span>`}</div></div>`}).join('')
+ :`<div class="card empty"><p class="sub" style="margin-top:0">Še nimaš predmetov.</p><button class="btn primary" onclick="subjectForm()">Dodaj predmet</button></div>`}
+ ${S.subjects.length?`<button class="btn full" onclick="subjectForm()">Dodaj predmet</button>`:''}`}
+function vSubject(id){const s=subj(id);if(!s){location.hash='subjects';return}const x=subjStats(s),types=[...new Set(x.l.map(g=>g.type))];
+ const R=x.avg==null?null:Math.round(x.avg),ni={R,keep:R!=null?needInfo(x.l,R-0.5,St().defW):null,better:R!=null&&R<St().max?needInfo(x.l,R+0.5,St().defW):undefined};
+ const ups=S.upcoming.filter(u=>u.sid===id).sort(byDate);
+ $('#app').innerHTML=`<header class="top"><button class="icon-btn" onclick="location.hash='subjects'" aria-label="Nazaj">${svg('back')}</button><div class="grow"></div><button class="btn sm" onclick="subjectForm('${s.id}')">Uredi</button></header>
+ <div class="row" style="margin:0 2px 14px"><span class="dot" style="background:${s.color};width:14px;height:14px"></span><h1 style="margin:0">${esc(s.name)}</h1></div>
+ <div class="card ov">${ringSvg(x.pct,x.avg==null?'var(--muted)':gcol(x.avg))}<div class="grow"><div class="eyebrow">Povprečje</div><div class="big" ${x.avg!=null?`data-n="${x.avg}" data-d="${St().dec}"`:''}>${f(x.avg)}</div><div class="row wrap mt" style="gap:6px">${x.l.length>1?trendPill(x.trend):''}<span class="pill">Zaključna ${x.final??'–'}</span>${s.target?`<span class="pill">Cilj ${s.target}</span>`:''}</div></div></div>
+ <div class="grid g3 mt"><div class="card kpi"><div class="l">Napoved</div><div class="v">${f(x.r.next,1)}</div></div><div class="card kpi"><div class="l">Ø testi</div><div class="v">${fp(x.avgPct)}</div></div><div class="card kpi"><div class="l">Stabilnost</div><div class="v">${fp(x.cons)}</div></div></div>
+ ${ups.length?`<section><div class="sh"><h2>Testi</h2></div><div class="card list">${ups.map(upRow).join('')}</div></section>`:''}
+ ${x.l.length?`<section><div class="sh"><h2>Naslednja ocena</h2></div><div class="card"><span class="sub">Kaj potrebuješ pri uteži ${St().defW}</span>${needChips(ni)}<div class="flabel" style="margin-left:0">Novo povprečje glede na naslednjo oceno</div><div class="what">${x.vals.length?Array.from({length:St().max-St().min+1},(_,i)=>St().min+i).map(v=>`<div><b style="color:${gcol(v)}">${v}</b>${f(wavg([...x.l,{val:v,w:St().defW}]))}</div>`).join(''):''}</div></div></section>
+ <section><div class="sh"><h2>Potek ocen</h2></div><div class="card"><div class="chart"><canvas id="cS"></canvas></div><div class="row sub mt wrap" style="gap:14px"><span>● ocene</span><span style="color:${s.color}">━ povprečje</span><span>┅ trend</span></div></div>
+ ${x.pcts.length>1?`<div class="card"><b>Rezultati testov</b><div class="chart sm"><canvas id="cP"></canvas></div></div>`:''}</section>
+ <section><div class="sh"><h2>Kalkulator cilja</h2></div><div class="card"><div class="grid"><div><label for="tg">Ciljno povprečje</label><input id="tg" type="number" inputmode="decimal" step="0.1" value="${s.target?s.target-0.5:St().max-0.5}"></div><div><label for="tn">Število ocen</label><input id="tn" type="number" inputmode="numeric" min="1" value="1"></div></div><label for="tw">Utež posamezne ocene</label><input id="tw" type="number" inputmode="decimal" step="0.5" min="0.5" value="${St().defW}"><div id="tr" class="conv"></div></div></section>
+ ${(()=>{const tr=topicStats(x.l);return tr.length?`<section><div class="sh"><h2>Po snovi</h2><span class="sub">najšibkejše najprej</span></div><div class="card list">${topicRows(tr)}</div></section>`:''})()}
+ ${types.length>1?`<section><div class="sh"><h2>Po vrsti ocene</h2></div><div class="card"><div class="chart sm"><canvas id="cT"></canvas></div></div></section>`:''}
+ <section><div class="sh"><h2>Ocene</h2><button class="link" onclick="gradeForm(null,'${s.id}')">Dodaj</button></div><div class="card list">${[...x.l].reverse().map(gradeRow).join('')}</div></section>`
+ :`<div class="card empty mt"><p class="sub" style="margin-top:0">Ni še ocen za ta predmet.</p><button class="btn primary" onclick="gradeForm(null,'${s.id}')">Dodaj oceno</button></div>`}`;
+ if(!x.l.length)return;
+ const calc=()=>{const t=+$('#tg').value,n=Math.max(1,Math.round(+$('#tn').value||1)),w=+$('#tw').value||1;let s_=0,W=0;x.l.forEach(g=>{s_+=g.val*g.w;W+=g.w});const v=(t*(W+w*n)-s_)/(w*n);const gi=Math.max(St().min,Math.ceil(v-1e-9));
+  $('#tr').innerHTML=v>St().max?`<span>Cilj ${f(t)} z ${n} ${n===1?'oceno':'ocenami'} ni dosegljiv. Potrebno bi bilo povprečje ${f(v)}.</span>`:v<=St().min?`<span>Cilj ${f(t)} je dosežen ne glede na naslednje ocene.</span>`:`${gBadge(gi)}<span>Na naslednjih ${n} ${n===1?'oceni':'ocenah'} rabiš povprečno <b>${f(v)}</b>${n===1?`, torej vsaj <b>${gradeMinPct(gi)} %</b>`:''}.</span>`};
+ ['tg','tn','tw'].forEach(i=>$('#'+i).oninput=calc);calc();
+ mk('cS',{type:'line',data:{labels:x.l.map(g=>fmtD(g.date)),datasets:[{data:x.vals,showLine:false,pointRadius:6,pointBackgroundColor:x.vals.map(gcolHex),pointBorderWidth:0},{data:running(x.l),borderColor:s.color,tension:.3,pointRadius:0,borderWidth:2.5},{data:x.r.fit,borderColor:css('--muted'),borderDash:[5,5],pointRadius:0,borderWidth:1.5}]},options:{scales:{y:yScale(),x:xNoGrid}}});
+ const pg=x.l.filter(g=>g.pct!=null);
+ if(x.pcts.length>1)mk('cP',{type:'line',data:{labels:pg.map(g=>fmtD(g.date)),datasets:[{data:pg.map(g=>g.pct),borderColor:s.color,backgroundColor:s.color+'22',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:pg.map(g=>gcolHex(g.val))}]},options:{scales:{y:{min:0,max:100,ticks:{callback:v=>v+' %'},grid:{color:css('--sep')}},x:xNoGrid}}});
+ if(types.length>1)mk('cT',{type:'bar',data:{labels:types,datasets:[{data:types.map(t=>wavg(x.l.filter(g=>g.type===t))),backgroundColor:s.color,borderRadius:10}]},options:{scales:{y:yScale(),x:xNoGrid}}});
+}
+
+/* ============ ANALIZA ============ */
+function median(v){if(!v.length)return null;const s=[...v].sort((a,b)=>a-b),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2}
+function vAnalysis(){const st=S.subjects.map(s=>({s,...subjStats(s)})).filter(x=>x.avg!=null);
+ if(!st.length){$('#app').innerHTML=header('Analiza','Celoten pregled')+`<div class="card empty"><p class="sub" style="margin-top:0">Za analizo potrebuješ nekaj ocen.</p></div>`;return}
+ const months={};S.grades.forEach(g=>{const m=g.date.slice(0,7);(months[m]=months[m]||[]).push(g)});const mo=Object.keys(months).sort();
+ const typeAvg=TYPES.map(t=>[t,wavg(S.grades.filter(g=>g.type===t))]).filter(t=>t[1]!=null);
+ const pos=S.grades.filter(g=>g.val>=St().pass).length,allPct=S.grades.filter(g=>g.pct!=null).map(g=>g.pct);
+ st.sort((a,b)=>b.avg-a.avg);
+ $('#app').innerHTML=header('Analiza','Celoten pregled')+`
+ <div class="grid"><div class="card kpi"><div class="l">Pozitivnih ocen</div><div class="v">${fp(pos/S.grades.length*100)}</div></div><div class="card kpi"><div class="l">Mediana ocen</div><div class="v">${f(median(S.grades.map(g=>g.val)),1)}</div></div><div class="card kpi"><div class="l">Ø vseh testov</div><div class="v">${fp(mean(allPct))}</div></div><div class="card kpi"><div class="l">Odličnih (${St().max})</div><div class="v">${S.grades.filter(g=>g.val>=St().max).length}</div></div></div>
+ <section><div class="sh"><h2>Potek povprečja</h2></div><div class="card"><div class="chart"><canvas id="cTl"></canvas></div></div></section>
+ <section><div class="sh"><h2>Po predmetih</h2></div><div class="card"><div class="chart" style="height:${Math.max(150,st.length*40)}px"><canvas id="cBar"></canvas></div></div></section>
+ <section><div class="sh"><h2>Tabela uspešnosti</h2></div><div class="card scroll-x"><table><tr><th>Predmet</th><th>Povp.</th><th>Indeks</th><th>Ø %</th><th>Trend</th><th>σ</th><th>Napoved</th><th>Zaklj.</th></tr>${st.map(x=>`<tr><td><span class="dot" style="display:inline-block;background:${x.s.color};margin-right:7px"></span>${esc(x.s.name)}</td><td style="color:${gcol(x.avg)};font-weight:700">${f(x.avg)}</td><td>${fp(x.pct)}</td><td>${fp(x.avgPct)}</td><td style="color:${x.trend>0.05?'var(--g5)':x.trend<-0.05?'var(--g1)':'inherit'}">${x.trend>0?'+':''}${f(x.trend)}</td><td>${f(stdev(x.vals))}</td><td>${f(x.r.next,1)}</td><td><b>${x.final}</b></td></tr>`).join('')}</table></div></section>
+ ${st.length>=3?`<section><div class="sh"><h2>Profil predmetov</h2></div><div class="card"><div class="chart" style="height:290px"><canvas id="cR"></canvas></div></div></section>`:''}
+ <section><div class="sh"><h2>Po mesecih</h2></div><div class="card"><div class="chart"><canvas id="cM"></canvas></div><div class="row sub mt" style="gap:14px"><span style="color:${St().accent}">■ število ocen</span><span>━ povprečje</span></div></div></section>
+ ${typeAvg.length>1?`<section><div class="sh"><h2>Po vrsti ocene</h2></div><div class="card"><div class="chart sm"><canvas id="cTy"></canvas></div></div></section>`:''}
+ ${(()=>{const tr=topicStats(S.grades);return tr.length?`<section><div class="sh"><h2>Teme za ponavljanje</h2><span class="sub">po povprečju</span></div><div class="card list">${topicRows(tr.slice(0,6),true)}</div></section>`:''})()}
+ <section><div class="sh"><h2>Porazdelitev ocen</h2><span class="sub">${S.grades.length} ocen</span></div><div class="card"><div class="chart sm"><canvas id="cPie"></canvas></div></div></section>`;
+ chartsOverview(timeline(),st,S.grades.map(g=>g.val));
+ if(st.length>=3)mk('cR',{type:'radar',data:{labels:st.map(x=>x.s.name),datasets:[{data:st.map(x=>x.avg),borderColor:St().accent,backgroundColor:St().accent+'33',pointBackgroundColor:St().accent}]},options:{scales:{r:{min:St().min,max:St().max,ticks:{stepSize:1,backdropColor:'transparent'},grid:{color:css('--sep')},angleLines:{color:css('--sep')}}}}});
+ mk('cM',{data:{labels:mo.map(m=>new Date(m+'-01T00:00').toLocaleDateString('sl-SI',{month:'short',year:'2-digit'})),datasets:[{type:'bar',data:mo.map(m=>months[m].length),backgroundColor:St().accent+'55',borderRadius:8,yAxisID:'c'},{type:'line',data:mo.map(m=>wavg(months[m])),borderColor:css('--text'),tension:.3,yAxisID:'y'}]},options:{scales:{y:{...yScale(),position:'left'},c:{position:'right',grid:{display:false},beginAtZero:true,ticks:{precision:0}},x:xNoGrid}}});
+ if(typeAvg.length>1)mk('cTy',{type:'bar',data:{labels:typeAvg.map(t=>t[0]),datasets:[{data:typeAvg.map(t=>t[1]),backgroundColor:typeAvg.map((_,i)=>PALETTE[i%PALETTE.length]),borderRadius:10}]},options:{scales:{y:yScale(),x:xNoGrid}}});
+}
+
+/* ============ NASTAVITVE ============ */
+function vSettings(){const s=St();
+ const P=S.profile||{},lv=P.level||'os',nG=lv==='os'?9:4;
+ $('#app').innerHTML=`<header class="top"><button class="icon-btn" onclick="history.length>1?history.back():location.hash='home'" aria-label="Nazaj">${svg('back')}</button><div class="grow"></div></header><h1 style="margin:0 2px 16px">Nastavitve</h1>
+ <div class="card"><h3>Profil</h3><label for="sUser">Ime</label><input id="sUser" value="${esc(P.name||s.user)}">
+ <div class="grid"><div><label for="pLv">Šola</label><select id="pLv"><option value="os" ${lv==='os'?'selected':''}>Osnovna šola</option><option value="ss" ${lv==='ss'?'selected':''}>Srednja šola</option></select></div><div><label for="pGr">${lv==='os'?'Razred':'Letnik'}</label><select id="pGr">${Array.from({length:nG},(_,i)=>i+1).map(g=>`<option value="${g}" ${P.grade==g?'selected':''}>${gradeLbl(lv,g)}</option>`).join('')}</select></div></div>
+ ${lv==='ss'?`<label for="pPr">Program</label><select id="pPr">${PROGS.map(p=>`<option ${P.program===p?'selected':''}>${p}</option>`).join('')}</select>`:''}
+ <label for="pSc">Ime šole</label><input id="pSc" value="${esc(P.school||'')}" placeholder="neobvezno">
+ ${lv==='ss'?`<button class="btn full" onclick="location.hash='matura'">${S.matura?'Odpri maturo':'Nastavi maturo'}</button>`:''}<button class="btn danger full" onclick="logout()">Odjava</button></div>
+ <div class="card"><h3>Videz</h3>
+ <div class="flabel" style="margin-top:6px">Tema</div><div class="seg" id="sTheme">${[['auto','Samodejno'],['light','Svetla'],['dark','Temna']].map(([k,n])=>`<button type="button" data-v="${k}" class="${s.theme===k?'on':''}">${n}</button>`).join('')}</div>
+ <div class="flabel">Barva poudarka</div><div class="row wrap" style="gap:10px">${PALETTE.map(c=>`<button type="button" class="sw ${s.accent===c?'on':''}" data-c="${c}" style="background:${c}" aria-label="Barva ${c}"></button>`).join('')}<input type="color" id="sAcc" value="${s.accent}" style="width:46px;height:38px"></div></div>
+ <div class="card"><h3>Opozorila</h3><label for="sAlert">Opozori me toliko dni pred testom</label><input id="sAlert" type="number" inputmode="numeric" min="1" max="14" value="${s.alert}"><p class="sub">Testi znotraj tega obdobja se prikažejo na vrhu pregleda.</p></div>
+ <div class="card"><h3>Pretvorba odstotkov v oceno</h3><p class="sub">Najmanjši odstotek za posamezno oceno. Privzeto je običajna slovenska lestvica 50, 63, 76, 89.</p><div class="thr">${s.thr.map((t,i)=>`<div><label for="thr${i}" style="margin-left:2px">Ocena ${s.min+i+1}</label><input id="thr${i}" data-i="${i}" class="thrI" type="number" inputmode="decimal" min="0" max="100" value="${t}"></div>`).join('')}</div><button class="btn sm mt" type="button" onclick="S.settings.thr=${JSON.stringify(SLO_THR)}.slice(0,St().max-St().min);fixThr(S.settings);save();render();toast('Lestvica ponastavljena')">Ponastavi na privzeto</button></div>
+ <div class="card"><h3>Ocenjevanje</h3><div class="grid"><div><label for="sMin">Najnižja ocena</label><input id="sMin" type="number" value="${s.min}"></div><div><label for="sMax">Najvišja ocena</label><input id="sMax" type="number" value="${s.max}"></div><div><label for="sPass">Prag pozitivne</label><input id="sPass" type="number" value="${s.pass}"></div><div><label for="sW">Privzeta utež</label><input id="sW" type="number" step="0.5" value="${s.defW}"></div></div><label for="sDec">Decimalna mesta</label><input id="sDec" type="number" min="0" max="3" value="${s.dec}"></div>
+ <div class="card"><h3>Podatki</h3><p class="sub">Vse se samodejno shrani na tej napravi. Za prenos na drugo napravo uporabi izvoz in uvoz.</p>
+ <button class="btn full" onclick="exportJSON()">Izvozi varnostno kopijo</button><button class="btn full" onclick="exportCSV()">Izvozi ocene v CSV</button><button class="btn full" onclick="$('#imp').click()">Uvozi varnostno kopijo</button><input type="file" id="imp" accept=".json,application/json" hidden>
+ <button class="btn full" onclick="demo()">Naloži demo podatke</button><button class="btn danger full" onclick="clearGrades()">Izbriši ocene in teste</button></div>
+ ${S.log.length?`<section><div class="sh"><h2>Zgodovina sprememb</h2></div><div class="card list">${S.log.slice(0,15).map(l=>`<div class="li" style="cursor:default"><span class="grow">${esc(l.t)}</span><span class="sub">${new Date(l.at).toLocaleDateString('sl-SI',{day:'numeric',month:'short'})}</span></div>`).join('')}</div></section>`:''}
+ <div class="brand">${MARK()}Grady</div><p class="sub" style="text-align:center;margin-top:4px">${S.subjects.length} predmetov · ${S.grades.length} ocen</p>`;
+ const set=(k,v)=>{S.settings[k]=v;save();applyTheme()};
+ 
+ const prof=(k,v)=>{S.profile={...(S.profile||{}),[k]:v};save()};
+ $('#sUser').onchange=e=>{const v=e.target.value.trim();set('user',v);prof('name',v);toast('Shranjeno')};
+ $('#pLv').onchange=e=>{prof('level',e.target.value);prof('grade',1);if(e.target.value==='ss'&&!S.profile.program)prof('program','Gimnazija');render()};
+ $('#pGr').onchange=e=>{prof('grade',+e.target.value);toast('Shranjeno')};
+ if($('#pPr'))$('#pPr').onchange=e=>{prof('program',e.target.value);toast('Shranjeno')};
+ $('#pSc').onchange=e=>{prof('school',e.target.value.trim());toast('Shranjeno')};
+ $('#sTheme').onclick=e=>{const v=e.target.dataset.v;if(v){set('theme',v);render()}};
+ document.querySelectorAll('.sw').forEach(el=>el.onclick=()=>{set('accent',el.dataset.c);render()});$('#sAcc').onchange=e=>{set('accent',e.target.value);render()};
+ $('#sAlert').onchange=e=>{set('alert',Math.max(1,Math.min(14,Math.round(+e.target.value)||3)));toast('Shranjeno')};
+ document.querySelectorAll('.thrI').forEach(el=>el.onchange=()=>{const v=[...document.querySelectorAll('.thrI')].map(x=>+x.value);if(v.some((x,i)=>isNaN(x)||x<0||x>100||(i&&x<=v[i-1]))){toast('Meje morajo naraščati od 0 do 100');el.value=St().thr[+el.dataset.i];return}set('thr',v);toast('Shranjeno')});
+ [['sMin','min'],['sMax','max'],['sPass','pass'],['sW','defW'],['sDec','dec']].forEach(([i,k])=>$('#'+i).onchange=e=>{const v=+e.target.value;if((k==='max'&&v<=St().min)||(k==='min'&&v>=St().max)||isNaN(v)){toast('Neveljaven razpon');e.target.value=St()[k];return}set(k,v);if(k==='min'||k==='max'){fixThr(S.settings);save();render()}toast('Shranjeno')});
+ $('#imp').onchange=importJSON}
+
+/* ============ OBRAZCI ============ */
+let _ok=0;
+let _ct=0;
+function openModal(html){const m=$('#modal');clearTimeout(_ct);m.classList.remove('closing');m.innerHTML=html;m.classList.add('open');m.onclick=e=>{if(e.target===m||e.target.closest('[data-close]'))closeSheet()};return m}
+function sheet(title,body,onSubmit,extra=''){openModal(`<div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-h"><h2>${title}</h2><button class="icon-btn" type="button" data-close aria-label="Zapri">✕</button></div><form id="sf" novalidate>${body}<button class="btn primary full" type="submit">Shrani</button>${extra}</form></div>`);
+ let busy=0;$('#sf').onsubmit=e=>{e.preventDefault();if(busy)return;const fd=Object.fromEntries(new FormData(e.target));if(onSubmit(fd)!==false){busy=1;closeSheet();save();render()}}}
+function closeSheet(){const m=$('#modal');if(!m.classList.contains('open'))return;m.classList.add('closing');clearTimeout(_ct);_ct=setTimeout(()=>{m.classList.remove('open','closing');m.innerHTML=''},200)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+function ask(msg,fn,detail='',yes='Potrdi'){openModal(`<div class="sheet" role="alertdialog" aria-modal="true"><h2 style="margin:6px 0 4px">${msg}</h2>${detail?`<p class="ask-d">${detail}</p>`:''}<button class="btn danger full" id="askY" type="button">${yes}</button><button class="btn full" type="button" data-close>Prekliči</button></div>`);$('#askY').onclick=()=>{closeSheet();fn()}}
+const subjOpts=sel=>S.subjects.map(s=>`<option value="${s.id}" ${s.id===sel?'selected':''}>${esc(s.name)}</option>`).join('');
+function gradeForm(id,sid,pre={}){if(!S.subjects.length){toast('Najprej dodaj predmet');return subjectForm()}
+ const g=id?S.grades.find(x=>x.id===id):null,cur=location.hash.startsWith('#subject:')?location.hash.split(':')[1]:null,sel=g?.sid||sid||cur||S.subjects[0].id;
+ const mode=pre.mode||(g?(g.pts!=null?'pts':g.pct!=null?'pct':'grade'):St().mode);
+ const vals=[];for(let v=St().min;v<=St().max;v++)vals.push(v);
+ sheet(g?'Uredi oceno':'Nova ocena',`<label for="fSid">Predmet</label><select id="fSid" name="sid">${subjOpts(sel)}</select>
+ <div class="flabel">Vnesi kot</div><div class="seg" id="gm">${[['grade','Ocena'],['pct','Odstotki'],['pts','Točke']].map(([k,n])=>`<button type="button" data-m="${k}" class="${mode===k?'on':''}">${n}</button>`).join('')}</div><input type="hidden" name="mode" value="${mode}">
+ <div data-p="grade" ${mode!=='grade'?'hidden':''}><div class="flabel">Ocena</div><div class="chips">${vals.map(v=>`<label><input type="radio" name="val" value="${v}" ${g&&g.pct==null&&g.val==v?'checked':''}><span style="color:${gcol(v)}">${v}</span></label>`).join('')}</div></div>
+ <div data-p="pct" ${mode!=='pct'?'hidden':''}><label for="fPct">Dosežen odstotek</label><input id="fPct" name="pct" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="npr. 78" value="${g?.pct!=null&&g.pts==null?g.pct:''}"></div>
+ <div data-p="pts" ${mode!=='pts'?'hidden':''}><div class="grid"><div><label for="fPa">Doseženo točk</label><input id="fPa" name="pa" type="number" inputmode="decimal" min="0" step="0.5" placeholder="npr. 42" value="${g?.pts??''}"></div><div><label for="fPm">Vseh točk</label><input id="fPm" name="pm" type="number" inputmode="decimal" min="1" step="0.5" placeholder="npr. 50" value="${g?.maxPts??''}"></div></div></div>
+ <div class="conv" id="conv" hidden></div>
+ <div class="grid"><div><label for="fType">Vrsta</label><select id="fType" name="type">${TYPES.map(t=>`<option ${(g?.type||pre.type||'Test')===t?'selected':''}>${t}</option>`).join('')}</select></div><div><label for="fW">Utež</label><input id="fW" name="w" type="number" inputmode="decimal" step="0.5" min="0.5" value="${g?.w??pre.w??St().defW}"></div></div>
+ ${topicPickerHtml()}
+ <label for="fDate">Datum</label><input id="fDate" name="date" type="date" value="${g?.date||pre.date||today()}"><label for="fNote">Opomba</label><input id="fNote" name="note" value="${esc(g?.note??pre.note??'')}" placeholder="npr. poglavje ali snov">`,
+ fd=>{let val,p=null,pts=null,maxPts=null;
+  if(fd.mode==='grade'){if(!fd.val){toast('Izberi oceno');return false}val=+fd.val}
+  else if(fd.mode==='pct'){if(fd.pct===''||isNaN(+fd.pct)||+fd.pct<0||+fd.pct>100){toast('Vpiši odstotek med 0 in 100');return false}p=+fd.pct;val=pctToGrade(p)}
+  else{const a=+fd.pa,b=+fd.pm;if(fd.pa===''||!b||a<0||a>b){toast('Preveri točke');return false}pts=a;maxPts=b;p=Math.round(a/b*1000)/10;val=pctToGrade(p)}
+  if(!fd.date){toast('Izberi datum');return false}
+  S.settings.mode=fd.mode;
+  const o={sid:fd.sid,val,pct:p,pts,maxPts,type:fd.type,w:+fd.w||1,date:fd.date,note:fd.note.trim(),topics:readTopics(fd)};
+  if(g){Object.assign(g,o);logA(`Urejena ocena ${val} – ${subj(o.sid).name}`)}else{S.grades.push({id:uid(),at:new Date().toISOString(),...o});logA(`Dodana ocena ${val}${p!=null?' ('+p+' %)':''} – ${subj(o.sid).name}`)}
+  if(pre.fromUp)S.upcoming=S.upcoming.filter(u=>u.id!==pre.fromUp);
+  toast(p!=null?`${f(p,p%1?1:0)} % → ocena ${val}`:'Ocena shranjena')},
+ g?`<button class="btn danger full" type="button" onclick="delGrade('${g.id}')">Izbriši oceno</button>`:'');
+ const F=$('#sf'),conv=$('#conv');
+ const upd=()=>{const m=F.mode.value;let p=null;if(m==='pct'&&F.pct.value!=='')p=+F.pct.value;if(m==='pts'&&F.pa.value!==''&&+F.pm.value>0)p=+F.pa.value/+F.pm.value*100;
+  if(p==null||isNaN(p)||p<0||p>100){conv.hidden=true;return}const v=pctToGrade(p),nx=v<St().max?gradeMinPct(v+1):null;conv.hidden=false;conv.innerHTML=`${gBadge(v)}<div><b>${f(p,1)} % → ocena ${v}</b><div class="sub">${nx!=null?`Do ocene ${v+1} manjka ${f(nx-p,1)} %`:'Najvišja ocena'}</div></div>`};
+ $('#gm').onclick=e=>{const m=e.target.dataset.m;if(!m)return;F.mode.value=m;document.querySelectorAll('#gm button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));document.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==m);upd();const first=F.querySelector(`[data-p="${m}"] input:not([type=radio])`);if(first)first.focus()};
+ ['pct','pa','pm'].forEach(n=>F[n].oninput=upd);upd();
+ const redraw=mountTopics(g?.topics||pre.topics,()=>F.sid.value);F.sid.onchange=redraw}
+function delGrade(id){if(!_ok)return ask('Izbrišem to oceno?',()=>{_ok=1;try{delGrade(id)}finally{_ok=0}});S.grades=S.grades.filter(g=>g.id!==id);logA('Izbrisana ocena');save();closeSheet();render()}
+function subjectForm(id){const s=id?subj(id):null,col=s?.color||PALETTE[S.subjects.length%PALETTE.length];
+ sheet(s?'Uredi predmet':'Nov predmet',`<label for="fName">Ime</label><input id="fName" name="name" value="${esc(s?.name||'')}" placeholder="npr. Matematika">
+ <label for="fCol">Barva</label><input id="fCol" name="color" type="color" value="${col}"><label for="fTg">Ciljna zaključna ocena</label><select id="fTg" name="target"><option value="">brez cilja</option>${Array.from({length:St().max-St().min+1},(_,i)=>St().min+i).map(v=>`<option ${s?.target==v?'selected':''}>${v}</option>`).join('')}</select>`,
+ fd=>{if(!fd.name.trim()){toast('Vpiši ime predmeta');return false}const o={name:fd.name.trim(),color:fd.color,target:fd.target?+fd.target:null};if(s){Object.assign(s,o);logA('Urejen predmet '+o.name)}else{S.subjects.push({id:uid(),...o});logA('Dodan predmet '+o.name)}toast('Predmet shranjen')},
+ s?`<button class="btn danger full" type="button" onclick="delSubject('${s.id}')">Izbriši predmet in ocene</button>`:'')}
+function delSubject(id){const s=subj(id);if(!_ok)return ask(`Izbrišem ${esc(s.name)} in vse njegove ocene?`,()=>{_ok=1;try{delSubject(id)}finally{_ok=0}});S.subjects=S.subjects.filter(x=>x.id!==id);S.grades=S.grades.filter(g=>g.sid!==id);S.upcoming=S.upcoming.filter(u=>u.sid!==id);logA('Izbrisan predmet '+s.name);save();closeSheet();location.hash='subjects';render()}
+function upForm(id){if(!S.subjects.length){toast('Najprej dodaj predmet');return subjectForm()}const u=id?S.upcoming.find(x=>x.id===id):null,cur=location.hash.startsWith('#subject:')?location.hash.split(':')[1]:null;
+ const d7=new Date();d7.setDate(d7.getDate()+7);
+ sheet(u?'Uredi test':'Nov test',`<label for="uSid">Predmet</label><select id="uSid" name="sid">${subjOpts(u?.sid||cur)}</select><label for="uT">Naziv</label><input id="uT" name="title" value="${esc(u?.title||'')}" placeholder="npr. 2. kontrolna naloga">
+ <div class="grid"><div><label for="uD">Datum</label><input id="uD" name="date" type="date" value="${u?.date||localISO(d7)}"></div><div><label for="uW">Utež</label><input id="uW" name="w" type="number" inputmode="decimal" step="0.5" min="0.5" value="${u?.w??St().defW}"></div></div>
+ ${topicPickerHtml()}
+ <label for="uE">Pričakovana ocena (za napoved)</label><input id="uE" name="exp" type="number" inputmode="decimal" step="1" min="${St().min}" max="${St().max}" value="${u?.exp??''}" placeholder="neobvezno">`,
+ fd=>{if(!fd.date){toast('Izberi datum');return false}const o={sid:fd.sid,title:fd.title.trim(),date:fd.date,w:+fd.w||1,exp:fd.exp?clamp(+fd.exp):null,topics:readTopics(fd)};if(u)Object.assign(u,o);else{S.upcoming.push({id:uid(),...o});logA('Dodan test – '+subj(o.sid).name)}toast('Test shranjen')},
+ u?`<button class="btn danger full" type="button" onclick="delUp('${u.id}')">Izbriši test</button>`:'');
+ const redraw=mountTopics(u?.topics,()=>$('#uSid').value);$('#uSid').onchange=redraw}
+function delUp(id){S.upcoming=S.upcoming.filter(u=>u.id!==id);save();closeSheet();render()}
+function convertUp(id){const u=S.upcoming.find(x=>x.id===id);if(!u)return;gradeForm(null,u.sid,{fromUp:id,date:u.date,w:u.w,note:u.title,type:'Test',mode:St().mode==='grade'?'pct':St().mode,topics:u.topics||[]})}
+$('#fab').onclick=()=>curView==='upcoming'?upForm():gradeForm();
+
+/* ============ IZVOZ / UVOZ ============ */
+function dl(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+function exportJSON(){dl(`grady-${today()}.json`,JSON.stringify(S,null,2),'application/json');toast('Varnostna kopija izvožena')}
+function exportCSV(){const r=[['Predmet','Ocena','Odstotek','Točke','Vseh točk','Vrsta','Utež','Datum','Opomba']].concat([...S.grades].sort(byDate).map(g=>[subj(g.sid)?.name,g.val,g.pct??'',g.pts??'',g.maxPts??'',g.type,g.w,g.date,g.note]));dl(`ocene-${today()}.csv`,'﻿'+r.map(x=>x.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(';')).join('\n'),'text/csv');toast('CSV izvožen')}
+function importJSON(e){const file=e.target.files[0];if(!file)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!Array.isArray(d.subjects)||!Array.isArray(d.grades))throw 0;if(!_ok)return ask('Uvoz bo zamenjal trenutne podatke. Nadaljujem?',()=>{_ok=1;try{rd.onload()}finally{_ok=0}});S={...structuredClone(DEF),...d,settings:{...DEF.settings,...d.settings}};fixThr(S.settings);save();location.hash='home';render();toast('Podatki uvoženi')}catch(_){toast('Datoteka ni veljavna varnostna kopija')}};rd.readAsText(file)}
+function resetAll(){S=structuredClone(DEF);OB={step:0,name:'',level:'os',grade:null,program:'Gimnazija',school:'',subs:null,custom:''};MS=null;save();location.hash='home';render()}
+function logout(){if(!_ok)return ask('Se želiš odjaviti?',()=>{_ok=1;try{logout()}finally{_ok=0}},'Ker so podatki shranjeni samo na tej napravi, odjava izbriše profil, predmete, ocene, teste in maturo. Če jih želiš obdržati, najprej izvozi varnostno kopijo v Nastavitvah.','Odjavi in izbriši');resetAll();toast('Odjavljen si')}
+function clearGrades(){if(!_ok)return ask('Izbrišem vse ocene in teste?',()=>{_ok=1;try{clearGrades()}finally{_ok=0}},'Profil, predmeti in matura ostanejo. Tega ni mogoče razveljaviti.','Izbriši');S.grades=[];S.upcoming=[];logA('Izbrisane ocene in testi');save();render();toast('Ocene in testi izbrisani')}
+function demo(){if(S.grades.length&&!_ok)return ask('Demo podatki bodo dodani k obstoječim. Nadaljujem?',()=>{_ok=1;try{demo()}finally{_ok=0}});
+ const names=[['Matematika',3.9,.25],['Slovenščina',3.6,0],['Angleščina',4.5,.1],['Fizika',3.0,.3],['Kemija',3.4,-.2],['Zgodovina',4.2,0],['Biologija',3.8,.15]];
+ const start=new Date();start.setDate(start.getDate()-60);const ids=[];
+ names.forEach(([n,b,tr],i)=>{const id=uid();ids.push(id);S.subjects.push({id,name:n,color:PALETTE[i%PALETTE.length],target:Math.min(St().max,Math.round(b)+1)});
+  for(let k=0;k<6;k++){const d=new Date(start.getTime()+(k*9+i*2)*864e5);if(d>new Date())break;const v=Math.round(clamp(b+tr*(k-2.5)+(Math.random()-.5)*1.4));const type=k%3===0?'Ustno':k%3===1?'Test':'Pisno';
+   let p=null;if(type!=='Ustno'){const lo=gradeMinPct(v),hi=v<St().max?gradeMinPct(v+1)-1:100;p=Math.round(lo+Math.random()*(hi-lo))}
+   const cat=catFor(id),pool=cat?(cat[Math.min(k<3?2:3,Object.keys(cat).length>1?4:0)]||Object.values(cat)[0]):[];const tps=pool.length&&type!=='Ustno'?[pool[(k*2+i)%pool.length],pool[(k*2+i+1)%pool.length]]:[];
+   S.grades.push({id:uid(),at:d.toISOString(),sid:id,val:v,pct:p,pts:null,maxPts:null,type,w:type==='Test'?2:1,date:localISO(d),note:'',topics:[...new Set(tps)]})}});
+ [[0,1,'Kontrolna naloga'],[3,3,'Test iz elektrike'],[1,6,'Spis'],[2,12,'Ustno spraševanje'],[4,-1,'Kratki test']].forEach(([si,dd,t])=>{const d=new Date();d.setDate(d.getDate()+dd);const cat=catFor(ids[si]),pool=cat?(cat[S.profile?.grade]||Object.values(cat)[0]):[];S.upcoming.push({id:uid(),sid:ids[si],title:t,date:localISO(d),w:2,exp:null,topics:pool.slice(0,si===0?3:2)})});
+ if(S.profile?.level==='ss'&&!S.matura){const mk_=(name,role,level)=>({id:uid(),name,role,level,tkey:matTKey(name,role,'sm'),target:null,goal:80,done:{},custom:[],prac:[]});
+  const subs=[mk_('Slovenščina','obv','vis'),mk_('Matematika','obv','vis'),mk_('Angleščina','obv','vis'),mk_('Biologija','izb','osn'),mk_('Kemija','izb','osn')];
+  [7,6,8,5,4].forEach((t,i)=>subs[i].target=t);subs.forEach((s,i)=>matTopics(s).slice(0,4+i*2).forEach(x=>s.done[x]=true));
+  [[-40,58],[-25,66],[-10,71],[-3,77]].forEach(([dd,pc])=>{const d=new Date();d.setDate(d.getDate()+dd);subs[1].prac.push({id:uid(),date:localISO(d),pct:pc,note:''})});
+  S.matura={type:'sm',subs}}
+ logA('Naloženi demo podatki');save();location.hash='home';render();toast('Demo podatki naloženi')}
+
+/* ============ SNOV: okvirne teme po učnih načrtih in katalogih znanj ============ */
+/* gim = gimnazija (po letnikih), ss = strokovna šola (katalogi znanj), pok = poklicna šola. Ključ 0 = vsi letniki. */
+const TOP={
+gim:{
+'Slovenščina':{
+1:['Uvod v književnost in literarna teorija','Ljudsko slovstvo','Antična književnost (Homer, Sofoklej)','Biblija','Srednjeveška književnost in Brižinski spomeniki','Dante','Renesansa (Petrarca, Boccaccio, Shakespeare, Cervantes)','Sporazumevanje in besedilo','Glasoslovje in pravorečje','Pravopis: velika začetnica in ločila'],
+2:['Reformacija in Trubar','Barok','Razsvetljenstvo (Linhart, Vodnik)','Klasicizem','Evropska romantika','Prešeren','Evropski realizem (Balzac, Flaubert, Tolstoj, Dostojevski)','Slovenski realizem (Jurčič, Levstik, Kersnik)','Oblikoslovje','Besedotvorje in besedje'],
+3:['Naturalizem','Simbolizem in dekadenca','Slovenska moderna (Cankar, Župančič, Murn, Kette)','Cankar: drama in proza','Ekspresionizem (Kosovel, Grum)','Avantgarda','Socialni realizem (Prežihov Voranc, Kosmač)','Skladnja: stavčni členi','Priredje in podredje','Pravopis: vejica'],
+4:['Svetovna književnost 20. stoletja (Kafka, Camus)','Slovenska književnost po letu 1945','Modernizem (Kocbek, Zajc, Šalamun)','Postmodernizem','Sodobna slovenska književnost','Esej za maturo','Razčlemba neumetnostnega besedila','Jezikovne zvrsti in jezikovna kultura']},
+'Matematika':{
+1:['Množice in logika','Naravna in cela števila, deljivost','Racionalna števila in ulomki','Realna števila in intervali','Algebrski izrazi in potence','Linearna enačba in neenačba','Linearna funkcija','Sistemi linearnih enačb','Osnove geometrije v ravnini','Skladnost in podobnost trikotnikov','Kotne funkcije v pravokotnem trikotniku'],
+2:['Potence in koreni','Kvadratna funkcija','Kvadratna enačba in neenačba','Potenčna funkcija','Eksponentna funkcija in enačbe','Logaritmi in logaritemska funkcija','Geometrijska telesa: površina in prostornina','Kotne funkcije poljubnega kota'],
+3:['Adicijski izreki in kotne funkcije','Trigonometrijske enačbe','Sinusni in kosinusni izrek','Vektorji','Analitična geometrija: premica in krožnica','Stožnice','Polinomi','Racionalne funkcije','Kompleksna števila'],
+4:['Zaporedja: aritmetično in geometrijsko','Limita zaporedja in vrste','Limita in zveznost funkcije','Odvod','Uporaba odvoda: ekstremi in tangenta','Nedoločeni in določeni integral','Ploščina in prostornina z integralom','Kombinatorika','Verjetnost','Statistika']},
+'Angleščina':{
+1:['Osebna identiteta in družina','Prosti čas in hobiji','Šola in izobraževanje','Present simple in continuous','Past simple in continuous','Opis osebe in kraja','Neformalno pismo in e-sporočilo'],
+2:['Potovanja in turizem','Hrana in zdravje','Šport','Present perfect','Prihodnji časi','Primerjava pridevnikov','Modalni glagoli','Formalno pismo'],
+3:['Delo in poklici','Okolje in narava','Mediji in tehnologija','Pogojniki (conditionals)','Trpnik (passive)','Poročani govor','Oziralni stavki','Pisanje mnenjskega sestavka'],
+4:['Družba in družbena vprašanja','Kultura, umetnost in znanost','Matura: bralno razumevanje','Matura: raba jezika','Matura: slušno razumevanje','Matura: esej','Matura: ustni izpit']},
+'Nemščina':{
+1:['Predstavitev in družina','Šola in prosti čas','Stanovanje in dom','Sedanjik in pravilni glagoli','Členi in samostalniki','Modalni glagoli'],
+2:['Hrana in nakupovanje','Mesto in promet','Zdravje in telo','Perfekt','Predlogi in skloni','Ločljivi glagoli'],
+3:['Potovanja in počitnice','Delo in poklici','Mediji','Preterit','Odvisni stavki','Pridevniška sklanjatev'],
+4:['Okolje','Družba in kultura','Konjunktiv II','Trpnik','Matura: bralno in slušno razumevanje','Matura: pisni sestavek','Matura: ustni izpit']},
+'Zgodovina':{
+1:['Uvod v zgodovino in viri','Prazgodovina','Stari Orient: Mezopotamija in Egipt','Antična Grčija','Antični Rim','Zgodnji srednji vek','Slovani in Karantanija'],
+2:['Visoki in pozni srednji vek','Humanizem in renesansa','Geografska odkritja','Reformacija in protireformacija','Absolutizem','Razsvetljenstvo','Industrijska revolucija','Francoska revolucija in Napoleon','Ilirske province'],
+3:['Narodna gibanja v 19. stoletju','Marčna revolucija 1848 in Zedinjena Slovenija','Imperializem','Prva svetovna vojna in soška fronta','Nastanek Kraljevine SHS','Obdobje med vojnama','Totalitarizmi'],
+4:['Druga svetovna vojna','Slovenci med drugo svetovno vojno','Hladna vojna','Socialistična Jugoslavija','Osamosvojitev Slovenije','Evropska integracija','Sodobni svet']},
+'Geografija':{
+1:['Zemlja v vesolju','Kartografija','Litosfera in relief','Atmosfera in podnebje','Hidrosfera','Prsti in rastlinstvo'],
+2:['Prebivalstvo','Naselja','Kmetijstvo','Industrija in energija','Storitve in promet','Globalizacija','Geografija Evrope'],
+3:['Azija','Afrika','Severna in Južna Amerika','Avstralija in Oceanija','Polarna območja'],
+4:['Naravne značilnosti Slovenije','Pokrajinske enote Slovenije','Prebivalstvo Slovenije','Gospodarstvo Slovenije','Varstvo okolja','Terensko delo']},
+'Biologija':{
+1:['Biologija kot znanost','Celica: zgradba in organeli','Biološke molekule','Membrane in transport','Encimi','Celično dihanje','Fotosinteza','Mitoza in mejoza'],
+2:['Zgradba in delovanje rastlin','Prebavila','Dihala','Obtočila','Izločala','Živčevje in čutila','Hormoni','Imunski sistem'],
+3:['Mendlova genetika','DNA in sinteza beljakovin','Mutacije','Biotehnologija','Evolucija','Raznolikost organizmov'],
+4:['Ekosistemi','Populacije','Kroženje snovi','Varstvo narave','Etologija','Priprava na maturo']},
+'Kemija':{
+1:['Snovi in njihove lastnosti','Zgradba atoma','Periodni sistem','Kemijske vezi','Množina snovi in mol','Kemijske reakcije in stehiometrija','Raztopine'],
+2:['Termokemija','Hitrost kemijskih reakcij','Kemijsko ravnotežje','Kisline in baze','pH','Redoks reakcije','Elektrokemija'],
+3:['Ogljikovodiki','Izomerija','Halogenoalkani','Alkoholi, fenoli in etri','Aldehidi in ketoni','Karboksilne kisline in derivati'],
+4:['Dušikove organske spojine','Ogljikovi hidrati','Lipidi','Beljakovine','Polimeri','Priprava na maturo']},
+'Fizika':{
+1:['Merjenje in enote','Premo gibanje','Sile in Newtonovi zakoni','Ravnovesje','Gravitacija','Kroženje'],
+2:['Delo, energija in moč','Gibalna količina','Tlak in vzgon','Temperatura in toplota','Plinski zakoni','Termodinamika'],
+3:['Električni naboj in polje','Električni tok in vezja','Magnetno polje','Indukcija','Nihanje','Valovanje in zvok'],
+4:['Odboj in lom svetlobe','Leče in optične naprave','Svetloba kot valovanje','Atom in jedro','Radioaktivnost','Posebna teorija relativnosti']},
+'Informatika':{
+1:['Podatki in informacije','Številski sistemi','Strojna in programska oprema','Algoritmi','Osnove programiranja','Omrežja in internet'],
+2:['Pogoji in zanke','Funkcije','Seznami in nizi','Podatkovne baze in SQL','Splet: HTML in CSS'],
+3:['Objektno programiranje','Urejanje in iskanje','Informacijski sistemi','Varnost in zasebnost'],
+4:['Projektna naloga','Priprava na maturo']},
+'Psihologija':{0:['Psihologija kot znanost','Biološke osnove vedenja','Zaznavanje','Učenje','Spomin','Mišljenje in inteligentnost','Čustva','Motivacija','Osebnost','Razvojna psihologija','Socialna psihologija','Duševno zdravje']},
+'Sociologija':{0:['Sociologija kot znanost','Raziskovalne metode','Kultura','Socializacija','Družbena slojevitost in neenakosti','Družina','Izobraževanje','Religija','Politika in država','Deviantnost','Globalizacija']},
+'Filozofija':{0:['Kaj je filozofija','Antična filozofija: Platon in Aristotel','Spoznavna teorija','Logika in argumentacija','Etika','Ontologija in metafizika','Politična filozofija','Novoveška filozofija: Descartes, Kant','Sodobna filozofija','Filozofski esej']},
+'Umetnostna zgodovina':{0:['Prazgodovina in stari vek','Antična umetnost','Srednji vek','Renesansa','Barok','Klasicizem in romantika','Realizem in impresionizem','Moderna umetnost 20. stoletja','Slovenska umetnost','Arhitektura']}
+},
+ss:{
+'Slovenščina':{0:['Sporazumevanje in besedilne vrste','Glasoslovje in pravopis','Oblikoslovje','Skladnja in vejica','Besedje in frazeologija','Ljudsko slovstvo','Antika in srednji vek','Renesansa in reformacija','Romantika in Prešeren','Realizem','Moderna in Cankar','Književnost 20. stoletja','Sodobna književnost','Razčlemba neumetnostnega besedila','Priprava na poklicno maturo']},
+'Matematika':{0:['Števila in računske operacije','Izrazi, potence in koreni','Linearna funkcija in enačbe','Sistemi enačb','Geometrija v ravnini','Kotne funkcije','Kvadratna funkcija in enačba','Eksponentna in logaritemska funkcija','Geometrijska telesa','Zaporedja','Polinomi in racionalne funkcije','Statistika','Verjetnost','Priprava na poklicno maturo']},
+'Angleščina':{0:['Osebna identiteta in družina','Prosti čas','Šola in delo','Potovanja','Zdravje in hrana','Okolje','Tehnologija','Stroka v angleščini','Glagolski časi','Pogojniki','Trpnik','Pisno sporočanje','Ustno sporočanje']},
+'Nemščina':{0:['Predstavitev in družina','Dom in prosti čas','Nakupovanje in hrana','Potovanja','Delo in stroka','Glagolski časi','Skloni in predlogi','Pisno sporočanje','Ustno sporočanje']},
+'Zgodovina':{0:['Stari vek','Srednji vek','Novi vek','19. stoletje in narodna gibanja','Prva svetovna vojna','Obdobje med vojnama','Druga svetovna vojna','Jugoslavija po letu 1945','Osamosvojitev Slovenije']},
+'Geografija':{0:['Kartografija','Naravne značilnosti Zemlje','Prebivalstvo in naselja','Gospodarstvo','Geografija Slovenije','Varstvo okolja']},
+'Fizika':{0:['Merjenje','Gibanje','Sile','Delo in energija','Tlak in tekočine','Toplota','Elektrika','Magnetizem','Nihanje in valovanje','Optika']},
+'Kemija':{0:['Zgradba atoma in periodni sistem','Kemijske vezi','Kemijske reakcije','Množina snovi','Raztopine','Kisline, baze in soli','Organske spojine']},
+'Biologija':{0:['Celica','Zgradba človeka','Genetika','Ekologija','Zdravje']},
+'Sociologija':{0:['Kultura','Socializacija','Družbene neenakosti','Družina','Politika in država','Globalizacija']},
+'Umetnost':{0:['Likovna umetnost','Glasba','Film in gledališče','Arhitektura','Sodobna umetnost']}
+},
+pok:{
+'Slovenščina':{0:['Sporazumevanje','Besedilne vrste','Pravopis','Oblikoslovje','Skladnja','Izbrana književna dela','Poslovno sporazumevanje']},
+'Matematika':{0:['Števila','Odstotki in razmerja','Izrazi in enačbe','Linearna funkcija','Geometrija in merjenje','Kotne funkcije','Statistika']},
+'Angleščina':{0:['Osebna identiteta','Vsakdanje življenje','Delo in stroka','Potovanja','Glagolski časi','Pisno sporočanje','Ustno sporočanje']},
+'Družboslovje':{0:['Zgodovina Slovenije','Država in demokracija','Človekove pravice','Družba in kultura','Delo in zaposlitev','Evropska unija']},
+'Naravoslovje':{0:['Snovi in lastnosti','Energija','Gibanje in sile','Elektrika','Kemijske reakcije','Človeško telo','Ekologija in okolje']}
+}};
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+function progKey(){const p=S.profile;if(!p||p.level!=='ss')return null;return p.program==='Strokovna šola'?'ss':p.program==='Poklicna šola'?'pok':'gim'}
+function catFor(sid){const s=subj(sid),k=progKey();if(!s||!k)return null;const n=norm(s.name),set=TOP[k],keys=Object.keys(set);const key=keys.find(x=>norm(x)===n)||keys.find(x=>n.startsWith(norm(x)));return key?set[key]:null}
+function topicLine(t){if(!t||!t.length)return'';return`<div class="tline">Snov: <b>${t.slice(0,3).map(esc).join(' · ')}</b>${t.length>3?` +${t.length-3}`:''}</div>`}
+function topicPickerHtml(){return`<div class="flabel">Snov</div><div class="tchips" id="tpSel"></div><div id="tpCat"></div><div class="row mt"><input id="tpIn" placeholder="Dodaj svojo temo" enterkeyhint="done"><button type="button" class="icon-btn" id="tpAdd" aria-label="Dodaj temo">${svg('plus')}</button></div><input type="hidden" name="topics" id="tpVal">`}
+function mountTopics(initial,getSid){let sel=[...(initial||[])],yr=null,lastSid=getSid();
+ const draw=()=>{const sid=getSid();if(sid!==lastSid){sel=[];yr=null;lastSid=sid}const cat=catFor(sid),cus=(S.custom&&S.custom[sid])||[];
+  $('#tpVal').value=JSON.stringify(sel);
+  $('#tpSel').innerHTML=sel.length?sel.map((t,i)=>`<button type="button" class="tchip on sel" data-r="${i}">${esc(t)}</button>`).join(''):'<span class="sub" style="margin-left:4px">Snov še ni izbrana.</span>';
+  let h='';
+  if(cat){const ys=Object.keys(cat).map(Number);if(yr==null||!ys.includes(yr))yr=ys.includes(S.profile?.grade)?S.profile.grade:ys[0];
+   if(ys.length>1)h+=`<div class="seg mt" id="tpYr">${ys.map(y=>`<button type="button" data-y="${y}" class="${y===yr?'on':''}">${y}. letnik</button>`).join('')}</div>`;
+   const list=(cat[yr]||[]).filter(t=>!sel.includes(t));h+=`<div class="tchips mt">${list.map(t=>`<button type="button" class="tchip" data-a="${esc(t)}">${esc(t)}</button>`).join('')||'<span class="sub">Vse teme so izbrane.</span>'}</div>`}
+  const cl=cus.filter(t=>!sel.includes(t));if(cl.length)h+=`<div class="flabel">Tvoje teme</div><div class="tchips">${cl.map(t=>`<button type="button" class="tchip" data-a="${esc(t)}">${esc(t)}</button>`).join('')}</div>`;
+  if(!cat)h+=`<p class="sub" style="margin:8px 4px 0">${progKey()?'Za ta predmet ni uradnega seznama tem.':'Uradne teme so na voljo za srednje šole.'} Dodaj svojo temo.</p>`;
+  $('#tpCat').innerHTML=h;
+  document.querySelectorAll('#tpSel [data-r]').forEach(b=>b.onclick=()=>{sel.splice(+b.dataset.r,1);draw()});
+  document.querySelectorAll('#tpCat [data-a]').forEach(b=>b.onclick=()=>{sel.push(b.dataset.a);draw()});
+  document.querySelectorAll('#tpYr [data-y]').forEach(b=>b.onclick=()=>{yr=+b.dataset.y;draw()})};
+ const add=()=>{const v=$('#tpIn').value.trim(),sid=getSid();if(!v)return;if(!sel.includes(v))sel.push(v);S.custom=S.custom||{};S.custom[sid]=S.custom[sid]||[];if(!S.custom[sid].includes(v)&&!(catFor(sid)&&Object.values(catFor(sid)).flat().includes(v)))S.custom[sid].push(v);$('#tpIn').value='';draw()};
+ $('#tpAdd').onclick=add;$('#tpIn').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();add()}};
+ draw();return draw}
+const readTopics=fd=>{try{return JSON.parse(fd.topics||'[]')}catch(e){return[]}};
+function topicStats(grades){const m={};grades.forEach(g=>(g.topics||[]).forEach(t=>{(m[t]=m[t]||[]).push(g)}));return Object.entries(m).map(([t,gs])=>({t,avg:wavg(gs),p:mean(gs.filter(g=>g.pct!=null).map(g=>g.pct)),n:gs.length,sid:gs[0].sid})).sort((a,b)=>a.avg-b.avg||b.n-a.n)}
+function topicRows(rows,showSubj){return rows.map(r=>`<div class="li" style="cursor:default"><div class="grow"><div class="row between"><span class="t" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.t)}</span><b style="color:${gcol(r.avg)};font-variant-numeric:tabular-nums">${f(r.avg)}</b></div><div class="sub">${showSubj?esc(subj(r.sid)?.name||'')+' · ':''}${r.n} ${r.n===1?'ocena':r.n===2?'oceni':r.n<=4?'ocene':'ocen'}${r.p!=null?' · Ø '+fp(r.p):''}</div><div class="bar"><i style="width:${pct(r.avg)}%;background:${gcol(r.avg)}"></i></div></div></div>`).join('')}
+
+/* ============ MATURA ============ */
+const MAT_YEAR=2027;
+const MAT_DATES=[{d:'2027-05-04',t:'Esej iz slovenščine',only:'sm'},{d:'2027-05-21',t:'Zadnji dan pouka za maturante'},{d:'2027-05-29',t:'Začetek spomladanskega roka'},{d:'2027-06-09',t:'Začetek ustnih izpitov'},{d:'2027-07-08',t:'Rezultati poklicne mature',only:'pm'},{d:'2027-07-13',t:'Rezultati splošne mature',only:'sm'},{d:'2027-08-21',t:'Začetek jesenskega roka'}];
+const LANGS=['Angleščina','Nemščina','Italijanščina','Francoščina','Španščina','Ruščina'];
+const SM_IZB=['Biologija','Kemija','Fizika','Geografija','Zgodovina','Umetnostna zgodovina','Psihologija','Sociologija','Filozofija','Informatika',...LANGS];
+const SM_FSP=['Psihologija','Sociologija','Filozofija'];
+const PM_STROK=['Avtomehatronika','Elektrotehnika','Farmacija','Frizerstvo','Gastronomija in turistične storitve','Gastronomija in turizem s podjetništvom','Gospodarstvo','Graditev objektov','Kemija','Kmetijstvo','Kozmetika','Logistika','Medijska in grafična tehnologija','Mehatronika','Naravovarstvo','Oblikovanje v aranžerstvu','Računalništvo','Strojništvo','Veterinarstvo','Vzgoja predšolskega otroka','Zasebno varovanje','Zdravstvena nega','Živilstvo in prehrana'];
+const PM_3=['Matematika','Angleščina','Nemščina','Italijanščina'];
+const PETI=['Matematika','Angleščina','Nemščina','Biologija','Kemija','Fizika','Geografija','Zgodovina','Psihologija','Sociologija','Filozofija','Informatika','Umetnostna zgodovina'];
+const TJ_T=['Bralno razumevanje','Poznavanje in raba jezika','Slušno razumevanje','Krajši pisni sestavek','Daljši pisni sestavek','Besedišče po temah','Slovnica in glagolski časi','Ustni izpit: pogovor','Ustni izpit: opis slike','Ustni izpit: predstavitev teme'];
+const MT={
+'Slovenščina':['Esej: maturitetni deli tega leta','Razčlemba neumetnostnega besedila','Jezikovna pravilnost in pravopis','Besedoslovje in skladnja','Antika in Biblija','Srednji vek in renesansa','Reformacija, barok, razsvetljenstvo','Romantika in Prešeren','Realizem','Naturalizem in moderna','Cankar in slovenska moderna','Ekspresionizem in avantgarda','Socialni realizem','Književnost po letu 1945','Sodobna književnost','Ustni izpit: književnost','Ustni izpit: jezik'],
+'Matematika':['Števila in računske operacije','Izrazi, enačbe in neenačbe','Linearna in kvadratna funkcija','Potenčna, eksponentna in logaritemska funkcija','Kotne funkcije','Polinomi in racionalne funkcije','Geometrija v ravnini','Geometrija v prostoru','Vektorji','Analitična geometrija v ravnini','Zaporedja in vrste','Limita in odvod','Integral','Kombinatorika','Verjetnost in statistika','Kompleksna števila','Ustni izpit'],
+'TJ':TJ_T,
+'Biologija':['Celica','Biološke molekule','Celično dihanje in fotosinteza','Delitev celic','Genetika in dedovanje','Molekularna biologija in biotehnologija','Evolucija','Zgradba in delovanje rastlin','Človek: organski sistemi','Živčevje, hormoni in imunost','Ekologija','Raznolikost organizmov','Laboratorijske vaje (notranji del)'],
+'Kemija':['Zgradba atoma in periodni sistem','Kemijske vezi','Stehiometrija in množina snovi','Raztopine','Termokemija','Kemijska kinetika','Kemijsko ravnotežje','Kisline, baze in pH','Redoks in elektrokemija','Ogljikovodiki','Kisikove organske spojine','Dušikove organske spojine','Biološko pomembne spojine','Polimeri','Laboratorijske vaje (notranji del)'],
+'Fizika':['Merjenje in enote','Kinematika','Dinamika','Delo, energija in gibalna količina','Gravitacija in kroženje','Tekočine','Toplota in termodinamika','Elektrostatika','Električni tok','Magnetizem in indukcija','Nihanje in valovanje','Optika','Moderna fizika in jedro','Laboratorijske vaje (notranji del)'],
+'Geografija':['Kartografija','Litosfera in relief','Vreme in podnebje','Vode','Prsti in rastlinstvo','Prebivalstvo in naselja','Gospodarstvo in globalizacija','Regionalna geografija sveta','Geografija Evrope','Slovenija: naravne značilnosti','Slovenija: družbene značilnosti','Varstvo okolja','Terensko delo (notranji del)'],
+'Zgodovina':['Prazgodovina in stari vek','Srednji vek','Novi vek','Razsvetljenstvo in revolucije','19. stoletje in narodna gibanja','Slovenci v 19. stoletju','Prva svetovna vojna','Obdobje med vojnama','Druga svetovna vojna','Slovenci med drugo svetovno vojno','Hladna vojna','Jugoslavija po letu 1945','Osamosvojitev Slovenije','Seminarska naloga (notranji del)'],
+'Umetnostna zgodovina':['Prazgodovina in stari vek','Antična umetnost','Srednji vek','Renesansa','Barok','Klasicizem in romantika','Realizem in impresionizem','Moderna umetnost 20. stoletja','Slovenska umetnost','Arhitektura in urbanizem','Analiza umetnin (notranji del)'],
+'Psihologija':['Psihologija kot znanost','Biološke osnove vedenja','Zaznavanje','Učenje','Spomin','Mišljenje in inteligentnost','Čustva in motivacija','Osebnost','Razvoj','Socialna psihologija','Duševno zdravje','Raziskava (notranji del)'],
+'Sociologija':['Sociologija kot znanost','Raziskovalne metode','Kultura','Socializacija','Družbena slojevitost','Družina','Izobraževanje','Religija','Politika in država','Deviantnost','Globalizacija','Raziskovalna naloga (notranji del)'],
+'Filozofija':['Kaj je filozofija','Antična filozofija','Spoznavna teorija','Logika','Etika','Ontologija in metafizika','Politična filozofija','Novoveška filozofija','Sodobna filozofija','Filozofski esej (notranji del)'],
+'Informatika':['Podatki in številski sistemi','Algoritmi','Programiranje','Podatkovne strukture','Podatkovne baze in SQL','Omrežja','Informacijski sistemi','Varnost in zasebnost','Projektna naloga (notranji del)'],
+'Slovenščina PM':['Razčlemba neumetnostnega besedila','Interpretacija umetnostnega besedila','Jezikovna pravilnost in pravopis','Besedilne vrste','Književnost po obdobjih','Ustni izpit: književnost','Ustni izpit: jezik'],
+'Matematika PM':['Števila in računske operacije','Izrazi in enačbe','Linearna in kvadratna funkcija','Eksponentna in logaritemska funkcija','Kotne funkcije','Geometrija v ravnini in prostoru','Zaporedja','Statistika in verjetnost','Ustni izpit'],
+'TJ PM':TJ_T,
+'Izdelek':['Izbira teme in mentorja','Načrt izdelka ali storitve','Izvedba','Dokumentacija ali poročilo','Priprava zagovora','Zagovor']};
+const ROLE={obv:'Obvezni',izb:'Izbirni',dod:'Dodatni izbirni',pm1:'1. predmet',pm2:'2. predmet · strokovni',pm3:'3. predmet',pm4:'4. predmet',peti:'Peti predmet · splošna matura'};
+function matTKey(name,role,type){if(role==='pm4')return'Izdelek';if(role==='pm2')return null;if(type==='pm'&&role==='pm1')return'Slovenščina PM';if(role==='pm3')return name==='Matematika'?'Matematika PM':'TJ PM';if(LANGS.includes(name))return'TJ';return MT[name]?name:null}
+function matInfo(s,type){const r=s.role;
+ if(type==='sm'){if(s.name==='Slovenščina')return'Samo višja raven, do 8 točk. Esej je 4. maja, nato izpitna pola 2 in ustni izpit, ki šteje do 20 %.';
+  if(r==='obv')return`${s.level==='vis'?'Višja raven, do 8 točk':'Osnovna raven, do 5 točk'}. Pisni del in ustni izpit, ki šteje do 20 %.`;
+  return`Osnovna raven, do 5 točk. ${LANGS.includes(s.name)?'Pisni del in ustni izpit':'Pisni del in notranji del (vaje ali seminarska), ki šteje do 20 %'}.${r==='dod'?' Pri uspehu štejeta le najboljša izbirna predmeta.':''}`}
+ if(r==='pm1')return'Pisni in ustni izpit iz slovenščine.';if(r==='pm2')return'Temeljni strokovno-teoretični predmet tvojega programa. Teme dodaj po izpitnem katalogu svoje šole.';
+ if(r==='pm3')return'Izbirni predmet: matematika ali tuji jezik.';if(r==='pm4')return'Izdelek, storitev ali izpitni nastop z zagovorom. Podrobnosti objavi CPI in tvoja šola.';
+ return`${s.level==='vis'?'Višja raven, do 8 točk. ':s.level?'Osnovna raven, do 5 točk. ':''}Izpit iz predmeta splošne mature, kadar je pogoj za vpis na univerzitetni program. Nanj se prijaviš na gimnaziji, običajno hkrati s prijavo na poklicno maturo.`}
+const visGrade=p=>p>=7?5:p>=5?4:p>=3?3:p;
+function targetOpts(s,type){const smScale=type==='sm'||s.role==='peti',max=smScale&&s.level==='vis'?8:5,o=[];for(let p=max;p>=1;p--)o.push([p,max===8?`${p} ${p===1?'točka':p===2?'točki':p<=4?'točke':'točk'} · ocena ${visGrade(p)}`:smScale?`${p} ${p===1?'točka':p===2?'točki':p<=4?'točke':'točk'} · ocena ${p}`:`ocena ${p}`]);return o}
+function matTopics(s){return[...(s.tkey&&MT[s.tkey]?MT[s.tkey]:[]),...(s.custom||[])]}
+function mastery(s){const t=matTopics(s);if(!t.length)return null;return t.filter(x=>s.done&&s.done[x]).length/t.length*100}
+function smPoints(M){const obv=M.subs.filter(s=>s.role==='obv'),izb=M.subs.filter(s=>s.role==='izb'||s.role==='dod');if(obv.some(s=>!s.target))return null;const iz=izb.map(s=>s.target).filter(Boolean).sort((a,b)=>b-a).slice(0,2);if(iz.length<2)return null;return obv.reduce((a,s)=>a+s.target,0)+iz[0]+iz[1]}
+let MS=null;
+function msFrom(M){const t=(M&&M.type)||(S.profile?.program==='Gimnazija'?'sm':'pm');const g=r=>M?.subs.filter(s=>s.role===r)||[];
+ const tj=g('obv').find(s=>LANGS.includes(s.name)),mat=g('obv').find(s=>s.name==='Matematika');
+ return{type:t,mat:mat?.level||'osn',tj:tj?.name||'Angleščina',tjLv:tj?.level||'osn',izb:[...g('izb'),...g('dod')].map(s=>s.name),strok:g('pm2')[0]?.name||'',pm3:g('pm3')[0]?.name||'Matematika',pm4:g('pm4')[0]?.note||'',peti:g('peti')[0]?.name||'',petiLv:g('peti')[0]?.level||'osn'}}
+function vMaturaSetup(){if(!MS)MS=msFrom(S.matura);const M=MS,sm=M.type==='sm',chip=(v,on,attr)=>`<button type="button" class="tchip ${on?'on':''}" ${attr}="${esc(v)}">${esc(v)}</button>`;
+ const izbList=SM_IZB.filter(x=>x!==M.tj);
+ $('#app').innerHTML=`<header class="top">${S.matura?`<button class="icon-btn" onclick="MS=null;location.hash='matura';render()" aria-label="Nazaj">${svg('back')}</button>`:''}<div class="grow"><div class="eyebrow">Matura ${MAT_YEAR}</div><h1>${S.matura?'Uredi maturo':'Nastavi maturo'}</h1></div></header>
+ <div class="card"><h3>Katero maturo opravljaš?</h3><div class="choice mt">${[['sm','Splošna matura','Gimnazija · 5 predmetov'],['pm','Poklicna matura','Strokovna šola · 4 predmeti']].map(([k,t,d])=>`<button type="button" data-mt="${k}" class="${M.type===k?'on':''}"><b>${t}</b><span>${d}</span></button>`).join('')}</div></div>
+ ${sm?`<div class="card"><h3>Obvezni predmeti</h3>
+  <div class="li" style="cursor:default"><div class="grow"><div class="t">Slovenščina</div><div class="sub">Samo višja raven</div></div></div>
+  <div class="flabel">Matematika</div><div class="seg" id="msMat">${[['osn','Osnovna raven'],['vis','Višja raven']].map(([k,n])=>`<button type="button" data-v="${k}" class="${M.mat===k?'on':''}">${n}</button>`).join('')}</div>
+  <label for="msTj">Tuji jezik</label><select id="msTj">${LANGS.map(l=>`<option ${M.tj===l?'selected':''}>${l}</option>`).join('')}</select>
+  <div class="seg mt" id="msTjLv">${[['osn','Osnovna raven'],['vis','Višja raven']].map(([k,n])=>`<button type="button" data-v="${k}" class="${M.tjLv===k?'on':''}">${n}</button>`).join('')}</div></div>
+ <div class="card"><div class="row between"><h3>Izbirni predmeti</h3><span class="pill">${Math.min(M.izb.length,2)}/2</span></div><p class="sub">Izberi dva. Tretji je neobvezen dodatni predmet, pri uspehu pa štejeta le najboljša dva. Izbereš lahko največ enega od predmetov psihologija, sociologija in filozofija ter največ en tuji jezik.</p>
+  <div class="tchips" id="msIzb">${izbList.map(x=>chip(x,M.izb.includes(x),'data-i')).join('')}</div></div>`
+ :`<div class="card"><h3>Predmeti poklicne mature</h3>
+  <div class="li" style="cursor:default"><div class="grow"><div class="t">1. Slovenščina</div><div class="sub">Obvezni, pisni in ustni izpit</div></div></div>
+  <label for="msStrok">2. Strokovni predmet</label><select id="msStrok"><option value="">Izberi predmet</option>${PM_STROK.map(x=>`<option ${M.strok===x?'selected':''}>${x}</option>`).join('')}<option value="__own" ${M.strok&&!PM_STROK.includes(M.strok)?'selected':''}>Drug predmet</option></select>
+  <input id="msStrokOwn" class="mt" placeholder="Ime strokovnega predmeta" value="${M.strok&&!PM_STROK.includes(M.strok)?esc(M.strok):''}" ${M.strok&&!PM_STROK.includes(M.strok)?'':'hidden'}>
+  <div class="flabel">3. Matematika ali tuji jezik</div><div class="tchips" id="msPm3">${PM_3.map(x=>chip(x,M.pm3===x,'data-p')).join('')}</div>
+  <label for="msPm4">4. Izdelek ali storitev z zagovorom</label><input id="msPm4" placeholder="Naziv izdelka ali storitve (neobvezno)" value="${esc(M.pm4)}"></div>
+ <div class="card"><h3>Peti predmet</h3><p class="sub">Če želiš na univerzitetni program, ki zahteva predmet splošne mature, ga opravljaš dodatno. Preveri zahteve v razpisu za vpis.</p>
+  <div class="tchips" id="msPeti">${chip('Brez',!M.peti,'data-x')}${PETI.map(x=>chip(x,M.peti===x,'data-x')).join('')}</div>
+  ${M.peti&&(M.peti==='Matematika'||LANGS.includes(M.peti))?`<div class="flabel">Raven</div><div class="seg" id="msPetiLv">${[['osn','Osnovna raven'],['vis','Višja raven']].map(([k,n])=>`<button type="button" data-v="${k}" class="${M.petiLv===k?'on':''}">${n}</button>`).join('')}</div>`:''}
+  ${M.peti&&M.peti===M.pm3?`<p class="sub mt" style="margin-left:4px">${esc(M.peti)} na splošni maturi je ločen izpit od 3. predmeta poklicne mature.</p>`:''}</div>
+ <div class="card"><p class="sub" style="margin:0">Po spremembi zakona o maturi bo od šolskega leta 2030/31 mogoča tudi poklicna matura s petimi predmeti. Do takrat velja sedanja oblika s štirimi predmeti.</p></div>`}
+ <button class="btn primary full" id="msSave">Shrani maturo</button>`;
+ document.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>{M.type=b.dataset.mt;vMaturaSetup()});
+ const seg=(id,k)=>{const e=$('#'+id);if(e)e.onclick=ev=>{const v=ev.target.dataset.v;if(v){M[k]=v;vMaturaSetup()}}};seg('msMat','mat');seg('msTjLv','tjLv');seg('msPetiLv','petiLv');
+ if($('#msTj'))$('#msTj').onchange=e=>{M.tj=e.target.value;M.izb=M.izb.filter(x=>x!==M.tj);vMaturaSetup()};
+ document.querySelectorAll('#msIzb [data-i]').forEach(b=>b.onclick=()=>{const v=b.dataset.i;if(M.izb.includes(v)){M.izb=M.izb.filter(x=>x!==v)}else{
+  if(M.izb.length>=3)return toast('Največ trije izbirni predmeti');
+  if(SM_FSP.includes(v)&&M.izb.some(x=>SM_FSP.includes(x)))return toast('Izbereš lahko le enega: psihologija, sociologija ali filozofija');
+  if(LANGS.includes(v)&&M.izb.some(x=>LANGS.includes(x)))return toast('Med izbirnimi je lahko le en tuji jezik');
+  M.izb.push(v)}vMaturaSetup()});
+ if($('#msStrok'))$('#msStrok').onchange=e=>{const v=e.target.value;if(v==='__own'){$('#msStrokOwn').hidden=false;M.strok=$('#msStrokOwn').value.trim();$('#msStrokOwn').focus()}else{$('#msStrokOwn').hidden=true;M.strok=v}};
+ if($('#msStrokOwn'))$('#msStrokOwn').oninput=e=>M.strok=e.target.value.trim();
+ if($('#msPm4'))$('#msPm4').oninput=e=>M.pm4=e.target.value;
+ document.querySelectorAll('#msPm3 [data-p]').forEach(b=>b.onclick=()=>{M.pm3=b.dataset.p;vMaturaSetup()});
+ document.querySelectorAll('#msPeti [data-x]').forEach(b=>b.onclick=()=>{M.peti=b.dataset.x==='Brez'?'':b.dataset.x;vMaturaSetup()});
+ $('#msSave').onclick=()=>{let subs;
+  if(sm){if(M.izb.length<2)return toast('Izberi dva izbirna predmeta');
+   subs=[{name:'Slovenščina',role:'obv',level:'vis'},{name:'Matematika',role:'obv',level:M.mat},{name:M.tj,role:'obv',level:M.tjLv},...M.izb.map((n,i)=>({name:n,role:i<2?'izb':'dod',level:'osn'}))]}
+  else{if(!M.strok)return toast('Izberi strokovni predmet');
+   subs=[{name:'Slovenščina',role:'pm1'},{name:M.strok,role:'pm2'},{name:M.pm3,role:'pm3'},{name:'Izdelek ali storitev z zagovorom',role:'pm4',note:M.pm4.trim()},...(M.peti?[{name:M.peti,role:'peti',level:(M.peti==='Matematika'||LANGS.includes(M.peti))?M.petiLv:'osn'}]:[])]}
+  const old=S.matura?.subs||[];
+  S.matura={type:M.type,subs:subs.map(s=>{const o=old.find(x=>x.name===s.name&&(x.role===s.role||(['izb','dod'].includes(x.role)&&['izb','dod'].includes(s.role))));const t=o&&o.level===s.level?o.target:null;return{id:o?.id||uid(),...s,tkey:matTKey(s.name,s.role,M.type),target:t,goal:o?.goal??null,done:o?.done||{},custom:o?.custom||[],prac:o?.prac||[]}})};
+  logA('Nastavljena matura');MS=null;delete scrollMem.matura;save();location.hash='matura';render();toast('Matura shranjena')}}
+function nextMatDate(type){return MAT_DATES.filter(x=>(!x.only||x.only===type)&&daysTo(x.d)>=0)[0]}
+function vMatura(){if(!S.matura)return vMaturaSetup();const M=S.matura,sm=M.type==='sm',ms=M.subs.map(mastery).filter(v=>v!=null),ready=mean(ms),pts=sm?smPoints(M):null;
+ const dates=MAT_DATES.filter(x=>(!x.only||x.only===M.type)&&daysTo(x.d)>=0);
+ const pmT=!sm?M.subs.filter(s=>s.role.startsWith('pm')&&s.target):[];
+ $('#app').innerHTML=header(`Matura ${MAT_YEAR}`,sm?'Splošna matura':'Poklicna matura',`<button class="btn sm" onclick="MS=null;S.matura&&(MS=msFrom(S.matura));location.hash='matura:uredi'">Uredi</button>`)+`
+ <div class="card ov">${ringSvg(ready??0,'var(--accent)')}<div class="grow"><div class="eyebrow">Pripravljenost</div><div class="big" style="font-size:44px">${sm?(pts!=null?`${pts}<span style="font-size:22px;color:var(--muted)"> / 34</span>`:'–'):(pmT.length?f(mean(pmT.map(s=>s.target)),1):'–')}</div><div class="sub">${sm?(pts!=null?'ciljne točke':'Nastavi cilje za vse predmete'):(pmT.length?'ciljno povprečje ocen':'Nastavi cilje za predmete')}</div>${sm&&pts!=null?`<div class="row mt"><span class="pill" style="${pts>=30?'color:var(--g5)':''}">${pts>=30?'Cilj: spričevalo s pohvalo':`Do pohvale manjka ${30-pts} ${30-pts===1?'točka':30-pts===2?'točki':30-pts<=4?'točke':'točk'}`}</span></div>`:''}</div></div>
+ ${dates.length?`<section><div class="sh"><h2>Koledar</h2><span class="sub">okvirni</span></div><div class="card list">${dates.map(x=>{const d=daysTo(x.d),u=urg(d);return`<div class="li" style="cursor:default"><div class="dbadge" style="--uc:${u.c}">${d>99?`<b style="font-size:15px">${d}</b>`:`<b>${d}</b>`}<span>${dniW(d)}</span></div><div class="grow"><div class="t">${x.t}</div><div class="sub">${fmtL(x.d)}</div></div></div>`}).join('')}</div></section>`:''}
+ <section><div class="sh"><h2>Predmeti</h2></div>${M.subs.map(s=>{const m=mastery(s),t=matTopics(s),dn=t.filter(x=>s.done[x]).length,lp=s.prac.length?s.prac[s.prac.length-1].pct:null;return`<div class="card" style="cursor:pointer" onclick="location.hash='matura:${s.id}'"><div class="row between"><div class="grow"><div class="t" style="font-weight:650;font-size:17px">${esc(s.name)}</div><div class="sub">${ROLE[s.role]}${s.level?` · ${s.level==='vis'?'višja':'osnovna'} raven`:''}</div></div><b style="font-size:20px;font-variant-numeric:tabular-nums">${m==null?'–':Math.round(m)+' %'}</b></div><div class="bar"><i style="width:${m||0}%;background:var(--accent)"></i></div><div class="row between sub mt wrap"><span>${t.length?`${dn} od ${t.length} tem`:'Dodaj teme'}${lp!=null?` · zadnji poskus ${fp(lp)}`:''}</span><span>${s.target?(sm?`cilj ${s.target} ${s.target===1?'točka':s.target===2?'točki':s.target<=4?'točke':'točk'}`:`cilj ${s.target}`):'brez cilja'}</span></div></div>`}).join('')}</section>
+ ${!sm&&!M.subs.some(s=>s.role==='peti')?`<div class="card banner" onclick="MS=msFrom(S.matura);location.hash='matura:uredi'"><div class="dbadge" style="--uc:var(--accent)"><b>5</b><span>predmet</span></div><div class="grow"><div class="t" style="font-weight:600">Dodaj peti predmet</div><div class="sub">Predmet splošne mature, npr. matematika, za vpis na univerzo.</div></div><span class="link">Dodaj</span></div>`:''}
+ ${sm&&!M.subs.some(s=>s.role==='dod')?`<div class="card banner" onclick="MS=msFrom(S.matura);location.hash='matura:uredi'"><div class="dbadge" style="--uc:var(--accent)"><b>+1</b><span>predmet</span></div><div class="grow"><div class="t" style="font-weight:600">Dodatni izbirni predmet</div><div class="sub">Neobvezen. Pri uspehu štejeta najboljša dva izbirna.</div></div><span class="link">Dodaj</span></div>`:''}
+ <p class="sub" style="margin:18px 4px 0">Teme so povzete po maturitetnih izpitnih katalogih. Točen obseg za tvoje leto preveri na <a class="link" style="font-size:14px" href="${sm?'https://www.ric.si/splosna-matura/predmeti/':'https://www.ric.si/poklicna-matura/predmeti/'}" target="_blank" rel="noopener">ric.si</a>.</p>`}
+function vMaturaSubj(id){if(id==='uredi'){if(!MS&&S.matura)MS=msFrom(S.matura);return vMaturaSetup()}const M=S.matura;if(!M){location.hash='matura';return}const s=M.subs.find(x=>x.id===id);if(!s){location.hash='matura';return}
+ const sm=M.type==='sm',t=matTopics(s),m=mastery(s),dn=t.filter(x=>s.done[x]).length;
+ $('#app').innerHTML=`<header class="top"><button class="icon-btn" onclick="location.hash='matura'" aria-label="Nazaj">${svg('back')}</button><div class="grow"></div></header>
+ <div style="margin:0 2px 14px"><div class="eyebrow">${ROLE[s.role]}${s.level?` · ${s.level==='vis'?'višja':'osnovna'} raven`:''}</div><h1 style="margin:0">${esc(s.name)}</h1>${s.note?`<div class="sub">${esc(s.note)}</div>`:''}</div>
+ <div class="card"><p style="margin:0">${matInfo(s,M.type)}</p></div>
+ <div class="card"><h3>Cilj</h3><div class="grid"><div><label for="mTg">${sm?'Ciljne točke':'Ciljna ocena'}</label><select id="mTg"><option value="">Ni nastavljen</option>${targetOpts(s,M.type).map(([v,l])=>`<option value="${v}" ${s.target==v?'selected':''}>${l}</option>`).join('')}</select></div><div><label for="mGoal">Cilj na poskusnih testih</label><input id="mGoal" type="number" inputmode="decimal" min="0" max="100" placeholder="npr. 80 %" value="${s.goal??''}"></div></div></div>
+ <section><div class="sh"><h2>Teme</h2><span class="sub">${t.length?`${dn} od ${t.length} · ${Math.round(m||0)} %`:''}</span></div>
+ <div class="card list">${t.length?t.map(x=>`<div class="li chk ${s.done[x]?'on':''}" data-t="${esc(x)}" role="checkbox" aria-checked="${!!s.done[x]}" tabindex="0"><span class="ck ${window._tog===x?'pop':''}">${s.done[x]?'✓':''}</span><span class="grow t">${esc(x)}</span>${(s.custom||[]).includes(x)?`<button class="link" data-del="${esc(x)}" aria-label="Odstrani temo" style="font-size:13px">Odstrani</button>`:''}</div>`).join(''):'<p class="sub">Za ta predmet dodaj teme iz izpitnega kataloga svoje šole.</p>'}</div>
+ <div class="row mt"><input id="mTopic" placeholder="Dodaj svojo temo" enterkeyhint="done"><button class="icon-btn" id="mTopicAdd" aria-label="Dodaj temo">${svg('plus')}</button></div><p class="sub" style="margin:8px 4px 0">Označi teme, ki jih že obvladaš.</p></section>
+ <section><div class="sh"><h2>Poskusni testi</h2></div><div class="card"><div class="grid"><div><label for="mpP" style="margin-top:0">Rezultat v %</label><input id="mpP" type="number" inputmode="decimal" min="0" max="100" placeholder="npr. 72"></div><div><label for="mpD" style="margin-top:0">Datum</label><input id="mpD" type="date" value="${today()}"></div></div><input id="mpN" class="mt" placeholder="Opomba, npr. matura 2024 pola 1"><button class="btn primary full" id="mpAdd">Dodaj rezultat</button></div>
+ ${s.prac.length>1?`<div class="card"><div class="chart sm"><canvas id="cMP"></canvas></div></div>`:''}
+ ${s.prac.length?`<div class="card list">${[...s.prac].reverse().map(p=>`<div class="li" style="cursor:default"><div class="badge" style="background:var(--fill);font-size:15px">${Math.round(p.pct)}</div><div class="grow"><div class="t">${fp(p.pct)}${s.goal!=null?` <span class="sub">${p.pct>=s.goal?'cilj dosežen':`do cilja ${f(s.goal-p.pct,0)} %`}</span>`:''}</div><div class="sub">${fmtD(p.date)}${p.note?' · '+esc(p.note):''}</div></div><button class="link" data-pd="${p.id}" style="font-size:13px">Izbriši</button></div>`).join('')}</div>`:''}</section>`;
+ const sv=()=>save();
+ $('#mTg').onchange=e=>{s.target=e.target.value?+e.target.value:null;sv();toast('Cilj shranjen')};
+ $('#mGoal').onchange=e=>{const v=e.target.value;s.goal=v===''?null:Math.max(0,Math.min(100,+v));sv();render()};
+ document.querySelectorAll('.chk').forEach(el=>{const tog=()=>{const k=el.dataset.t;if(s.done[k])delete s.done[k];else s.done[k]=true;window._tog=k;sv();render();window._tog=null};el.onclick=e=>{if(e.target.closest('[data-del]'))return;tog()};el.onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();tog()}}});
+ document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const k=b.dataset.del;s.custom=s.custom.filter(x=>x!==k);delete s.done[k];sv();render()});
+ const addT=()=>{const v=$('#mTopic').value.trim();if(!v)return;if(!t.includes(v))s.custom.push(v);sv();render()};$('#mTopicAdd').onclick=addT;$('#mTopic').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addT()}};
+ $('#mpAdd').onclick=()=>{const p=$('#mpP').value;if(p===''||+p<0||+p>100)return toast('Vpiši rezultat med 0 in 100 %');s.prac.push({id:uid(),date:$('#mpD').value||today(),pct:+p,note:$('#mpN').value.trim()});s.prac.sort(byDate);sv();render();toast('Rezultat dodan')};
+ document.querySelectorAll('[data-pd]').forEach(b=>b.onclick=()=>{s.prac=s.prac.filter(x=>x.id!==b.dataset.pd);sv();render()});
+ if(s.prac.length>1)mk('cMP',{type:'line',data:{labels:s.prac.map(p=>fmtD(p.date)),datasets:[{data:s.prac.map(p=>p.pct),borderColor:St().accent,backgroundColor:St().accent+'22',fill:true,tension:.3,pointRadius:4},...(s.goal!=null?[{data:s.prac.map(()=>s.goal),borderColor:css('--g5'),borderDash:[6,5],pointRadius:0,borderWidth:1.5}]:[])]},options:{scales:{y:{min:0,max:100,ticks:{callback:v=>v+' %'},grid:{color:css('--sep')}},x:xNoGrid}}})}
+function maturaCard(){const p=S.profile;if(!p||p.level!=='ss'||(!S.matura&&(p.grade||0)<3))return'';
+ if(!S.matura)return`<div class="card banner" onclick="location.hash='matura'"><div class="dbadge" style="--uc:var(--accent)"><b>${Math.max(0,daysTo('2027-05-29'))>99?'·':Math.max(0,daysTo('2027-05-29'))}</b><span>matura</span></div><div class="grow"><div class="t" style="font-weight:600">Pripravi se na maturo</div><div class="sub">Izberi predmete, ravni in cilje.</div></div><span class="link">Nastavi</span></div>`;
+ const nx=nextMatDate(S.matura.type),r=mean(S.matura.subs.map(mastery).filter(v=>v!=null));
+ return`<div class="card banner" onclick="location.hash='matura'">${ringSvg(r??0,'var(--accent)').replace('class="ring"','class="ring" style="width:56px;height:56px"')}<div class="grow"><div class="t" style="font-weight:600">Matura ${MAT_YEAR}</div><div class="sub">${nx?`${esc(nx.t)} čez ${daysTo(nx.d)} ${dniA(daysTo(nx.d))}`:'Koledar za to leto je zaključen'}</div></div><span class="link">Odpri</span></div>`}
+
+/* ============ UVOD (PROFIL) ============ */
+let OB={step:0,name:'',level:'os',grade:null,program:'Gimnazija',school:'',subs:null,custom:''};
+function presetSubs(){const g=OB.grade||1;
+ if(OB.level==='os'){if(g<=5)return['*Slovenščina','*Matematika','*Angleščina',g<=3?'*Spoznavanje okolja':'*Naravoslovje in tehnika',...(g>=4?['*Družba']:[]),'Likovna umetnost','Glasbena umetnost','Šport'];
+  if(g<=7)return['*Slovenščina','*Matematika','*Angleščina','*Zgodovina','*Geografija','*Naravoslovje','*Tehnika in tehnologija',g===6?'Gospodinjstvo':'Domovinska in državljanska kultura in etika','Likovna umetnost','Glasbena umetnost','Šport'];
+  return['*Slovenščina','*Matematika','*Angleščina','*Zgodovina','*Geografija','*Biologija','*Kemija','*Fizika',...(g===8?['Domovinska in državljanska kultura in etika']:[]),'Likovna umetnost','Glasbena umetnost','Šport']}
+ if(OB.program==='Gimnazija')return['*Slovenščina','*Matematika','*Angleščina','*Nemščina','*Zgodovina','*Geografija','*Biologija','*Kemija','*Fizika',...(g===1?['Informatika','Glasba','Likovna umetnost']:[]),...(g===2?['Psihologija']:[]),...(g===3?['Sociologija']:[]),...(g===4?['Filozofija']:[]),'Športna vzgoja'];
+ if(OB.program==='Strokovna šola')return['*Slovenščina','*Matematika','*Angleščina','*Zgodovina','*Fizika','*Kemija','*Strokovni modul 1','*Strokovni modul 2','Športna vzgoja'];
+ return['*Slovenščina','*Matematika','*Angleščina','*Družboslovje','*Naravoslovje','*Strokovni modul','Športna vzgoja']}
+const gradeLbl=(lv,g)=>lv==='os'?`${g}. razred`:`${g}. letnik`;
+function vOnboard(){const s=OB.step,steps=`<div class="steps">${[0,1,2].map(i=>`<i class="${i<=s?'on':''}"></i>`).join('')}</div>`;let h='';
+ if(s===0)h=`<div class="logo">${MARK()}</div><h1>Pozdravljen v Grady</h1><p class="lead">Ocene, testi in napredek na enem mestu. Vse ostane samo na tvoji napravi.</p>
+ <div class="card"><label for="obName" style="margin-top:0">Kako ti je ime?</label><input id="obName" value="${esc(OB.name)}" placeholder="Tvoje ime" autocomplete="given-name" enterkeyhint="next"></div>
+ <button class="btn primary full" id="obNext">Naprej</button><button class="btn full" id="obDemo">Najprej poskusi z demo podatki</button>`;
+ if(s===1){const n=OB.level==='os'?9:4;h=`${steps}<h1>Katero šolo obiskuješ?</h1><p class="lead">Glede na to ti predlagam predmete.</p>
+ <div class="choice">${[['os','Osnovna šola','1. do 9. razred'],['ss','Srednja šola','1. do 4. letnik']].map(([k,t,d])=>`<button type="button" data-l="${k}" class="${OB.level===k?'on':''}"><b>${t}</b><span>${d}</span></button>`).join('')}</div>
+ ${OB.level==='ss'?`<div class="flabel">Program</div><div class="tchips" id="obProg">${PROGS.map(p=>`<button type="button" class="tchip ${OB.program===p?'on':''}" data-p="${p}">${p}</button>`).join('')}</div>`:''}
+ <div class="flabel">${OB.level==='os'?'Razred':'Letnik'}</div><div class="tchips" id="obGr">${Array.from({length:n},(_,i)=>i+1).map(g=>`<button type="button" class="tchip ${OB.grade===g?'on':''}" data-g="${g}">${g}.</button>`).join('')}</div>
+ <label for="obSchool">Ime šole <span style="font-weight:400">(neobvezno)</span></label><input id="obSchool" value="${esc(OB.school)}" placeholder="npr. Gimnazija Bežigrad">
+ ${OB.level==='ss'?`<p class="sub mt" style="margin-left:4px">Maturo boš nastavil v zavihku Matura.</p>`:''}
+ <div class="row mt"><button class="btn" id="obBack">Nazaj</button><button class="btn primary grow" id="obNext">Naprej</button></div>`}
+ if(s===2){if(S.subjects.length)h=`${steps}<h1>Predmeti so že tu</h1><p class="lead">Imaš ${S.subjects.length} predmetov iz prejšnje uporabe. Urejaš jih lahko kadar koli.</p><div class="row"><button class="btn" id="obBack">Nazaj</button><button class="btn primary grow" id="obDone">Začni</button></div>`;
+  else{if(!OB.subs)OB.subs=presetSubs().map(x=>({n:x.replace('*',''),on:x[0]==='*'}));const c=OB.subs.filter(x=>x.on).length;
+  h=`${steps}<h1>Tvoji predmeti</h1><p class="lead">Označi predmete, ki jih imaš letos. Kasneje lahko dodaš ali odstraniš katerega koli.</p>
+  <div class="card"><div class="tchips" id="obSubs">${OB.subs.map((x,i)=>`<button type="button" class="tchip ${x.on?'on':''}" data-i="${i}">${esc(x.n)}</button>`).join('')}</div>
+  <div class="row mt"><input id="obCustom" placeholder="Dodaj svoj predmet" value="${esc(OB.custom)}" enterkeyhint="done"><button class="icon-btn" id="obAdd" type="button" aria-label="Dodaj predmet">${svg('plus')}</button></div></div>
+  <div class="row mt"><button class="btn" id="obBack">Nazaj</button><button class="btn primary grow" id="obDone">Začni z ${c} ${c===1?'predmetom':'predmeti'}</button></div>`}}
+ $('#app').innerHTML=`<div class="ob">${h}<div class="brand">${MARK()}Grady</div></div>`;
+ const on=(id,fn)=>{const e=$('#'+id);if(e)e.onclick=fn};
+ const nm=$('#obName');if(nm){nm.oninput=e=>OB.name=e.target.value;nm.onkeydown=e=>{if(e.key==='Enter')$('#obNext').click()};if(!OB.name)setTimeout(()=>nm.focus(),50)}
+ const sc=$('#obSchool');if(sc)sc.oninput=e=>OB.school=e.target.value;
+ const cu=$('#obCustom');if(cu){cu.oninput=e=>OB.custom=e.target.value;cu.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('#obAdd').click()}}}
+ on('obNext',()=>{if(s===0&&!OB.name.trim()){toast('Vpiši svoje ime');return}if(s===1&&!OB.grade){toast(OB.level==='os'?'Izberi razred':'Izberi letnik');return}OB.step++;vOnboard()});
+ on('obBack',()=>{OB.step--;vOnboard()});
+ on('obDemo',()=>{S.profile={name:'Demo',level:'ss',grade:3,program:'Gimnazija',school:'',at:new Date().toISOString()};S.settings.user='Demo';save();demo()});
+ document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{if(OB.level!==b.dataset.l){OB.level=b.dataset.l;OB.grade=null;OB.subs=null}vOnboard()});
+ document.querySelectorAll('#obProg [data-p]').forEach(b=>b.onclick=()=>{OB.program=b.dataset.p;OB.subs=null;vOnboard()});
+ document.querySelectorAll('#obGr [data-g]').forEach(b=>b.onclick=()=>{OB.grade=+b.dataset.g;OB.subs=null;vOnboard()});
+ document.querySelectorAll('#obSubs [data-i]').forEach(b=>b.onclick=()=>{const x=OB.subs[+b.dataset.i];x.on=!x.on;vOnboard()});
+ on('obAdd',()=>{const n=OB.custom.trim();if(!n)return;if(!OB.subs.some(x=>x.n.toLowerCase()===n.toLowerCase()))OB.subs.push({n,on:true});OB.custom='';vOnboard()});
+ on('obDone',()=>{if(!S.subjects.length){const pick=OB.subs.filter(x=>x.on);if(!pick.length){toast('Izberi vsaj en predmet');return}pick.forEach((x,i)=>S.subjects.push({id:uid(),name:x.n,color:PALETTE[i%PALETTE.length],target:null}))}
+  S.profile={name:OB.name.trim(),level:OB.level,grade:OB.grade,program:OB.level==='ss'?OB.program:null,school:OB.school.trim(),at:new Date().toISOString()};S.settings.user=S.profile.name;logA('Ustvarjen profil');save();location.hash='home';render();toast(`Dobrodošel, ${S.profile.name}`)})}
+
+/* ============ ZAGON ============ */
+function loadChart(){return new Promise(res=>{if(window.Chart)return res(true);let done=0;const fin=v=>{if(!done){done=1;res(v)}};const s=document.createElement('script');s.src=CHART_URL;s.onload=()=>fin(true);s.onerror=()=>fin(false);document.head.appendChild(s);setTimeout(()=>fin(!!window.Chart),7000)})}
+async function boot(){const st=$('#spStatus'),bar=$('#spBar'),t0=performance.now(),reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,wait=ms=>new Promise(r=>setTimeout(r,ms));
+ const step=(t,p)=>{st.textContent=t;bar.style.width=p+'%'};
+ applyTheme();step('Nalagam tvoje podatke',22);await wait(reduce?0:260);
+ step('Pripravljam grafe',52);const ok=await loadChart();
+ step('Računam analizo',80);S.subjects.forEach(subjStats);await wait(reduce?0:200);
+ step('Skoraj pripravljeno',100);render();
+ const el=performance.now()-t0,min=reduce?0:1550;if(el<min)await wait(min-el);
+ const sp=$('#splash');sp.classList.add('out');setTimeout(()=>sp.remove(),500);if(!ok&&S.grades.length)toast('Grafi bodo na voljo, ko boš povezan')}
+boot();
+/*SW*/if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
