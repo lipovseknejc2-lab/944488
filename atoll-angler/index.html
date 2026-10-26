@@ -184,6 +184,15 @@ body.tour-on .ctlsw{top:calc(env(safe-area-inset-top,0px) + 140px)}body.tour-on 
 .haul{display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow-y:auto;touch-action:pan-y}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<script>
+/* Offline helper: register the offline worker straight away and show whether the game is saved for offline play. */
+(function(){if(!('serviceWorker' in navigator)||location.protocol==='file:')return;
+try{navigator.serviceWorker.register('sw.js').catch(function(){})}catch(e){}
+var pg=new URL('index.html',location.href).href,el=null,was=false,n=0;
+function pill(t,ok){if(!document.body){return setTimeout(function(){pill(t,ok)},200)}if(!el){el=document.createElement('div');el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 6px);z-index:99999;pointer-events:none;font:700 12px system-ui,sans-serif;padding:6px 12px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:opacity .4s';document.body.appendChild(el)}el.textContent=t;el.style.background=ok?'#5fdc8c':'#ffc94a';el.style.color=ok?'#06301a':'#3a2600';el.style.opacity='1'}
+function chk(){caches.match(pg).then(function(r){if(r){var seen=false;try{seen=!!sessionStorage.getItem('offline-ok'+location.pathname)}catch(e){}if(was||!seen){try{sessionStorage.setItem('offline-ok'+location.pathname,'1')}catch(e){}pill('\u2713 Saved for offline play',true);setTimeout(function(){if(el)el.style.opacity='0'},3500)}}else{was=true;if(navigator.onLine===false){pill('Not saved for offline yet: connect to wifi once',false)}else{pill('Saving for offline\u2026 keep this open',false)}if(n++<200)setTimeout(chk,1500)}}).catch(function(){})}
+setTimeout(chk,800)})();
+</script>
 </head>
 <body>
 <div class="boot" id="boot" role="status" aria-live="polite"><div class="bootin">

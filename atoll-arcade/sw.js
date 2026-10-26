@@ -1,29 +1,40 @@
-// Atoll Arcade offline worker.
+// Atoll Arcade offline worker (v3).
 // Lives in its own folder and only handles requests inside it, so it never touches
 // other apps on the same site (their pages, caches or saves).
-const VERSION = 'atoll-arcade-v2';
+// Install only finishes once the game page itself is saved, so "ready" really means ready offline.
+const VERSION = 'atoll-arcade-v3';
 const PREFIX = 'atoll-arcade-';
-const CORE = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './icon-512-maskable.png'];
 const SCOPE = new URL('./', self.location).pathname;
+const PAGE = SCOPE + 'index.html';
+const EXTRA = ['manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png','icon-512-maskable.png'];
+
+// Safari refuses to show a page that was reached through a redirect when it comes from a worker,
+// so every page answer is rebuilt as a plain, clean response.
+const clean = async r => {
+  if (!r) return r;
+  if (!r.redirected && r.type === 'basic') return r;
+  const body = await r.blob();
+  return new Response(body, { status: 200, statusText: 'OK', headers: { 'Content-Type': r.headers.get('Content-Type') || 'text/html; charset=utf-8' } });
+};
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION)
-    .then(c => Promise.all(CORE.map(u => c.add(new Request(u, { cache: 'reload' })).catch(() => {}))))
-    .then(() => self.skipWaiting()));
+  e.waitUntil((async () => {
+    const c = await caches.open(VERSION);
+    const r = await fetch(new Request(PAGE, { cache: 'reload' }));
+    if (!r.ok) throw new Error('page not saved');
+    await c.put(PAGE, await clean(r));
+    await Promise.all(EXTRA.map(u => fetch(new Request(SCOPE + u, { cache: 'reload' })).then(x => x.ok && c.put(SCOPE + u, x)).catch(() => {})));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', e => {
-  // Only remove the arcade's own old caches.
   e.waitUntil(caches.keys()
     .then(ks => Promise.all(ks.filter(k => k.startsWith(PREFIX) && k !== VERSION).map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
 
-const put = (req, res) => {
-  if (res && res.ok && res.type !== 'opaque') { const cp = res.clone(); caches.open(VERSION).then(c => c.put(req, cp)).catch(() => {}); }
-  return res;
-};
-const fromCache = req => caches.open(VERSION).then(c => c.match(req, { ignoreSearch: true }));
+const fromCache = u => caches.open(VERSION).then(c => c.match(u, { ignoreSearch: true }));
 
 self.addEventListener('fetch', e => {
   const req = e.request;
@@ -32,30 +43,25 @@ self.addEventListener('fetch', e => {
 
   // Google Fonts: keep a copy so the game looks right offline.
   if (url.hostname.endsWith('googleapis.com') || url.hostname.endsWith('gstatic.com')) {
-    e.respondWith(fromCache(req).then(hit => {
-      const net = fetch(req).then(r => { if (r && (r.ok || r.type === 'opaque')) { const cp = r.clone(); caches.open(VERSION).then(c => c.put(req, cp)); } return r; }).catch(() => hit);
-      return hit || net;
-    }));
+    e.respondWith(fromCache(req).then(hit => hit || fetch(req).then(r => { if (r && (r.ok || r.type === 'opaque')) { const cp = r.clone(); caches.open(VERSION).then(c => c.put(req, cp)); } return r; }).catch(() => Response.error())));
     return;
   }
 
-  // Ignore everything outside the arcade's folder.
   if (url.origin !== self.location.origin || !url.pathname.startsWith(SCOPE)) return;
 
-  // The game page: newest from the network, but never wait more than 4 s; offline uses the saved copy.
-  if (req.mode === 'navigate' || url.pathname === SCOPE || url.pathname.endsWith('/index.html')) {
-    // Offline: answer from the saved copy straight away.
-    if (self.navigator && self.navigator.onLine === false) { e.respondWith(fromCache(SCOPE + 'index.html').then(r => r || fetch(req))); return; }
-    e.respondWith(new Promise(resolve => {
-      let done = false;
-      const finish = r => { if (!done && r) { done = true; resolve(r); } };
-      const net = fetch(req).then(r => { put(new Request(SCOPE + 'index.html'), r.clone()); return r; });
-      net.then(finish).catch(() => fromCache(SCOPE + 'index.html').then(r => finish(r || Response.error())));
-      setTimeout(() => fromCache(SCOPE + 'index.html').then(finish), 3000);
-    }));
+  // The game page: the saved copy opens instantly (works with no internet at all);
+  // a fresh copy is fetched quietly in the background for next time.
+  if (req.mode === 'navigate' || url.pathname === SCOPE || url.pathname === PAGE) {
+    e.respondWith((async () => {
+      const hit = await fromCache(PAGE);
+      const net = fetch(new Request(PAGE, { cache: 'no-cache' })).then(async r => { if (r && r.ok) { const cl = await clean(r); const c = await caches.open(VERSION); await c.put(PAGE, cl.clone()); return cl } return r; });
+      if (hit) { e.waitUntil(net.catch(() => {})); return clean(hit); }
+      try { return await net; } catch (err) { return new Response('<meta name=viewport content="width=device-width"><body style="font:16px system-ui;background:#071a2e;color:#eaf6f7;padding:24px">Connect to the internet once to save this game for offline play.</body>', { headers: { 'Content-Type': 'text/html' } }); }
+    })());
     return;
   }
 
-  // Icons, manifest and other files: cached copy first, refilled from the network if missing.
-  e.respondWith(fromCache(req).then(hit => hit || fetch(req).then(r => put(req, r))));
+  // Icons, manifest and other files: cached copy first.
+  e.respondWith(fromCache(req).then(hit => hit || fetch(req).then(r => { if (r && r.ok) { const cp = r.clone(); caches.open(VERSION).then(c => c.put(req, cp)); } return r; })));
 });
+
