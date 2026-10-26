@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Lacquer",
+  "short_name": "Lacquer",
+  "description": "A life in records: make music in a real studio, chase the charts and become a legend. Works offline.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#141210",
+  "theme_color": "#141210",
+  "categories": ["games", "music"],
+  "icons": [
+    {"src": "icon-180.png", "sizes": "180x180", "type": "image/png"},
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
