@@ -1,7 +1,7 @@
 // Atoll Angler offline worker.
 // Lives in its own folder and only handles requests inside it, so it never touches
 // other apps on the same site (their pages, caches or saves).
-const VERSION = 'atoll-angler-v5';
+const VERSION = 'atoll-angler-v6';
 const PREFIX = 'atoll-angler-';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 const SCOPE = new URL('./', self.location).pathname;
@@ -44,12 +44,14 @@ self.addEventListener('fetch', e => {
 
   // The game page: newest from the network, but never wait more than 4 s; offline uses the saved copy.
   if (req.mode === 'navigate' || url.pathname === SCOPE || url.pathname.endsWith('/index.html')) {
+    // Offline: answer from the saved copy straight away.
+    if (self.navigator && self.navigator.onLine === false) { e.respondWith(fromCache(SCOPE + 'index.html').then(r => r || fetch(req))); return; }
     e.respondWith(new Promise(resolve => {
       let done = false;
       const finish = r => { if (!done && r) { done = true; resolve(r); } };
       const net = fetch(req).then(r => { put(new Request(SCOPE + 'index.html'), r.clone()); return r; });
       net.then(finish).catch(() => fromCache(SCOPE + 'index.html').then(r => finish(r || Response.error())));
-      setTimeout(() => fromCache(SCOPE + 'index.html').then(finish), 4000);
+      setTimeout(() => fromCache(SCOPE + 'index.html').then(finish), 3000);
     }));
     return;
   }
