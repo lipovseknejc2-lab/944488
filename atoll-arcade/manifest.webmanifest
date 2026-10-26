@@ -1,0 +1,42 @@
+{
+  "id": "./",
+  "name": "Atoll Arcade",
+  "short_name": "Arcade",
+  "description": "Eight offline mini-games in one tropical arcade: turtle swimmer, seaplane, tower stack, match-3, 2048, river puzzles, sudoku and memory.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "portrait",
+  "background_color": "#071a2e",
+  "theme_color": "#071a2e",
+  "categories": [
+    "games"
+  ],
+  "icons": [
+    {
+      "src": "icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
