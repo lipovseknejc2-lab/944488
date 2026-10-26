@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Atoll City</title>
+<meta name="description" content="Build an island city across a whole atoll. Works offline.">
+<meta name="theme-color" content="#071a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Atoll City">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>html,body{margin:0;background:#071a2e}[hidden]{display:none!important}</style>
+</head>
+<body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,900&display=swap" rel="stylesheet">
+<style>
+/* Layout: island city builder for an upright phone. World canvas fills the screen; HUD on top, tool bar at the thumb, sheets slide up over the city. One deep-sea look. */
+:root{
+  --bg:#06192b; --panel:rgba(7,26,44,.96); --panel2:#123553; --line:rgba(140,220,230,.18);
+  --sea:#3fd6cf; --coral:#ff7a59; --gold:#ffc94a; --txt:#eaf6f7; --mut:#8fb2bd; --good:#5fdc8c; --bad:#ff6363; --warn:#ffb648;
+  --fd:'Luckiest Guy','Trebuchet MS',system-ui,sans-serif; --fb:'Nunito Sans',system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--txt);font-family:var(--fb);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer;border:0}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 6px) max(8px,env(safe-area-inset-right,0px)) 0 max(8px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:5px;pointer-events:none;z-index:5}
+.hr{display:flex;gap:5px;align-items:center}
+.chip{pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px 9px;font-size:12.5px;display:flex;gap:5px;align-items:center;white-space:nowrap;font-variant-numeric:tabular-nums;min-width:0;font-weight:700}
+.chip b{font-weight:900}
+.chip small{font-size:10px;font-weight:900}
+.money b{color:var(--gold);font-family:var(--fd);font-weight:400;font-size:16px;letter-spacing:.4px;padding-top:2px}
+.sp{flex:1}
+.ico{width:16px;height:16px;flex:none}
+.lbl{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:900}
+.pos{color:var(--good)}.neg{color:var(--bad)}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:8px max(6px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 6px) max(6px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:linear-gradient(rgba(4,16,28,0),rgba(4,16,28,.9) 35%);z-index:6}
+.bar button{background:var(--panel);border:1px solid var(--line);border-radius:12px;height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9.5px;font-weight:900;position:relative;min-width:0}
+.bar button.on{background:var(--coral);border-color:var(--coral);color:#2a0d05}
+.bar svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dot{position:absolute;top:4px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.mode{position:fixed;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:7;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.mode .mt{display:flex;align-items:center;gap:8px;font-weight:900;font-size:14px}
+.mode .mt span{flex:1;min-width:0}
+.mode .md{font-size:12px;color:var(--mut);font-weight:700}
+.btns{display:flex;gap:7px;flex-wrap:wrap}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:9px 13px;font-weight:900;font-size:13px;min-height:42px}
+.btn.p{background:var(--sea);color:#04262a;border-color:var(--sea)}
+.btn.g{background:var(--gold);color:#3a2600;border-color:var(--gold)}
+.btn.d{background:#5a1d1d;border-color:#ff8a7a55;color:#ffd6cf}
+.btn.s{min-height:34px;padding:6px 10px;font-size:12px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btns .btn{flex:1}
+.sheet{position:fixed;left:max(6px,env(safe-area-inset-left,0px));right:max(6px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 66px);max-height:calc(100% - env(safe-area-inset-top,0px) - 150px);background:var(--panel);border-radius:20px;border:1px solid var(--line);z-index:8;display:flex;flex-direction:column;box-shadow:0 -10px 40px rgba(0,0,0,.45);animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+.shead{display:flex;align-items:center;gap:8px;padding:10px 14px 6px}
+.shead h2{font-family:var(--fd);font-weight:400;font-size:22px;margin:0;flex:1;letter-spacing:.5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.x{background:var(--panel2);border-radius:10px;width:36px;height:36px;font-weight:900;flex:none}
+.sbody{overflow-y:auto;padding:4px 12px 14px;touch-action:pan-y;display:flex;flex-direction:column;gap:10px;font-size:13.5px;-webkit-overflow-scrolling:touch}
+.sbody>*{flex-shrink:0}
+.tabs{display:flex;gap:5px;overflow-x:auto;touch-action:pan-x;scrollbar-width:none;padding-bottom:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;background:var(--panel2);border-radius:20px;padding:7px 12px;font-size:12px;font-weight:900}
+.tab.on{background:var(--gold);color:#3a2600}
+.card{background:var(--panel2);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.card .t{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:900}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.k{color:var(--mut)}
+.desc{color:var(--mut);font-size:12.5px;line-height:1.45;margin:0}
+.sec{display:flex;flex-direction:column;gap:7px}
+.sec h3{margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);font-weight:900}
+.mbar{height:8px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden;flex:1}.mbar i{display:block;height:100%;border-radius:5px}
+.bgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.bc{background:var(--panel2);border:2px solid transparent;border-radius:14px;padding:6px;display:flex;flex-direction:column;gap:3px;text-align:left;min-width:0}
+.bc img{width:100%;aspect-ratio:4/3;border-radius:10px;background:#0a3050;display:block}
+.bc b{font-size:12.5px;line-height:1.15}
+.bc span{font-size:11px;color:var(--mut);font-weight:700;font-variant-numeric:tabular-nums}
+.bc .c{color:var(--gold)}
+.bc.lock{opacity:.55}
+.bc.sel{border-color:var(--gold)}
+.stp{display:flex;align-items:center;gap:6px}
+.stp button{width:34px;height:32px;border-radius:9px;background:#1d4a6e;font-weight:900;font-size:16px}.stp button:disabled{opacity:.35}
+.stp b{min-width:34px;text-align:center;font-variant-numeric:tabular-nums}
+.sl{display:flex;align-items:center;gap:8px}
+.sl input{flex:1;accent-color:var(--sea)}
+.tog{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border-radius:12px;cursor:pointer}
+.tog .m{flex:1;min-width:0}.tog .m b{display:block;font-size:13.5px}.tog .m span{font-size:11.5px;color:var(--mut);line-height:1.35;display:block}
+.sw{flex:none;width:44px;height:26px;border-radius:13px;background:#2b4f61;position:relative}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.tog.on .sw{background:var(--good)}.tog.on .sw::after{left:21px}
+.list{display:flex;flex-direction:column;gap:6px}
+.item{background:var(--panel2);border-radius:12px;padding:8px 10px;display:flex;align-items:center;gap:10px}
+.item .m{flex:1;min-width:0}.item .m b{display:block;font-size:13px}.item .m span{font-size:11.5px;color:var(--mut)}
+.pill{display:inline-block;font-size:10px;font-weight:900;padding:2px 7px;border-radius:7px;background:#2b4f61;letter-spacing:.03em}
+.pill.g{background:var(--good);color:#06301a!important}.pill.b{background:var(--bad);color:#3a0000!important}.pill.y{background:var(--gold);color:#3a2600!important}.pill.s{background:var(--sea);color:#04262a!important}
+.toasts{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 76px);display:flex;flex-direction:column;align-items:center;gap:5px;z-index:9;pointer-events:none;width:min(360px,92vw)}
+.toast{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--sea);border-radius:11px;padding:7px 12px;font-size:12.5px;font-weight:700;text-align:center;animation:tin .25s ease-out}
+.toast.bad{border-left-color:var(--bad)}.toast.good{border-left-color:var(--good)}.toast.gold{border-left-color:var(--gold)}
+@keyframes tin{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
+.modal{position:fixed;inset:0;background:rgba(2,10,18,.72);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.mbox{background:#0b2a44;border:1px solid var(--line);border-radius:22px;padding:16px;max-width:420px;width:100%;max-height:calc(100% - 20px);overflow-y:auto;display:flex;flex-direction:column;gap:10px;touch-action:pan-y;animation:pop .3s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.88);opacity:0}to{transform:none;opacity:1}}
+.mbox h2{font-family:var(--fd);font-weight:400;margin:0;font-size:25px;letter-spacing:.5px;text-wrap:balance;line-height:1.08}
+.mbox p{margin:0;line-height:1.45;color:#cfe5e6;font-size:14px}
+.mcv{width:100%;height:170px;border-radius:14px;display:block;background:#0a3050}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.stats3 div{background:var(--panel2);border-radius:10px;padding:7px;text-align:center}
+.stats3 b{display:block;font-size:15px;font-variant-numeric:tabular-nums}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.col{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--mut);text-align:center;min-width:0}
+.col img{width:100%;aspect-ratio:1;border-radius:10px;display:block}
+.sw8{display:flex;gap:6px;flex-wrap:wrap}.sw8 button{width:34px;height:34px;border-radius:10px;border:2px solid transparent}.sw8 button.on{border-color:#fff}
+textarea{background:#08243a;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:8px;font:11px ui-monospace,monospace;width:100%;height:60px;-webkit-user-select:text;user-select:text}
+input[type=text]{background:#08243a;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:9px 10px;font:inherit;font-weight:700;width:100%;-webkit-user-select:text;user-select:text}
+.boot{position:fixed;inset:0;z-index:50;background:radial-gradient(120% 80% at 50% 30%,#0f4a6e,#06192b 70%);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;transition:opacity .4s}
+.boot h1{margin:0;font-family:var(--fd);font-weight:400;font-size:40px;color:var(--gold);text-shadow:0 3px 0 #a0601a}
+.boot.out{opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<canvas id="cv" aria-label="Island city"></canvas>
+<div class="hud" id="hud">
+  <div class="hr">
+    <div class="chip money" id="hMoney"><b id="hM">$0</b><small id="hMd" class="pos"></small></div>
+    <div class="chip" id="hPop" aria-label="Population"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2c3 .2 5.5 2.4 5.5 5.8"/></svg><b id="hP">0</b><small id="hPd" class="pos"></small></div>
+    <div class="chip" id="hHap" aria-label="Happiness"><span id="hHf" style="font-size:15px;line-height:1">☺</span><b id="hH">0%</b></div>
+    <span class="sp"></span>
+    <div class="chip" id="hPearl" aria-label="Pearls"><i style="display:inline-block;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#e8d8ff 45%,#a890d0)"></i><b id="hPe">0</b></div>
+  </div>
+  <div class="hr">
+    <button class="chip" id="hIsl"><span class="lbl">Isle</span><b id="hIn">Home</b></button>
+    <button class="chip" id="hDay"><b id="hD">Day 1</b><span id="hT" class="lbl">08:00</span><span id="hW"></span></button>
+    <button class="chip" id="hSpd"><b id="hS">1×</b></button>
+    <span class="sp"></span>
+    <button class="chip" id="hGoal"><span class="lbl">Goals</span><b id="hG">0</b><span class="dot" id="gDot" hidden style="position:static"></span></button>
+  </div>
+</div>
+<nav class="bar" id="bar">
+  <button data-s="build"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>Build</button>
+  <button data-s="roads"><svg viewBox="0 0 24 24"><path d="M7 3L4 21M17 3l3 18M12 4v3M12 10v3M12 16v3"/></svg>Roads</button>
+  <button data-s="jobs"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 12h18"/></svg>Jobs</button>
+  <button data-s="city"><svg viewBox="0 0 24 24"><path d="M4 20V10h5v10M10 20V4h5v16M16 20v-7h4v7"/></svg>City</button>
+  <button data-s="map"><svg viewBox="0 0 24 24"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>Islands</button>
+  <button data-s="collect"><svg viewBox="0 0 24 24"><path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18"/></svg>Collect<span class="dot" id="cDot" hidden></span></button>
+  <button data-s="more"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>More</button>
+</nav>
+<div class="mode" id="mode" hidden></div>
+<aside class="sheet" id="sheet" hidden><div class="shead"><h2 id="stitle">Build</h2><button class="x" id="sclose" aria-label="Close">✕</button></div><div class="sbody" id="sbody"></div></aside>
+<div class="toasts" id="toasts"></div>
+<div class="modal" id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<div class="boot" id="boot"><h1>Atoll City</h1><p class="desc" id="bootMsg">Raising the islands…</p></div>
+
+<script>
+'use strict';
+/* ================= utils ================= */
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t,ri=n=>Math.random()*n|0,rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[ri(a.length)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=ri(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const fmt=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('en-US');
+const fmtk=n=>{const a=Math.abs(n),s=n<0?'-':'';return a>=1e9?s+'$'+(a/1e9).toFixed(2)+'B':a>=1e6?s+'$'+(a/1e6).toFixed(2)+'M':a>=1e4?s+'$'+(a/1e3).toFixed(1)+'k':fmt(n)};
+const num=n=>Math.round(n).toLocaleString('en-US');
+const pct=v=>Math.round(clamp(v,0,1.5)*100)+'%';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mmss=s=>{s=Math.max(0,Math.ceil(s));return s>=3600?`${Math.floor(s/3600)}h ${Math.floor(s%3600/60)}m`:s>=60?`${Math.floor(s/60)}m ${String(s%60).padStart(2,'0')}s`:`${s}s`};
+const hexRgb=h=>{const n=parseInt(h.slice(1),16);return[n>>16&255,n>>8&255,n&255]};
+const mix=(a,b,t)=>{const A=hexRgb(a),B=hexRgb(b);return'#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')};
+const shade=(h,t)=>t>0?mix(h,'#ffffff',t):mix(h,'#000000',-t);
+function rng(seed){let s=seed>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+const now=()=>Date.now();
+
+/* ================= game data ================= */
+const TS=32;
+const SECTORS={police:{n:'Police',pub:1,c:'#4a8aff'},fire:{n:'Fire',pub:1,c:'#ff5a4a'},health:{n:'Health',pub:1,c:'#ff8ab0'},edu:{n:'Education',pub:1,c:'#ffc94a'},maint:{n:'Maintenance',pub:1,c:'#b8a070'},util:{n:'Utilities',pub:1,c:'#3fd6cf'},food:{n:'Food',pub:0,c:'#5fdc8c'},trade:{n:'Trade',pub:0,c:'#ff9a3d'},tour:{n:'Tourism',pub:0,c:'#c07bff'}};
+const SECK=Object.keys(SECTORS);
+const CLS=[{n:'Workers',w:40,c:'#8fd0ff'},{n:'Skilled',w:58,c:'#5fdc8c'},{n:'Wealthy',w:130,c:'#ffc94a'}];
+const CATS={house:'Housing',civic:'Services',util:'Utilities',prod:'Work',tour:'Tourism',fun:'Leisure',wonder:'Wonders',design:'My designs'};
+// n name, cat, w h size, cost, up upkeep/lvl/day, bt build seconds, max level, era any|modern|trad, req town hall lvl, sec sector, st staff/lvl
+// cap/capi housing (+per lvl), cls class housed, svc people served per worker, water/food/goods/pwo/pw/beds/attr/fun/app/poll per lvl
+const B={
+ townhall:{n:'Town Hall',cat:'civic',w:3,h:3,cost:0,up:0,bt:60,max:10,era:'any',req:0,unique:'city',app:4,fun:1,desc:'The heart of your city. Its level sets how far every other building can be upgraded and how many crews can build at once.'},
+ office:{n:'Island Office',cat:'civic',w:2,h:2,cost:2500,up:6,bt:40,max:10,era:'any',req:2,unique:'island',app:2,desc:'Collects taxes on this island. Without one, an island pays only half its taxes.'},
+ hut:{n:'Palm Hut',cat:'house',w:1,h:1,cost:150,up:.5,bt:8,max:3,era:'any',req:0,cap:4,capi:2,cls:1,app:.5,desc:'A thatched home for workers.'},
+ house:{n:'Family House',cat:'house',w:2,h:2,cost:600,up:2,bt:20,max:6,era:'any',req:1,cap:12,capi:6,cls:1,app:1,desc:'Coral-stone family homes. Each level adds a floor.'},
+ apart:{n:'Apartments',cat:'house',w:2,h:2,cost:2200,up:6,bt:45,max:8,era:'any',req:2,cap:26,capi:16,cls:1,pw:1.5,tradMax:3,desc:'Apartment blocks for workers and skilled families. Grows a floor each level. Above level 3 it needs the modern era.'},
+ villa:{n:'Villa',cat:'house',w:2,h:2,cost:4500,up:10,bt:60,max:6,era:'any',req:2,cap:4,capi:2,cls:2,app:5,fun:1,pw:1,desc:'Homes for wealthy citizens, with a pool. The wealthy pay the most tax.'},
+ tower:{n:'High-Rise',cat:'house',w:3,h:3,cost:32000,up:50,bt:240,max:8,era:'modern',req:5,cap:110,capi:55,cls:1,pw:5,app:3,desc:'Glass towers that climb three floors with every level. Needs power.'},
+ police:{n:'Police Station',cat:'civic',w:2,h:2,cost:900,up:4,bt:30,max:8,era:'any',req:1,sec:'police',st:3,svc:60,desc:'Officers keep streets safe. Each officer covers about 60 people.'},
+ fire:{n:'Fire Station',cat:'civic',w:2,h:2,cost:900,up:4,bt:30,max:8,era:'any',req:1,sec:'fire',st:3,svc:80,desc:'Firefighters stop fires before they spread. Each covers about 80 people.'},
+ clinic:{n:'Clinic',cat:'civic',w:2,h:2,cost:1300,up:6,bt:35,max:8,era:'any',req:2,sec:'health',st:3,svc:50,pw:.5,desc:'Doctors and nurses. Grows into a hospital at level 5.'},
+ school:{n:'School',cat:'civic',w:2,h:2,cost:1300,up:6,bt:35,max:8,era:'any',req:2,sec:'edu',st:3,svc:45,desc:'Teachers lift workers into skilled and wealthy citizens over time.'},
+ depot:{n:'Road Depot',cat:'civic',w:2,h:2,cost:800,up:4,bt:25,max:8,era:'any',req:1,sec:'maint',st:3,road:16,desc:'Road maintenance workers repair worn roads. Each keeps about 16 road tiles in shape.'},
+ waste:{n:'Waste Yard',cat:'civic',w:2,h:2,cost:700,up:3,bt:25,max:8,era:'any',req:1,sec:'maint',st:2,clean:90,poll:.5,desc:'Collects rubbish. Each worker keeps about 90 people clean.'},
+ well:{n:'Water Well',cat:'util',w:1,h:1,cost:250,up:1,bt:10,max:5,era:'any',req:0,sec:'util',st:1,water:22,desc:'Fresh water for about 22 people per level.'},
+ desal:{n:'Desalination Plant',cat:'util',w:2,h:2,cost:6500,up:20,bt:120,max:8,era:'modern',req:4,sec:'util',st:3,water:150,pw:4,desc:'Turns seawater into fresh water for 150 people per level. Needs power.'},
+ diesel:{n:'Diesel Generator',cat:'util',w:2,h:2,cost:3000,up:14,bt:60,max:8,era:'modern',req:3,sec:'util',st:2,pwo:40,poll:3,desc:'Cheap, loud power. Pollutes nearby homes.'},
+ solar:{n:'Solar Farm',cat:'util',w:3,h:3,cost:9500,up:8,bt:150,max:8,era:'modern',req:5,sec:'util',st:1,pwo:32,desc:'Clean power from the sun. No pollution.'},
+ wind:{n:'Wind Turbine',cat:'util',w:1,h:1,cost:2800,up:4,bt:90,max:6,era:'modern',req:4,pwo:13,app:.5,desc:'Clean power with no staff needed.'},
+ farm:{n:'Coconut Grove',cat:'prod',w:2,h:2,cost:400,up:1.5,bt:15,max:6,era:'any',req:0,sec:'food',st:3,food:13,desc:'Farmers grow coconuts. Feeds about 13 people per level.'},
+ taro:{n:'Taro Field',cat:'prod',w:2,h:2,cost:650,up:2,bt:20,max:6,era:'any',req:1,sec:'food',st:3,food:16,grass:1,desc:'Rich fields that must sit on grass. Feeds about 16 per level.'},
+ fishing:{n:'Fishing Jetty',cat:'prod',w:2,h:2,cost:800,up:2.5,bt:25,max:8,era:'any',req:1,sec:'food',st:3,food:19,poll:.3,coast:1,desc:'Fishing boats go out every morning. Must touch the sea.'},
+ market:{n:'Market',cat:'prod',w:2,h:2,cost:1000,up:3,bt:25,max:8,era:'any',req:1,sec:'trade',st:4,shop:120,fun:2,desc:'Shops and stalls. Shopping makes people happy and pays business tax.'},
+ workshop:{n:'Craft Workshop',cat:'prod',w:2,h:2,cost:1600,up:5,bt:40,max:8,era:'any',req:2,sec:'trade',st:4,goods:7,poll:.6,desc:'Makes crafts and boat parts for export.'},
+ boatyard:{n:'Boatyard',cat:'prod',w:3,h:3,cost:8500,up:16,bt:120,max:8,era:'any',req:3,sec:'trade',st:6,goods:12,coast:1,arr:1,desc:'Builds bigger ferries: more people arrive and ferries link islands faster.'},
+ harbor:{n:'Harbor',cat:'prod',w:2,h:2,cost:1200,up:4,bt:30,max:8,era:'any',req:0,sec:'trade',st:2,coast:1,arr:1,unique:'island',desc:'Where rafts and ferries land. Needed for trade, tourists and links to other islands.'},
+ airstrip:{n:'Airstrip',cat:'tour',w:2,h:6,cost:26000,up:30,bt:240,max:6,era:'modern',req:5,sec:'tour',st:4,pw:3,tourCap:60,unique:'island',desc:'Prop planes bring many more tourists and newcomers.'},
+ hotel:{n:'Guesthouse',cat:'tour',w:2,h:2,cost:2600,up:6,bt:40,max:8,era:'any',req:2,sec:'tour',st:3,beds:8,pw:.5,app:1,desc:'Rooms for visiting tourists.'},
+ resort:{n:'Beach Resort',cat:'tour',w:3,h:3,cost:7000,up:14,bt:90,max:8,era:'any',req:3,sec:'tour',st:5,beds:16,app:6,pw:1,coast:1,desc:'Bungalows and a pool on the beach. Tourists spend a lot here. Design your own in the Design Studio.'},
+ dive:{n:'Dive Center',cat:'tour',w:1,h:1,cost:1500,up:3,bt:30,max:6,era:'any',req:2,sec:'tour',st:2,attr:7,coast:1,desc:'Reef trips. Islands with reefs attract far more divers.'},
+ bar:{n:'Beach Bar',cat:'tour',w:1,h:1,cost:800,up:2,bt:15,max:6,era:'any',req:1,sec:'tour',st:2,attr:3,fun:3,desc:'Sunset drinks for tourists and locals.'},
+ park:{n:'Garden',cat:'fun',w:1,h:1,cost:120,up:.3,bt:6,max:4,era:'any',req:0,fun:2,app:2,desc:'Flowers and shade. Makes nearby homes nicer.'},
+ palm:{n:'Palm Tree',cat:'fun',w:1,h:1,cost:40,up:0,bt:3,max:1,era:'any',req:0,app:1,desc:'A single palm. Cheap beauty.'},
+ plaza:{n:'Fountain Plaza',cat:'fun',w:2,h:2,cost:1100,up:3,bt:30,max:6,era:'any',req:2,fun:6,app:5,attr:1,desc:'A paved square with a fountain.'},
+ stage:{n:'Music Stage',cat:'fun',w:2,h:2,cost:3200,up:6,bt:60,max:6,era:'any',req:3,fun:12,attr:3,desc:'Live music on weekends.'},
+ statue:{n:'Statue',cat:'fun',w:1,h:1,cost:700,up:1,bt:20,max:3,era:'any',req:3,app:5,attr:1,desc:'A proud statue of a famous sailor.'},
+ lamp:{n:'Street Lamp',cat:'fun',w:1,h:1,cost:150,up:.2,bt:5,max:1,era:'modern',req:2,app:1,safe:6,pw:.2,desc:'Light at night. A little safer and prettier.'},
+ lighthouse:{n:'Lighthouse of Hope',cat:'wonder',w:2,h:2,cost:60000,up:20,bt:600,max:5,era:'any',req:4,unique:'city',app:25,attr:10,coast:1,wonder:1,desc:'Its beam guides rafts home. +40% newcomers on every island.'},
+ coralpalace:{n:'Coral Palace',cat:'wonder',w:3,h:3,cost:140000,up:40,bt:900,max:5,era:'any',req:5,unique:'city',app:40,attr:30,fun:20,wonder:1,desc:'A palace built from sea-glass and coral. +30% tourism.'},
+ floatmarket:{n:'Floating Market',cat:'wonder',w:3,h:3,cost:100000,up:30,bt:900,max:5,era:'any',req:5,unique:'city',app:20,attr:15,fun:15,shop:600,coast:1,wonder:1,desc:'Boats become shops. +40% business tax.'},
+ sanctuary:{n:'Turtle Sanctuary',cat:'wonder',w:3,h:3,cost:80000,up:20,bt:900,max:5,era:'any',req:4,unique:'city',app:25,attr:25,coast:1,wonder:1,desc:'Rescued turtles return to the sea. +25% tourism, +3 happiness.'},
+ observatory:{n:'Moon Observatory',cat:'wonder',w:2,h:2,cost:160000,up:40,bt:1200,max:5,era:'any',req:6,unique:'city',app:20,attr:10,wonder:1,desc:'Stargazing and science. +30% education and faster class growth.'},
+ festival:{n:'Festival Grounds',cat:'wonder',w:4,h:4,cost:220000,up:50,bt:1500,max:5,era:'any',req:6,unique:'city',app:30,fun:60,attr:20,wonder:1,desc:'Monthly island festival. Big boost to happiness.'},
+ seabridge:{n:'Sea Bridge Monument',cat:'wonder',w:3,h:3,cost:300000,up:60,bt:1800,max:5,era:'any',req:7,unique:'city',app:35,wonder:1,desc:'Celebrates the bond between islands. +6 happiness on every island.'},
+ skytower:{n:'Sky Tower',cat:'wonder',w:3,h:3,cost:450000,up:120,bt:2100,max:5,era:'modern',req:8,unique:'city',cap:400,capi:150,cls:1,app:50,attr:30,pw:12,wonder:1,desc:'The tallest building in the ocean. Homes for 400 and a view tourists love.'}
+};
+const BK=Object.keys(B);
+const TH_COST=[0,0,2500,7000,16000,38000,85000,180000,380000,800000,1600000];
+const TH_TIME=[0,0,60,180,360,600,900,1200,1500,1800,2100];
+const upCost=(t,l,b)=>t==='townhall'?TH_COST[l+1]:Math.round(bcost(t,b)*Math.pow(1.85,l));
+const upTime=(t,l,b)=>t==='townhall'?TH_TIME[l+1]:Math.min(2100,Math.round(btime(t,b)*Math.pow(2.15,l)));
+/* ================= designs ================= */
+const DTYPES={villa:{n:'Villa',sizes:[2,3],maxF:3,cls:2,base:4000,perF:900,cap:2},resort:{n:'Resort',sizes:[3,4],maxF:6,base:6000,perF:1500,beds:5},apart:{n:'Apartment Block',sizes:[2,3],maxF:12,tradF:3,cls:1,base:2000,perF:600,cap:5},tower:{n:'Tower',sizes:[2,3,4],maxF:30,era:'modern',cls:1,base:20000,perF:1800,cap:7,req:5}};
+const WALLS=['#f4efe4','#ffd9b0','#ffb8a8','#bfe3f2','#c9efd6','#f6e7a0','#d8cfe8','#9fb8cc','#e8a87c','#4a5a6e'];
+const ROOFS={flat:{n:'Flat',app:0,c:0},thatch:{n:'Thatch',app:2,c:300},pyramid:{n:'Hip roof',app:1,c:200},dome:{n:'Dome',app:3,c:800},garden:{n:'Roof garden',app:4,c:1200},helipad:{n:'Helipad',app:3,c:2500,era:'modern'},pool:{n:'Rooftop pool',app:5,c:3000}};
+const WINS={small:{n:'Small'},wide:{n:'Wide'},glass:{n:'Glass',era:'modern',app:1},arched:{n:'Arched',app:1}};
+const EXTRAS={pool:{n:'Pool',app:3,c:1500,yard:1},palms:{n:'Palms',app:2,c:300,yard:1},garden:{n:'Garden',app:2,c:400,yard:1},balcony:{n:'Balconies',app:1,c:200},lights:{n:'Night lights',app:1,c:300,pw:.5},umbrellas:{n:'Sun umbrellas',app:1,c:300,yard:1},fountain:{n:'Fountain',app:2,c:800,yard:1}};
+function designStats(d){const T=DTYPES[d.type];const area=d.size*d.size;let app=ROOFS[d.roof].app+(WINS[d.win].app||0)+Math.min(8,d.floors*.3);let cost=T.base+d.floors*T.perF*area/4+ROOFS[d.roof].c;let pw=d.type==='tower'?2+d.floors*.3:d.floors*.2;let yard=0;
+  for(const k in d.ext)if(d.ext[k]){app+=EXTRAS[k].app;cost+=EXTRAS[k].c;pw+=EXTRAS[k].pw||0;if(EXTRAS[k].yard)yard++}
+  const body=yard?Math.max(.55,1-yard*.12):1;const units=Math.max(1,Math.round(d.floors*area*body));
+  const cap=T.cap?Math.round(units*T.cap/4*(d.type==='villa'?1.6:1)):0,beds=T.beds?Math.round(units*T.beds/3):0;
+  return{cap,beds,app:Math.round(app*10)/10,cost:Math.round(cost/50)*50,bt:Math.min(2100,Math.round(25+d.floors*area*5)),pw:Math.round(pw*10)/10,up:Math.round((cost/600)*10)/10,body}}
+function bdef(b){if(b&&b.t==='design'){const d=(G.designs||[]).find(x=>x.id===b.d)||b.dd;if(!d)return B.house;const s=designStats(d),T=DTYPES[d.type];return{n:d.name,cat:'design',w:d.size,h:d.size,cost:s.cost,up:s.up,bt:s.bt,max:6,era:T.era||'any',req:T.req||2,cap:s.cap,capi:Math.round(s.cap*.25),cls:T.cls,beds:s.beds?s.beds:0,bedsi:Math.round(s.beds*.25),sec:d.type==='resort'?'tour':null,st:d.type==='resort'?Math.max(2,Math.round(s.beds/4)):0,app:s.app,pw:s.pw,coast:d.type==='resort'?1:0,tradMax:d.type==='apart'?6:undefined,design:d,desc:`Your own ${T.n.toLowerCase()} design.`}}return B[b&&b.t||b]}
+const bcost=(t,b)=>t==='design'?bdef(b).cost:B[t].cost;
+const btime=(t,b)=>t==='design'?bdef(b).bt:B[t].bt;
+/* ================= islands ================= */
+const ISLES=[
+ {n:'Home Isle',sz:24,x:500,y:820,cost:0,th:0,pop:0,f:{spring:1},d:'Where your city begins.'},
+ {n:'Palm Key',sz:18,x:690,y:690,cost:4000,th:2,pop:40,f:{fertile:1},d:'Rich soil. Farms here grow 25% more.'},
+ {n:'Turtle Cay',sz:16,x:330,y:640,cost:9000,th:3,pop:90,f:{reef:1,beach:1},d:'Turtles nest on its beaches. Great for resorts and diving.'},
+ {n:'Coral Ring',sz:22,x:760,y:960,cost:18000,th:3,pop:150,f:{reef:1},d:'Ringed by a living reef. Divers love it.'},
+ {n:'Lagoon Isle',sz:26,x:270,y:960,cost:32000,th:4,pop:250,f:{lagoon:1,beach:1},d:'A calm turquoise lagoon. Tourists pay more here.'},
+ {n:'Mangrove Isle',sz:20,x:590,y:520,cost:50000,th:4,pop:400,f:{fish:1},d:'Mangrove roots shelter fish. Fishing jetties catch 40% more.'},
+ {n:'Sandbar Point',sz:14,x:860,y:780,cost:70000,th:5,pop:600,f:{beach:1},d:'A tiny white sandbar. Pure postcard beauty.'},
+ {n:'Sunset Isle',sz:24,x:160,y:760,cost:110000,th:5,pop:900,f:{sunset:1,beach:1},d:'The best sunsets in the atoll. Villas here are worth more.'},
+ {n:'Whale Reef',sz:18,x:880,y:1120,cost:170000,th:6,pop:1300,f:{reef:1,whale:1},d:'Whale sharks feed here. A magnet for tourists.'},
+ {n:'Big Island',sz:34,x:480,y:1160,cost:260000,th:6,pop:1800,f:{fertile:1,spring:1},d:'The largest island. Room for a whole new district.'},
+ {n:'Pearl Isle',sz:20,x:180,y:1140,cost:420000,th:7,pop:2600,f:{pearl:1},d:'Pearl beds offshore. Pearls wash up here every week.'},
+ {n:'Volcano Rock',sz:28,x:430,y:380,cost:700000,th:8,pop:3600,f:{geo:1},d:'An old volcano. Its warm springs power the city for free.'}];
+/* ================= laws ================= */
+const LAWS={
+ healthcare:{n:'Free Healthcare',d:'Clinics treat everyone for free. +Health, +3 happiness. Costs $0.25 per citizen a day.',cost:.25,hap:3,health:.25},
+ curfew:{n:'Night Curfew',d:'Halves crime, but people feel watched. −4 happiness, −10% tourism.',crime:.5,hap:-4,tour:-.1},
+ reef:{n:'Reef Protection',d:'No fishing near reefs. −30% fishing, +20% tourism.',fish:-.3,tour:.2,hap:1},
+ plastic:{n:'Plastic Ban',d:'Cleaner beaches. +Cleanliness and +10% tourism. Costs $0.12 per citizen a day.',cost:.12,clean:.2,tour:.1},
+ open:{n:'Open Borders',d:'60% more newcomers arrive. Crime rises a little.',arr:.6,crime:1.15},
+ code:{n:'Strict Building Code',d:'Fires are half as likely. Construction costs 15% more.',fire:.5,build:.15},
+ fourday:{n:'Four-Day Week',d:'+6 happiness, but every workplace produces 15% less.',hap:6,prod:-.15},
+ tourtax:{n:'Tourist Levy',d:'Tourists pay an extra 6% tax, but enjoy their stay a little less.',ttax:.06,tsat:-.08},
+ festival:{n:'Festival Weekends',d:'Street parties every week. +5 happiness and +5% tourism. Costs $0.2 per citizen a day.',cost:.2,hap:5,tour:.05},
+ speed:{n:'Speed Limits',d:'Roads wear 30% slower. −1 happiness.',road:-.3,hap:-1},
+ school:{n:'Education Act',d:'Citizens climb to skilled and wealthy 50% faster. Costs $0.15 per citizen a day.',cost:.15,mob:.5},
+ lights:{n:'Bright Nights',d:'Modern era only. Lit streets: +15% safety, +5% tourism, +10% power use.',era:'modern',safe:.15,tour:.05,pwm:.1},
+ green:{n:'Green Energy Mandate',d:'Modern era only. Diesel makes 40% less power. +2 happiness, cleaner air.',era:'modern',diesel:-.4,hap:2,clean:.1}};
+/* ================= collections ================= */
+const TSETS=[
+ {n:"Sultan's Coins",b:'Business tax +10%',k:'biz',w:'floatmarket'},{n:'Shipwreck Relics',b:'Harbors bring 20% more people',k:'arr',w:'lighthouse'},{n:'Coral Idols',b:'Tourism +10%',k:'tour',w:'coralpalace'},
+ {n:'Ancient Maps',b:'Construction 10% faster',k:'speed',w:'observatory'},{n:'Star Stones',b:'+3 happiness everywhere',k:'hap',w:'festival'},{n:'Pearls of the Deep',b:'+1 pearl every 5 days',k:'pearl',w:'sanctuary'}];
+const TREAS=[
+ ['Gold Dinar',0],['Silver Larin',0],['Copper Fils',0],['Royal Seal Coin',0],['Merchant Token',0],['Sultan Crown Coin',0],
+ ['Ship Bell',1],['Brass Compass',1],['Old Anchor',1],["Captain's Log",1],['Cannonball',1],['Figurehead',1],
+ ['Turtle Idol',2],['Fish Idol',2],['Moon Idol',2],['Wave Idol',2],['Shark Idol',2],['Sun Idol',2],
+ ['Reef Chart',3],['Star Chart',3],['Trade Route Map',3],['Wind Map',3],['Lost Island Map',3],['Treasure Map',3],
+ ['Red Star Stone',4],['Blue Star Stone',4],['Green Star Stone',4],['Gold Star Stone',4],['Night Star Stone',4],['Dawn Star Stone',4],
+ ['White Pearl',5],['Black Pearl',5],['Pink Pearl',5],['Gold Pearl',5],['Blue Pearl',5],['Moon Pearl',5]];
+const NOTABLES=[
+ {n:'Captain Rasheed',r:'Master Boatbuilder',b:'Harbors and boatyards build 25% faster',k:'boat'},{n:'Dr. Aminath',r:'Island Doctor',b:'Health +20%',k:'health'},
+ {n:'Chef Ibrahim',r:'Famous Chef',b:'Tourists spend 12% more',k:'spend'},{n:'Mariyam Saeed',r:'Marine Biologist',b:'Reef tourism +25%',k:'reef'},
+ {n:'Hassan Ali',r:'Architect',b:'All construction 10% faster',k:'speed'},{n:'Chief Moosa',r:'Fire Chief',b:'Fire risk −40%',k:'fire'},
+ {n:'Inspector Hawwa',r:'Detective',b:'Crime −30%',k:'crime'},{n:'Ms. Fathimath',r:'Teacher of the Year',b:'Education +20%',k:'edu'},
+ {n:'Zahir Naseem',r:'Engineer',b:'Power plants +15%',k:'power'},{n:'Old Yoosuf',r:'Farmer Sage',b:'Food +15%',k:'food'},
+ {n:'Shiuna',r:'Island Musician',b:'+2 happiness everywhere',k:'hap'},{n:'Ismail Adam',r:'Free Diver',b:'Treasure spots appear twice as often',k:'treasure'},
+ {n:'Laila Hudha',r:'Painter',b:'Building beauty +20%',k:'app'},{n:'Faisal Omar',r:"Mayor's Advisor",b:'+5% tax income with no extra unhappiness',k:'tax'},
+ {n:'Nadia Rafeeq',r:'Bush Pilot',b:'Airstrips bring 30% more tourists',k:'plane'},{n:'Imran Latheef',r:'Turtle Guardian',b:'+5% tourism and +1 happiness',k:'turtle'}];
+const NAMES=['Ahmed','Aishath','Ibrahim','Mariyam','Hassan','Fathimath','Ali','Hawwa','Moosa','Aminath','Ismail','Shiuna','Zahir','Nasreena','Hudha','Ilham','Yoosuf','Laila','Rasheed','Saeed','Nadia','Faisal','Shifa','Imran','Leena','Adam','Sara','Omar','Maya','Rizwan','Azra','Nashid','Mohamed','Raniya','Amir','Zoya','Hamid','Lubna','Ziyad','Thasneem','Niyaz','Shaheen','Aroosha','Kareem','Mausoof','Nuha','Jaufar','Asma'];
+
+/* ================= state ================= */
+let G=null;
+const SAVE='atoll-city-v1';
+const DAYLEN=30;
+const thLvl=()=>{const t=G.isl[0].b.find(b=>b.t==='townhall');return t?t.lvl:1};
+const crews=()=>2+Math.floor(thLvl()/3);
+const busy=()=>G.isl.reduce((a,I)=>a+I.b.filter(b=>b.state==='build'||b.state==='up').length,0);
+const isModern=()=>G.era==='modern';
+const law=k=>!!G.laws[k];
+const lawsOn=()=>G.money>=0||!G.broke;
+const lawSum=f=>!lawsOn()?0:Object.keys(G.laws).filter(k=>G.laws[k]&&LAWS[k]&&(!LAWS[k].era||LAWS[k].era===G.era)).reduce((a,k)=>a+(LAWS[k][f]||0),0);
+const lawMul=f=>!lawsOn()?1:Object.keys(G.laws).filter(k=>G.laws[k]&&LAWS[k]&&(!LAWS[k].era||LAWS[k].era===G.era)).reduce((a,k)=>a*(LAWS[k][f]!=null?LAWS[k][f]:1),1);
+const setDone=k=>{const s=TSETS.findIndex(x=>x.k===k);return s>=0&&TREAS.every((t,i)=>t[1]!==s||G.treasure[i])};
+const hasNot=k=>NOTABLES.some((n,i)=>n.k===k&&G.notables[i]==='home');
+const hasWonder=t=>G.isl.some(I=>I.b.some(b=>b.t===t&&b.state!=='build'&&b.state!=='ruin'));
+
+function newGame(era){
+  G={v:1,seed:1+ri(1e9),era:era||'trad',money:8000,pearls:12,day:1,tod:.3,speed:1,taxes:{c0:.10,c1:.12,c2:.15,biz:.12,tour:.08},pubWage:1,laws:{},isl:[],cur:0,designs:[],treasure:{},notables:{},wonderBP:{},
+    goals:{i:0,done:{},proc:0,claimed:0},stats:{hist:[],peakPop:0,tourists:0,arrived:0,left:0,fires:0,crimes:0,digs:0,days:0},nextId:1,nextCit:1,evt:{},last:now(),started:false,eraSince:0,yday:null,notice:[]};
+  ISLES.forEach((I,i)=>G.isl.push({i,unlocked:i===0,b:[],c:[],road:{},clr:[],tgt:{},trs:[]}));
+  hydrate();setupStart();return G}
+/* runtime caches (not saved): tiles, occupancy */
+function hydrate(){for(const I of G.isl){genTiles(I);for(const k of I.clr)if(I.tiles[k]===4)I.tiles[k]=3;rebuildOcc(I)}}
+function noise(sx,x,y){const h=Math.sin(x*12.9898+y*78.233+sx*37.719)*43758.5453;return h-Math.floor(h)}
+function genTiles(I){const S=ISLES[I.i],n=S.sz+10;I.n=n;const r=rng(G.seed*31+I.i*977+13);const ph=[r()*6.28,r()*6.28,r()*6.28,r()*6.28],amp=[.13,.09,.06,.04],el=.85+r()*.3,rot=r()*3.14;const R=S.sz/2;
+  const t=new Uint8Array(n*n);const seed=G.seed%1000+I.i;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){let dx=(x+.5-n/2)/R,dy=(y+.5-n/2)/R;const ca=Math.cos(rot),sa=Math.sin(rot);const ux=dx*ca-dy*sa,uy=(dx*sa+dy*ca)/el;const a=Math.atan2(uy,ux),d=Math.hypot(ux,uy);
+    let e=1;for(let k=0;k<4;k++)e+=amp[k]*Math.sin(a*(k+2)+ph[k]);const v=d/e;
+    let tt;if(v<1){if(v>.84)tt=2;else{const c1=noise(seed,Math.floor(x/3),Math.floor(y/3))*.65+noise(seed+7,x,y)*.35;tt=c1>.66&&v<.78?4:(c1<.06&&v<.6?5:3)}}else tt=v<1.3?1:0;
+    t[y*n+x]=tt}
+  if(S.f.lagoon){for(let y=0;y<n;y++)for(let x=0;x<n;x++){const dx=x+.5-n*.62,dy=y+.5-n*.45;if(Math.hypot(dx,dy)<S.sz*.13&&t[y*n+x]>=2)t[y*n+x]=1}}
+  I.tiles=t}
+const tileAt=(I,x,y)=>x<0||y<0||x>=I.n||y>=I.n?0:I.tiles[y*I.n+x];
+const isLand=v=>v>=2&&v<=4;
+function rebuildOcc(I){I.occ=new Int32Array(I.n*I.n);for(const b of I.b){for(let y=b.y;y<b.y+b.h;y++)for(let x=b.x;x<b.x+b.w;x++)if(x>=0&&y>=0&&x<I.n&&y<I.n)I.occ[y*I.n+x]=b.id}}
+const bAt=(I,x,y)=>{if(x<0||y<0||x>=I.n||y>=I.n)return null;const id=I.occ[y*I.n+x];return id?I.b.find(b=>b.id===id):null};
+const isRoad=(I,x,y)=>x>=0&&y>=0&&x<I.n&&y<I.n&&I.road[y*I.n+x]!=null;
+function coastal(I,x,y,w,h){for(let yy=y-1;yy<=y+h;yy++)for(let xx=x-1;xx<=x+w;xx++){if(xx>=x&&xx<x+w&&yy>=y&&yy<y+h)continue;if(tileAt(I,xx,yy)<=1)return true}return false}
+function roadAdj(I,b){for(let x=b.x;x<b.x+b.w;x++){if(isRoad(I,x,b.y-1)||isRoad(I,x,b.y+b.h))return true}for(let y=b.y;y<b.y+b.h;y++){if(isRoad(I,b.x-1,y)||isRoad(I,b.x+b.w,y))return true}return false}
+const needsRoad=t=>!['palm','park','statue','lamp','wind','well','townhall'].includes(t);
+/* ================= placement ================= */
+function canPlace(I,t,x,y,dd){const D=t==='design'?bdef({t:'design',d:dd&&dd.id,dd}):B[t];if(!D)return{ok:false,why:'Unknown'};const w=D.w,h=D.h;
+  if(!I.unlocked)return{ok:false,why:'Island locked'};
+  if(D.era==='modern'&&!isModern())return{ok:false,why:'Needs the modern era'};
+  if(thLvl()<(D.req||0))return{ok:false,why:`Needs Town Hall ${D.req}`};
+  if(D.unique==='city'&&G.isl.some(J=>J.b.some(b=>b.t===t)))return{ok:false,why:'Only one in the city'};
+  if(D.unique==='island'&&I.b.some(b=>b.t===t))return{ok:false,why:'Only one per island'};
+  if(D.wonder&&!G.wonderBP[t])return{ok:false,why:'Needs its blueprint'};
+  let jungle=0,grass=0;for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++){const v=tileAt(I,xx,yy);if(!isLand(v))return{ok:false,why:v===5?'Rock in the way':'Must be on land'};if(I.occ[yy*I.n+xx])return{ok:false,why:'Something is already here'};if(isRoad(I,xx,yy))return{ok:false,why:'A road is here'};if(v===4)jungle++;if(v===3)grass++}
+  if(D.grass&&grass<w*h*.6)return{ok:false,why:'Needs grass, not sand'};
+  if(D.coast&&!coastal(I,x,y,w,h))return{ok:false,why:'Must touch the sea'};
+  const cost=placeCost(t,dd)+jungle*40;if(G.money<cost)return{ok:false,why:`Needs ${fmt(cost)}`,cost};
+  if(busy()>=crews())return{ok:false,why:`All ${crews()} building crews are busy`,cost};
+  return{ok:true,cost,jungle}}
+const placeCost=(t,dd)=>Math.round((t==='design'?designStats(dd).cost:B[t].cost)*(1+lawSum('build')));
+function speedMul(t){let m=1;if(setDone('speed'))m*=.9;if(hasNot('speed'))m*=.9;if(hasNot('boat')&&(t==='harbor'||t==='boatyard'))m*=.75;return m}
+function place(I,t,x,y,dd,free){const c=free?{ok:true,cost:0,jungle:0}:canPlace(I,t,x,y,dd);if(!c.ok)return null;const D=t==='design'?designStats(dd):B[t];const w=t==='design'?dd.size:B[t].w,h=t==='design'?dd.size:B[t].h;
+  for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++){const k=yy*I.n+xx;if(I.tiles[k]===4){I.tiles[k]=3;I.clr.push(k)}}
+  const b={id:G.nextId++,t,x,y,w,h,lvl:1,state:free?'ok':'build',end:free?0:now()+Math.round((t==='design'?D.bt:B[t].bt)*speedMul(t)*1000),dur:(t==='design'?D.bt:B[t].bt)*speedMul(t)};
+  if(t==='design'){b.d=dd.id;b.dd=JSON.parse(JSON.stringify(dd))}
+  I.b.push(b);G.money-=c.cost;rebuildOcc(I);I._dirty=true;
+  if(!free){digCheck(I,b)}return b}
+function canUpgrade(I,b){const D=bdef(b);if(b.state!=='ok')return{ok:false,why:b.state==='build'?'Still being built':b.state==='up'?'Upgrade in progress':b.state==='fire'?'On fire!':'Ruined: rebuild first'};
+  const max=D.max;if(b.lvl>=max)return{ok:false,why:'Fully upgraded'};
+  if(b.t!=='townhall'&&b.lvl>=thLvl()+1)return{ok:false,why:`Upgrade the Town Hall to ${b.lvl} first`};
+  if(b.t==='office'&&b.lvl>=thLvl())return{ok:false,why:'Cannot pass the Town Hall level'};
+  if(!isModern()&&D.tradMax&&b.lvl>=D.tradMax)return{ok:false,why:'Taller needs the modern era'};
+  if(!isModern()&&D.era==='modern')return{ok:false,why:'Needs the modern era'};
+  const cost=Math.round(upCost(b.t,b.lvl,b)*(1+lawSum('build')));if(G.money<cost)return{ok:false,why:`Needs ${fmt(cost)}`,cost};
+  if(busy()>=crews())return{ok:false,why:`All ${crews()} crews are busy`,cost};return{ok:true,cost,time:Math.round(upTime(b.t,b.lvl,b)*speedMul(b.t))}}
+function upgrade(I,b){const c=canUpgrade(I,b);if(!c.ok)return false;G.money-=c.cost;b.state='up';b.dur=c.time;b.end=now()+c.time*1000;return true}
+const rushCost=b=>Math.max(1,Math.ceil((b.end-now())/1000/150));
+function rush(b){const c=rushCost(b);if(G.pearls<c||!(b.state==='build'||b.state==='up'))return false;G.pearls-=c;b.end=now();return true}
+function finishWork(){const t=now();let done=[];for(const I of G.isl)for(const b of I.b){if((b.state==='build'||b.state==='up')&&b.end<=t){if(b.state==='up')b.lvl++;b.state='ok';done.push([I,b])}}return done}
+function demolish(I,b){if(b.t==='townhall')return false;const D=bdef(b);const refund=b.state==='ruin'?0:Math.round(placeCost(b.t,b.dd||b.design)*.25*(D.wonder?0:1));I.b=I.b.filter(x=>x!==b);for(const c of I.c)if(c.home===b.id)c.home=0;rebuildOcc(I);I._dirty=true;G.money+=refund;return refund}
+function rebuild(I,b){if(b.state!=='ruin')return false;const cost=Math.round(placeCost(b.t,b.dd)*.5);if(G.money<cost||busy()>=crews())return false;G.money-=cost;b.state='build';b.lvl=1;b.end=now()+btime(b.t,b)*500;b.dur=btime(b.t,b)/2;return true}
+/* ================= roads ================= */
+const roadCost=()=>isModern()?25:12;
+function roadPath(I,a,b){const p=[];let x=a[0],y=a[1];p.push([x,y]);while(x!==b[0]){x+=Math.sign(b[0]-x);p.push([x,y])}while(y!==b[1]){y+=Math.sign(b[1]-y);p.push([x,y])}return p}
+function roadValid(I,x,y){const v=tileAt(I,x,y);return isLand(v)&&!I.occ[y*I.n+x]}
+function buildRoads(I,path,free){let cost=0;const ok=path.filter(([x,y])=>roadValid(I,x,y)&&!isRoad(I,x,y));for(const[x,y]of ok)cost+=roadCost()+(tileAt(I,x,y)===4?40:0);if(!free&&G.money<cost)return -1;
+  for(const[x,y]of ok){const k=y*I.n+x;if(I.tiles[k]===4){I.tiles[k]=3;I.clr.push(k)}I.road[k]=1}if(!free)G.money-=cost;I._dirty=true;return ok.length}
+function removeRoad(I,x,y){const k=y*I.n+x;if(I.road[k]==null)return false;delete I.road[k];I._dirty=true;G.money+=Math.round(roadCost()*.3);return true}
+function bfsRoad(I,from,to){const n=I.n,prev=new Int32Array(n*n).fill(-1),q=[from[1]*n+from[0]];prev[q[0]]=q[0];
+  while(q.length){const k=q.shift();if(k===to[1]*n+to[0])break;const x=k%n,y=k/n|0;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=n||yy>=n)continue;const kk=yy*n+xx;if(prev[kk]>=0||!roadValid(I,xx,yy))continue;prev[kk]=k;q.push(kk)}}
+  const tk=to[1]*n+to[0];if(prev[tk]<0)return null;const p=[];let k=tk;while(k!==from[1]*n+from[0]){p.push([k%n,k/n|0]);k=prev[k]}p.push(from);return p.reverse()}
+/* find a free spot near a point, used for the starting town and new islands */
+function findSpot(I,t,cx,cy,dd,needRoad){const D=t==='design'?{w:dd.size,h:dd.size}:B[t];let best=null,bd=1e9;
+  for(let y=1;y<I.n-D.h;y++)for(let x=1;x<I.n-D.w;x++){const d=Math.hypot(x-cx,y-cy);if(d>=bd)continue;let ok=true;
+    for(let yy=y;yy<y+D.h&&ok;yy++)for(let xx=x;xx<x+D.w;xx++){const v=tileAt(I,xx,yy);if(!isLand(v)||I.occ[yy*I.n+xx]||isRoad(I,xx,yy)){ok=false;break}}
+    if(!ok)continue;const DD=t==='design'?bdef({t:'design',d:dd.id,dd}):B[t];if(DD.coast&&!coastal(I,x,y,D.w,D.h))continue;if(t!=='design'&&B[t].grass){let gr=0;for(let yy=y;yy<y+D.h;yy++)for(let xx=x;xx<x+D.w;xx++)if(tileAt(I,xx,yy)===3)gr++;if(gr<D.w*D.h*.6)continue}
+    if(needRoad&&!roadAdj(I,{x,y,w:D.w,h:D.h}))continue;best=[x,y];bd=d}return best}
+function centerOf(I){let sx=0,sy=0,n=0;for(let y=0;y<I.n;y++)for(let x=0;x<I.n;x++)if(isLand(tileAt(I,x,y))){sx+=x;sy+=y;n++}return[Math.round(sx/n),Math.round(sy/n)]}
+function connect(I,b,to){// road from a building edge to a point / existing road
+  const starts=[];for(let x=b.x-1;x<=b.x+b.w;x++)for(let y=b.y-1;y<=b.y+b.h;y++){const edge=(x===b.x-1||x===b.x+b.w)!==(y===b.y-1||y===b.y+b.h);if(edge&&roadValid(I,x,y))starts.push([x,y])}
+  starts.sort((a,c)=>Math.hypot(a[0]-to[0],a[1]-to[1])-Math.hypot(c[0]-to[0],c[1]-to[1]));for(const s of starts.slice(0,4)){const p=bfsRoad(I,s,to);if(p){buildRoads(I,p,true);return true}}return false}
+function setupStart(){const I=G.isl[0];const[cx,cy]=centerOf(I);
+  const th=findSpot(I,'townhall',cx-1,cy-1);const T=place(I,'townhall',th[0],th[1],null,true);
+  for(let x=T.x-1;x<=T.x+3;x++){buildRoads(I,[[x,T.y+3]],true)}for(let y=T.y-1;y<=T.y+3;y++)buildRoads(I,[[T.x+3,y]],true);
+  const hs=findSpot(I,'harbor',cx,cy+I.n/2);const H=place(I,'harbor',hs[0],hs[1],null,true);connect(I,H,[T.x+3,T.y+3]);
+  for(const t of['hut','hut','hut','hut','well','farm']){const s=findSpot(I,t,T.x+1,T.y+4,null,true)||findSpot(I,t,T.x+1,T.y+4);if(s){place(I,t,s[0],s[1],null,true)}}
+  for(let i=0;i<10;i++)addCitizen(I,i<8?0:1);settleHomes(I);G.isl[0].b.forEach(b=>b.state='ok');G.stats.road0=roadsN()}
+function unlockIsland(i){const S=ISLES[i],I=G.isl[i];if(I.unlocked)return{ok:false};const why=unlockWhy(i);if(why)return{ok:false,why};G.money-=S.cost;I.unlocked=true;
+  const[cx,cy]=centerOf(I);const hs=findSpot(I,'harbor',cx+I.n,cy);if(hs){const H=place(I,'harbor',hs[0],hs[1],null,true);connect(I,H,[cx,cy])}return{ok:true}}
+function unlockWhy(i){const S=ISLES[i];if(thLvl()<S.th)return`Town Hall level ${S.th}`;if(totalPop()<S.pop)return`${num(S.pop)} citizens`;if(G.money<S.cost)return fmt(S.cost);return''}
+/* ================= citizens ================= */
+function addCitizen(I,cls){const sec=pick(SECK);const c={i:G.nextCit++,n:ri(NAMES.length),c:cls,j:'',ji:-1,w:sec,h:60,home:0,d:0,sk:0};I.c.push(c);return c}
+const totalPop=()=>G.isl.reduce((a,I)=>a+I.c.length,0);
+function homesOf(I){return I.b.filter(b=>{const D=bdef(b);return D.cap&&(b.state==='ok'||b.state==='up'||b.state==='fire')})}
+function capOf(b){const D=bdef(b);let l=b.lvl;if(!isModern()&&D.tradMax)l=Math.min(l,D.tradMax);if(!isModern()&&D.era==='modern')return 0;return Math.round(D.cap+(D.capi||0)*(l-1))}
+function settleHomes(I){const homes=homesOf(I);const occ={},hm={};for(const h of homes){occ[h.id]=0;hm[h.id]=h}
+  for(const c of I.c){const hb=c.home&&hm[c.home];if(hb){const villa=bdef(hb).cls===2;if((!villa||c.c===2)&&occ[hb.id]<capOf(hb)){occ[hb.id]++;continue}}c.home=0}
+  for(const c of I.c){if(c.home)continue;let opts=homes.filter(h=>occ[h.id]<capOf(h)&&(c.c===2?true:bdef(h).cls!==2));if(c.c===2){const v=opts.filter(h=>bdef(h).cls===2);if(v.length)opts=v}
+    if(opts.length){const h=opts[ri(opts.length)];c.home=h.id;occ[h.id]++}}
+  return occ}
+/* ================= simulation ================= */
+const linked=I=>I.unlocked&&I.b.some(b=>b.t==='harbor'&&b.state!=='build'&&b.state!=='ruin');
+function functional(I,b){if(b.state==='build'||b.state==='ruin')return false;const D=bdef(b);if(D.era==='modern'&&!isModern())return false;if(needsRoad(b.t)&&b.t!=='design'&&!roadAdj(I,b))return false;if(b.t==='design'&&!roadAdj(I,b))return false;return true}
+function effLvl(b){const D=bdef(b);let l=b.lvl;if(!isModern()&&D.tradMax)l=Math.min(l,D.tradMax);if(b.state==='fire')l*=.5;return l}
+function simDay(){const S={isl:[]};G.day++;G.stats.days++;
+  // 1. per-island production & needs
+  for(const I of G.isl){if(!I.unlocked){S.isl.push(null);continue}S.isl.push(islandPrep(I))}
+  // 2. jobs across islands
+  assignJobs(S);
+  // 3. power pooled across linked islands (undersea cables), food pooled with imports
+  let pSup=0,pDem=0;const geo=G.isl[11].unlocked&&linked(G.isl[11])?200:0;
+  for(const s of S.isl)if(s){s.pwo=0;for(const b of s.b){const D=bdef(b);if(D.pwo){let o=D.pwo*effLvl(b)*(D.st?s.sr.util:1);if(b.t==='diesel')o*=1+lawSum('diesel');if(hasNot('power'))o*=1.15;s.pwo+=o}}if(s.link){pSup+=s.pwo;pDem+=s.pw}}if(isModern())pSup+=geo;G._power={sup:pSup,dem:pDem};
+  for(const s of S.isl)if(s){if(!isModern()){s.pr=1}else if(s.link){s.pr=pDem?clamp(pSup/pDem,0,1):1}else{s.pr=s.pw?clamp(s.pwo/s.pw,0,1):1}}
+  // 4. finish each island
+  const tot={tax:0,biz:0,ttax:0,up:0,wages:0,laws:0,imp:0,crime:0,exp:0};let foodPool=0,foodNeed=0;
+  for(const I of G.isl){const s=S.isl[I.i];if(!s)continue;islandServices(I,s);if(s.link){foodPool+=s.food;foodNeed+=s.eat}else{s.foodR=s.eat?clamp(s.food/s.eat,0,1.5):1}}
+  const anyHarbor=G.isl.some(I=>I.unlocked&&linked(I));let imported=0;
+  if(foodNeed>0){let r=foodPool/foodNeed;if(r<1&&anyHarbor){const need=foodNeed-foodPool;const can=Math.min(need,Math.max(0,G.money)/1.5);imported=can;tot.imp+=can*1.5;r=(foodPool+can)/foodNeed}
+    for(const s of S.isl)if(s&&s.link){s.foodR=clamp(r,0,1.5);s.foodSurplus=Math.max(0,(foodPool-foodNeed))*s.food/(foodPool||1)}}
+  for(const I of G.isl){const s=S.isl[I.i];if(!s)continue;islandPeople(I,s);islandMoney(I,s,tot)}
+  const net=tot.tax+tot.biz+tot.ttax-tot.up-tot.wages-tot.laws-tot.imp-tot.crime;
+  G.money+=net;G.yday=Object.assign(tot,{net,imported:Math.round(imported)});G._S=S;
+  const wasBroke=G.broke;G.broke=G.money<0;if(G.broke&&!wasBroke)G.notice.push(['bad','The treasury is empty! Laws are paused and repairs are delayed. Raise taxes, add workplaces or cut costs.']);if(!G.broke&&wasBroke)G.notice.push(['good','The treasury is back in the black. Laws are active again.']);
+  globalDay(S);return S}
+function islandPrep(I){const s={i:I.i,link:linked(I),pop:I.c.length,b:[],slots:{},pw:0,pwo:0,food:0,eat:0,apps:0};SECK.forEach(k=>s.slots[k]=0);
+  for(const b of I.b){if(!functional(I,b))continue;const D=bdef(b),l=effLvl(b);s.b.push(b);if(D.sec&&D.st)s.slots[D.sec]+=Math.round(D.st*l);if(D.pw)s.pw+=D.pw*l*(1+lawSum('pwm'));}
+  return s}
+function assignJobs(S){const pubW=G.pubWage;
+  // targets
+  for(const I of G.isl){const s=S.isl[I.i];if(!s)continue;s.want={};s.fill={};for(const k of SECK){const tg=I.tgt[k];let w=tg==null?s.slots[k]:Math.min(tg,s.slots[k]);if(SECTORS[k].pub)w=Math.floor(w*clamp(.55+pubW*.45,.5,1));s.want[k]=w;s.fill[k]=0}}
+  // keep valid jobs
+  for(const I of G.isl){const s=S.isl[I.i];if(!s)continue;for(const c of I.c){if(c.c===2||c.sk>0){c.j='';c.ji=-1;continue}if(!c.j)continue;const J=S.isl[c.ji];if(!J||(c.ji!==I.i&&(!s.link||!J.link))){c.j='';c.ji=-1;continue}if(J.fill[c.j]<J.want[c.j])J.fill[c.j]++;else{c.j='';c.ji=-1}}}
+  // fill: local first (wanting sector first), then commuters from linked islands
+  // fair share: dreamers take their dream job first, then everyone else is dealt out one by one across services that still need people
+  for(const pass of[0,1])for(const I of G.isl){const s=S.isl[I.i];if(!s)continue;
+    const pools=pass===0?[I]:G.isl.filter(J=>J!==I&&S.isl[J.i]&&S.isl[J.i].link&&s.link);
+    for(const P of pools){let free=P.c.filter(c=>!c.j&&c.c<2&&c.sk<=0);if(!free.length)continue;
+      for(const c of free){const k=c.w;if(s.fill[k]<s.want[k]){c.j=k;c.ji=I.i;s.fill[k]++}}
+      free=free.filter(c=>!c.j);shuffle(free);let guard=0;
+      while(free.length&&guard++<5000){const open=SECK.filter(k=>s.fill[k]<s.want[k]);if(!open.length)break;open.sort((a,b)=>s.fill[a]/Math.max(1,s.want[a])-s.fill[b]/Math.max(1,s.want[b]));const k=open[0];
+        let i=free.findIndex(c=>(k==='edu'||k==='health')?c.c===1:true);if(i<0)i=0;const c=free.splice(i,1)[0];c.j=k;c.ji=I.i;s.fill[k]++}}}
+  for(const I of G.isl){const s=S.isl[I.i];if(!s)continue;s.sr={};for(const k of SECK)s.sr[k]=s.slots[k]?s.fill[k]/s.slots[k]:0}}
+function islandServices(I,s){const pop=Math.max(1,s.pop);const F=ISLES[I.i].f;let pol=0,fir=0,hea=0,edu=0,road=0,cln=0,wat=0,food=0,goods=0,shop=0,beds=0,attr=0,fun=0,app=0,poll=0,safe=0,tourCap=0,arr=0;
+  const prodM=1+lawSum('prod');
+  for(const b of s.b){const D=bdef(b),l=effLvl(b),sr=D.sec?s.sr[D.sec]:1,pf=D.pw?s.pr:1,e=l*sr*pf,stf=(D.st||0)*l*sr*pf;
+    if(D.svc){const v=stf*D.svc;if(D.sec==='police')pol+=v;else if(D.sec==='fire')fir+=v;else if(D.sec==='health')hea+=v;else if(D.sec==='edu')edu+=v}
+    if(D.road)road+=stf*D.road;if(D.clean)cln+=stf*D.clean;if(D.water)wat+=D.water*e;
+    if(D.food){let f=D.food*e*prodM;if(F.fertile&&(b.t==='farm'||b.t==='taro'))f*=1.25;if(b.t==='fishing'){if(F.fish)f*=1.4;if(law('reef'))f*=.7}if(hasNot('food'))f*=1.15;food+=f}
+    if(D.goods)goods+=D.goods*e*prodM;if(D.shop)shop+=D.shop*(D.st?e:l);if(D.beds)beds+=(D.beds+(D.bedsi||0)*(l-1))*(D.st?sr:1)*pf*(D.bedsi?1:l);
+    if(D.attr)attr+=D.attr*(D.st?e:l);if(D.fun)fun+=D.fun*l*(D.st?sr:1);if(D.app)app+=D.app*(D.cat==='design'?1+.15*(l-1):l);if(D.poll)poll+=D.poll*l*(D.st?sr:1);if(D.safe)safe+=D.safe*l*pf;
+    if(b.t==='harbor'){tourCap+=20*l;arr+=1+l*1.1}if(b.t==='boatyard')arr+=l*.8;if(b.t==='airstrip'){tourCap+=(D.tourCap||60)*e*(hasNot('plane')?1.3:1);arr+=2*e}}
+  if(F.spring)wat+=30;if(hasNot('app'))app*=1.2;
+  s.water=wat;s.food=food;s.goods=goods;s.shop=shop;s.beds=beds;s.attr=attr;s.app=app;s.poll=poll;s.tourCap=tourCap;s.arr=arr;
+  // tourists
+  let tAttr=attr+app*.15+(F.beach?15:0)+(F.lagoon?20:0)+(F.sunset?15:0)+(F.whale?40:0);if(F.reef){const dv=s.b.filter(b=>b.t==='dive').length;tAttr+=dv?30*(hasNot('reef')?1.25:1):8}
+  let tMul=1+lawSum('tour');if(setDone('tour'))tMul*=1.1;if(hasWonder('coralpalace'))tMul*=1.3;if(hasWonder('sanctuary'))tMul*=1.25;if(hasNot('turtle'))tMul*=1.05;if(G.evt.whale>0)tMul*=1.5;if(G.evt.bleach>0&&F.reef&&!law('reef'))tMul*=.8;if(!isModern())tMul*=1.1;
+  const demand=tAttr*1.6*tMul,cap=Math.min(beds,tourCap||0);s.tourists=Math.max(0,Math.round(Math.min(demand,cap)));
+  s.eat=s.pop+s.tourists*.7;
+  // ratios
+  const healthM=(1+lawSum('health'))*(hasNot('health')?1.2:1),eduM=(hasNot('edu')?1.2:1)*(hasWonder('observatory')?1.3:1);
+  s.polR=clamp(pol/pop,0,1.3);s.fireR=clamp(fir/pop,0,1.3);s.healthR=clamp(hea*healthM/pop,0,1.3);s.eduR=clamp(edu*eduM/pop,0,1.3);s.waterR=clamp(wat/Math.max(1,s.eat),0,1.3);s.shopR=clamp(shop/pop,0,1.3);
+  const nr=Object.keys(I.road).length;s.roads=nr;let rc=0;const decay=.012*(1+Math.min(1,pop/(nr*6+1)))*(1+lawSum('road'));const rep=road;const keys=Object.keys(I.road);
+  for(const k of keys)I.road[k]=Math.max(0,I.road[k]-decay);if(rep>0&&keys.length){if(rep>=keys.length){for(const k of keys)I.road[k]=Math.min(1,I.road[k]+.06*Math.min(2,rep/keys.length))}else{keys.sort((a,b)=>I.road[a]-I.road[b]);for(let i=0;i<Math.floor(rep);i++)I.road[keys[i]]=Math.min(1,I.road[keys[i]]+.12)}}
+  for(const k of keys)rc+=I.road[k];s.roadR=nr?rc/nr:.5;
+  s.cleanR=clamp(cln/pop*(1+lawSum('clean'))-poll/(pop*.08+10),0,1.2);s.funR=clamp((fun*8+shop*.05)/pop,0,1.3);s.safeBonus=safe/pop+lawSum('safe');
+  if(G.evt.storm>0)s.roadR*=.9}
+function islandPeople(I,s){const pop=I.c.length;const occ=settleHomes(I);const homes=homesOf(I);let cap=0,vcap=0,used=0,vused=0;for(const h of homes){const c=capOf(h);if(bdef(h).cls===2){vcap+=c;vused+=occ[h.id]||0}else{cap+=c;used+=occ[h.id]||0}}
+  const homeless=I.c.filter(c=>!c.home).length,labor=I.c.filter(c=>c.c<2).length,emp=I.c.filter(c=>c.j).length;s.homeless=homeless;s.cap=cap+vcap;s.vfree=vcap-vused;s.free=cap-used;
+  // local appeal & pollution near homes
+  const near={};for(const h of homes){let a=0,p=0;for(const b of s.b){const D=bdef(b);if(!D.app&&!D.poll)continue;const dx=Math.max(0,Math.max(b.x-(h.x+h.w),h.x-(b.x+b.w))),dy=Math.max(0,Math.max(b.y-(h.y+h.h),h.y-(b.y+b.h)));if(dx<=4&&dy<=4&&b!==h){a+=(D.app||0)*.8;p+=(D.poll||0)*b.lvl*2.5}}near[h.id]=clamp(a,0,10)-clamp(p,0,15)}
+  // components
+  const tax=(G.taxes.c0+G.taxes.c1+G.taxes.c2)/3,taxC=clamp(1-(tax-.05)/.3,0,1);
+  const comp={housing:clamp(1-homeless/Math.max(1,pop)*2.5,0,1),jobs:labor?clamp(emp/labor*1.1,0,1):1,safety:clamp(s.polR*(1+s.safeBonus),0,1),fire:clamp(s.fireR,0,1),health:clamp(s.healthR,0,1),edu:clamp(s.eduR,0,1),water:clamp(s.waterR,0,1),food:clamp(s.foodR,0,1),power:isModern()?clamp(s.pr,0,1):1,roads:clamp(s.roadR,0,1),clean:clamp(s.cleanR,0,1),fun:clamp(s.funR,0,1),tax:taxC};
+  const W={housing:.12,jobs:.1,safety:.09,fire:.05,health:.09,edu:.06,water:.1,food:.1,power:.05,roads:.06,clean:.06,fun:.08,tax:.04};
+  let base=0;for(const k in W)base+=W[k]*comp[k];base*=100;
+  let bonus=lawSum('hap')+(setDone('hap')?3:0)+(hasNot('hap')?2:0)+(hasNot('turtle')?1:0)+(hasWonder('sanctuary')?3:0)+(hasWonder('seabridge')?6:0)+(hasWonder('festival')?5:0)+(!isModern()?3:0)+(G.evt.festival>0?6:0)+(G.evt.cruise>0?-3:0);
+  if(hasNot('tax'))bonus+=2.5;s.comp=comp;s.baseHap=base+bonus;
+  // crime, fire, sickness
+  const crimeR=.03*(1-clamp(s.polR*(1+s.safeBonus),0,1))*(law('curfew')?.5:1)*(law('open')?1.15:1)*(hasNot('crime')?.7:1);const crimes=Math.round(pop*crimeR*(.5+Math.random()));s.crimes=crimes;
+  const fireP=.035*Math.sqrt(s.b.length)/3*(1-.92*clamp(s.fireR,0,1))*(law('code')?.5:1)*(hasNot('fire')?.6:1);
+  for(const b of I.b){if(b.state==='fire'){b.fd=(b.fd||0)+1;if(Math.random()<.35+s.fireR*.6){b.state='ok';G.notice.push(['good',`Firefighters saved the ${bdef(b).n} on ${ISLES[I.i].n}`])}else if(b.fd>=2){b.lvl--;b.fd=0;if(b.lvl<=0){b.lvl=1;b.state='ruin';G.notice.push(['bad',`The ${bdef(b).n} burned down on ${ISLES[I.i].n}`])}else{b.state='ok';G.notice.push(['bad',`Fire damaged the ${bdef(b).n} (now level ${b.lvl})`])}}}}
+  if(Math.random()<fireP){const cand=I.b.filter(b=>b.state==='ok'&&!['palm','park','well','lamp','townhall','wind'].includes(b.t));if(cand.length){const b=pick(cand);b.state='fire';b.fd=0;G.stats.fires++;G.notice.push(['bad',`Fire! The ${bdef(b).n} on ${ISLES[I.i].n} is burning`])}}
+  const sickP=.025*(1-clamp(s.healthR,0,1));
+  // per citizen
+  const mob=(1+lawSum('mob'))*(hasWonder('observatory')?1.3:1);let hsum=0;
+  for(const c of I.c){c.d++;if(c.sk>0)c.sk--;else if(Math.random()<sickP)c.sk=3;
+    let t=s.baseHap;if(!c.home)t-=25;else t+=near[c.home]||0;if(c.c<2&&!c.j)t-=10;if(c.j&&c.j===c.w)t+=5;if(c.j&&c.ji!==I.i)t-=3;if(c.sk>0)t-=10;
+    if(c.c===2){const hb=homes.find(h=>h.id===c.home);if(hb&&bdef(hb).cls!==2)t-=15;t+=(comp.safety-.5)*8+(comp.fun-.5)*8}
+    if(G.evt.crime>0)t-=4;c.h=clamp(c.h+(clamp(t,0,100)-c.h)*.18,0,100);hsum+=c.h;
+    if(c.c===0&&c.j&&c.d>8&&Math.random()<.006*clamp(s.eduR,0,1.2)*mob)c.c=1;
+    else if(c.c===1&&c.d>20&&c.h>58&&s.vfree>0&&Math.random()<.004*clamp(s.eduR,0,1.2)*mob){c.c=2;c.j='';c.ji=-1;c.home=0;s.vfree--}}
+  s.hap=I.c.length?hsum/I.c.length:s.baseHap;
+  // emigration
+  let left=0;I.c=I.c.filter(c=>{const p=c.h<25?.12:(!c.home?(c.h<40?.15:.03):0);if(p&&Math.random()<p){left++;return false}return true});G.stats.left+=left;s.left=left;
+  // immigration
+  let arr=s.arr;if(I.i===0&&arr===0)arr=1;if(!s.link&&I.i!==0)arr=0;
+  const attract=.35*clamp(s.hap/100,0,1)+.35*clamp((s.free+s.vfree)/Math.max(4,pop*.15),0,1)+.3*clamp(SECK.reduce((a,k)=>a+Math.max(0,s.want[k]-s.fill[k]),0)/Math.max(3,pop*.1),0,1);
+  let mul=1.3*(1+lawSum('arr'))*(hasWonder('lighthouse')?1.4:1)*(setDone('arr')?1.2:1);let n=arr*attract*mul;n=Math.floor(n)+(Math.random()<n%1?1:0);n=Math.min(n,Math.max(0,s.free+s.vfree)+(s.homeless<Math.max(2,pop*.02)?1:0));
+  const arrivals=[];for(let k=0;k<n;k++){let cls=Math.random()<.18*clamp(s.eduR+.2,0,1)?1:0;if(s.vfree>0&&Math.random()<.35&&s.app/Math.max(1,pop)>.08){cls=2;s.vfree--}arrivals.push(addCitizen(I,cls))}
+  s.arrived=n;G.stats.arrived+=n;if(n&&I.i===G.cur)visArrive(I,n);settleHomes(I);s.pop=I.c.length}
+function islandMoney(I,s,tot){let tax=0;for(const c of I.c){if(c.c===2)tax+=CLS[2].w*G.taxes.c2;else if(c.j)tax+=CLS[c.c].w*G.taxes['c'+c.c];else tax+=CLS[c.c].w*.25*G.taxes['c'+c.c];if(c.home)tax+=1.2*(c.c+1)}if(I.i!==0&&!I.b.some(b=>b.t==='office'&&functional(I,b)))tax*=.5;if(hasNot('tax'))tax*=1.05;
+  const tSat=clamp(.5+s.app/Math.max(10,s.tourists*3)*.3+s.cleanR*.15+clamp(s.polR,0,1)*.1+lawSum('tsat'),.3,1.25);s.tSat=tSat;
+  const tSpend=s.tourists*70*tSat*(hasNot('spend')?1.12:1)*(ISLES[I.i].f.lagoon?1.15:1);
+  const foodSales=(s.foodSurplus||0)*2.4*(s.link?1:0),goodsSales=s.goods*7*(s.link?1:.4),shopRev=Math.min(s.shop,s.pop+s.tourists)*6;
+  let bizRev=foodSales+goodsSales+shopRev+tSpend;let biz=bizRev*G.taxes.biz;if(setDone('biz'))biz*=1.1;if(hasWonder('floatmarket'))biz*=1.4;
+  const ttax=tSpend*(G.taxes.tour+lawSum('ttax'));
+  let up=0;for(const b of I.b){if(b.state==='ruin')continue;up+=bdef(b).up*b.lvl}if(G.broke)up*=.5;
+  let wages=0;for(const k of SECK)if(SECTORS[k].pub)wages+=s.fill[k]*3*G.pubWage;
+  const lawc=lawSum('cost')*s.pop,crime=s.crimes*9;
+  s.money={tax,biz,ttax,up,wages,lawc,crime,tSpend,bizRev};
+  tot.tax+=tax;tot.biz+=biz;tot.ttax+=ttax;tot.up+=up;tot.wages+=wages;tot.laws+=lawc;tot.crime+=crime;G.stats.tourists=(G.stats.tourists||0)+s.tourists;G.stats.crimes+=s.crimes}
+/* ================= daily global: events, treasures, notables, goals ================= */
+function globalDay(S){for(const k in G.evt)if(G.evt[k]>0)G.evt[k]--;
+  const pop=totalPop();G.stats.peakPop=Math.max(G.stats.peakPop,pop);const hap=cityHap();
+  if(G.isl[10].unlocked&&G.day%7===0){G.pearls+=2;G.notice.push(['gold','Pearls washed up on Pearl Isle: +2 pearls'])}
+  if(setDone('pearl')&&G.day%5===0)G.pearls++;
+  // treasure spots
+  for(const I of G.isl){if(!I.unlocked)continue;const open=I.trs.filter(t=>!t.found).length;if(I.trs.length<3&&open<2&&Math.random()<.05*(hasNot('treasure')?2:1)){const sp=freeTile(I);if(sp){I.trs.push({x:sp[0],y:sp[1],found:false});G.notice.push(['gold',`Something glints on ${ISLES[I.i].n}. Tap the sparkle to dig.`])}}}
+  // notable citizens
+  if(!G.pendNot&&pop>=60&&hap>=58&&Math.random()<.035){const free=NOTABLES.map((n,i)=>i).filter(i=>!G.notables[i]||G.notables[i]==='left');if(free.length)G.pendNot={i:pick(free),day:G.day}}
+  if(G.pendNot&&G.day-G.pendNot.day>12){G.notice.push(['bad',`${NOTABLES[G.pendNot.i].n} gave up waiting and sailed away. They may return.`]);G.pendNot=null}
+  for(const k in G.notables){if(G.notables[k]==='home'){const I=G.isl.find(J=>J.c.some(c=>c.nb==+k));if(!I)G.notables[k]='left'}}
+  // random events
+  if(G.day>4&&Math.random()<.07)randomEvent(S);
+  // wonders blueprints from treasure sets
+  TSETS.forEach((t,i)=>{if(setDone(t.k)&&!G.wonderBP[t.w]){G.wonderBP[t.w]=1;G.notice.push(['gold',`Set complete: ${t.n}! Blueprint unlocked: ${B[t.w].n}`])}});
+  if(!G.wonderBP.seabridge&&G.isl.filter(I=>I.unlocked).length>=6){G.wonderBP.seabridge=1;G.notice.push(['gold','Six islands united! Blueprint unlocked: Sea Bridge Monument'])}
+  if(!G.wonderBP.skytower&&thLvl()>=8&&pop>=2000){G.wonderBP.skytower=1;G.notice.push(['gold','Blueprint unlocked: Sky Tower'])}
+  const h=G.stats.hist;h.push({d:G.day,m:Math.round(G.money),p:pop,h:Math.round(hap),t:S.isl.reduce((a,s)=>a+(s?s.tourists:0),0),n:Math.round(G.yday.net)});if(h.length>120)h.shift();
+  checkGoals()}
+function freeTile(I){for(let k=0;k<60;k++){const x=1+ri(I.n-2),y=1+ri(I.n-2);if(isLand(tileAt(I,x,y))&&!I.occ[y*I.n+x]&&!isRoad(I,x,y)&&!I.trs.some(t=>t.x===x&&t.y===y))return[x,y]}return null}
+function digCost(I){return 150+I.i*120}
+function dig(I,t){if(t.found)return null;const c=digCost(I);if(G.money<c)return null;G.money-=c;t.found=true;G.stats.digs++;return findTreasure(I)}
+function digCheck(I,b){for(const t of I.trs)if(!t.found&&t.x>=b.x&&t.x<b.x+b.w&&t.y>=b.y&&t.y<b.y+b.h){t.found=true;const r=findTreasure(I);if(r!=null)G.notice.push(['gold',`Builders dug up a treasure: ${TREAS[r][0]}!`])}}
+function findTreasure(I){const tier=Math.min(5,Math.floor(I.i/2));const miss=TREAS.map((t,i)=>i).filter(i=>!G.treasure[i]);if(!miss.length){G.money+=2000;G.pearls+=1;return -1}
+  const pref=miss.filter(i=>TREAS[i][1]<=tier+1);const pool=pref.length&&Math.random()<.8?pref:miss;const i=pick(pool);G.treasure[i]=1;G.pearls+=1;return i}
+function cityHap(){let s=0,n=0;for(const I of G.isl)for(const c of I.c){s+=c.h;n++}return n?s/n:50}
+const EVENTS=[
+ {k:'storm',w:3,f:S=>{G.evt.storm=2;for(const I of G.isl)if(I.unlocked)for(const k in I.road)I.road[k]=Math.max(0,I.road[k]-.15);G.notice.push(['bad','A storm hits the atoll. Roads are battered for a couple of days.'])}},
+ {k:'whale',w:2,f:()=>{G.evt.whale=4;G.notice.push(['gold','Whale sharks spotted! Tourism +50% for 4 days.'])}},
+ {k:'festival',w:2,c:()=>cityHap()>65,f:()=>{G.evt.festival=3;G.notice.push(['good','A spontaneous island festival! +6 happiness for 3 days.'])}},
+ {k:'bleach',w:2,f:()=>{G.evt.bleach=6;G.notice.push(['bad',law('reef')?'Warm water, but your Reef Protection law keeps the reef healthy.':'Coral bleaching: reef tourism −20% for 6 days. Reef Protection would help.'])}},
+ {k:'crime',w:2,c:S=>S.isl.some(s=>s&&s.polR<.7),f:()=>{G.evt.crime=3;G.notice.push(['bad','A crime wave! More police would stop it.'])}},
+ {k:'cruise',w:2,c:()=>G.isl.some(I=>linked(I)),f:()=>ask('A cruise ship asks to dock','Their 600 passengers would pay $'+num(800+totalPop()*6)+' to visit, but crowds annoy residents (−3 happiness for 2 days).',[['Let them dock',()=>{G.money+=800+totalPop()*6;G.evt.cruise=2;toast('The cruise passengers spent big','good')}],['Politely decline',()=>{}]])},
+ {k:'raft',w:2,f:()=>ask('Refugees on rafts','A family group of 8 drifted in after a storm. Taking them in may leave some without homes for a while.',[['Welcome them',()=>{for(let i=0;i<8;i++)addCitizen(G.isl[0],0);settleHomes(G.isl[0]);G.pearls+=1;toast('8 newcomers joined Home Isle. +1 pearl','good')}],['Send them to another atoll',()=>{for(const I of G.isl)for(const c of I.c)c.h=Math.max(0,c.h-3)}]])},
+ {k:'fish',w:2,f:()=>{G.money+=300+totalPop()*2;G.notice.push(['good','A huge tuna run! Fishing crews sold the surplus.'])}},
+ {k:'map',w:1,f:()=>{const I=pick(G.isl.filter(J=>J.unlocked));const sp=freeTile(I);if(sp){I.trs.push({x:sp[0],y:sp[1],found:false});G.notice.push(['gold',`A fisherman found an old map pointing to ${ISLES[I.i].n}.`])}}},
+ {k:'outage',w:1,c:()=>isModern(),f:()=>{G.money-=200;G.notice.push(['bad','A generator broke down. Repairs cost $200.'])}},
+ {k:'grant',w:1,c:()=>cityHap()>70,f:()=>{G.money+=1500+thLvl()*800;G.notice.push(['good','The atoll council sent a grant for your happy city!'])}}];
+function randomEvent(S){const ok=EVENTS.filter(e=>!e.c||e.c(S));let t=ok.reduce((a,e)=>a+e.w,0),r=Math.random()*t;for(const e of ok){r-=e.w;if(r<=0){e.f(S);return}}}
+let askQ=[];function ask(title,text,opts){askQ.push({title,text,opts});if(typeof showAsk==='function')showAsk()}
+/* notable acceptance */
+function acceptNotable(){const p=G.pendNot;if(!p)return{ok:false};for(const I of G.isl){if(!I.unlocked)continue;const homes=homesOf(I).filter(h=>bdef(h).cls===2);const occ=settleHomes(I);const h=homes.find(h=>(occ[h.id]||0)<capOf(h));if(h){const c=addCitizen(I,2);c.home=h.id;c.nb=p.i;c.h=80;G.notables[p.i]='home';G.pendNot=null;G.pearls+=2;return{ok:true,isl:I.i}}}return{ok:false,why:'Build a villa with a free room first'}}
+/* ================= goals ================= */
+const cnt=t=>G.isl.reduce((a,I)=>a+I.b.filter(b=>b.t===t&&b.state!=='build').length,0);
+const maxL=t=>Math.max(0,...G.isl.flatMap(I=>I.b.filter(b=>b.t===t).map(b=>b.state==='up'?b.lvl:b.lvl)));
+const roadsN=()=>G.isl.reduce((a,I)=>a+Object.keys(I.road).length,0);
+const wealthy=()=>G.isl.reduce((a,I)=>a+I.c.filter(c=>c.c===2).length,0);
+const islandsN=()=>G.isl.filter(I=>I.unlocked).length;
+const touristsToday=()=>G._S?G._S.isl.reduce((a,s)=>a+(s?s.tourists:0),0):0;
+const GOALS=[
+ ['Build a Palm Hut',()=>cnt('hut')>=5,{m:300}],['Lay 12 new road tiles',()=>roadsN()>=(G.stats.road0||0)+12,{m:300}],['Build a second Water Well',()=>cnt('well')>=2,{m:300}],['Grow 20 citizens',()=>totalPop()>=20,{m:500,p:1}],
+ ['Build a Market',()=>cnt('market')>=1,{m:500}],['Build a Police Station',()=>cnt('police')>=1,{m:600}],['Build a Fire Station',()=>cnt('fire')>=1,{m:600}],['Upgrade the Town Hall to level 2',()=>thLvl()>=2,{m:1500,p:2}],
+ ['Build a Family House',()=>cnt('house')>=1,{m:600}],['Build a Road Depot',()=>cnt('depot')>=1,{m:600}],['Reach 50 citizens',()=>totalPop()>=50,{m:1500,p:2}],['Build a School and a Clinic',()=>cnt('school')>=1&&cnt('clinic')>=1,{m:1500}],
+ ['Reach 60% happiness',()=>cityHap()>=60&&totalPop()>=30,{m:1000,p:1}],['Build a Guesthouse for tourists',()=>cnt('hotel')>=1,{m:1000}],['Pass your first law',()=>Object.values(G.laws).some(Boolean),{m:500}],['Unlock Palm Key',()=>G.isl[1].unlocked,{m:2000,p:2}],
+ ['Build a Villa',()=>cnt('villa')>=1||G.isl.some(I=>I.b.some(b=>b.t==='design'&&b.dd&&b.dd.type==='villa'&&b.state!=='build')),{m:1500}],['Design your own building',()=>G.designs.length>=1,{m:500,p:2}],['Build one of your designs',()=>G.isl.some(I=>I.b.some(b=>b.t==='design'&&b.state!=='build')),{m:1500,p:1}],['Upgrade the Town Hall to level 3',()=>thLvl()>=3,{m:4000,p:3}],
+ ['Have 5 wealthy citizens',()=>wealthy()>=5,{m:2500,p:2}],['Build a Beach Resort',()=>cnt('resort')>=1||G.isl.some(I=>I.b.some(b=>b.t==='design'&&b.dd&&b.dd.type==='resort'&&b.state!=='build')),{m:3000,p:2}],['Welcome 30 tourists a day',()=>touristsToday()>=30,{m:3000,p:2}],['Dig up a treasure',()=>Object.keys(G.treasure).length>=1,{m:1500,p:1}],
+ ['Reach 150 citizens',()=>totalPop()>=150,{m:4000,p:3}],['Unlock Turtle Cay',()=>G.isl[2].unlocked,{m:4000,p:2}],['Upgrade the Town Hall to level 4',()=>thLvl()>=4,{m:8000,p:3}],['Host a famous citizen',()=>Object.values(G.notables).includes('home'),{m:5000,p:3}],
+ ['Earn $2,000 in a single day',()=>G.yday&&G.yday.net>=2000,{m:5000,p:3}],['Reach 75% happiness',()=>cityHap()>=75&&totalPop()>=100,{m:6000,p:4}],['Reach 300 citizens',()=>totalPop()>=300,{m:8000,p:3}],['Own 4 islands',()=>islandsN()>=4,{m:10000,p:4}],
+ ['Upgrade the Town Hall to level 5',()=>thLvl()>=5,{m:20000,p:5}],['Build a wonder',()=>G.isl.some(I=>I.b.some(b=>B[b.t]&&B[b.t].wonder&&b.state!=='build')),{m:20000,p:5}],['Welcome 150 tourists a day',()=>touristsToday()>=150,{m:15000,p:4}],['Reach 600 citizens',()=>totalPop()>=600,{m:20000,p:5}],
+ ['Upgrade the Town Hall to level 6',()=>thLvl()>=6,{m:50000,p:6}],['Collect 3 famous citizens',()=>Object.values(G.notables).filter(v=>v==='home').length>=3,{m:30000,p:5}],['Own 7 islands',()=>islandsN()>=7,{m:60000,p:6}],['Reach 1,200 citizens',()=>totalPop()>=1200,{m:60000,p:6}],
+ ['Upgrade the Town Hall to level 8',()=>thLvl()>=8,{m:150000,p:8}],['Reach 85% happiness',()=>cityHap()>=85&&totalPop()>=500,{m:100000,p:8}],['Own all 12 islands',()=>islandsN()>=12,{m:300000,p:10}],['Build 4 wonders',()=>G.isl.reduce((a,I)=>a+I.b.filter(b=>B[b.t]&&B[b.t].wonder&&b.state!=='build').length,0)>=4,{m:200000,p:8}],
+ ['Reach 3,000 citizens',()=>totalPop()>=3000,{m:300000,p:10}],['Upgrade the Town Hall to level 10',()=>thLvl()>=10,{m:1000000,p:15}],['Complete every treasure set',()=>TREAS.every((t,i)=>G.treasure[i]),{m:500000,p:15}],['Build all 8 wonders',()=>Object.keys(B).filter(k=>B[k].wonder).every(k=>hasWonder(k)),{m:1000000,p:20}]];
+function procGoal(n){const kinds=[['Reach '+num(Math.round(3000*Math.pow(1.35,n+1)))+' citizens',()=>totalPop()>=Math.round(3000*Math.pow(1.35,n+1))],['Welcome '+num(200+n*80)+' tourists a day',()=>touristsToday()>=200+n*80],['Keep 88% happiness with '+num(1000+n*300)+' citizens',()=>cityHap()>=88&&totalPop()>=1000+n*300],['Earn '+fmtk(20000+n*8000)+' in a day',()=>G.yday&&G.yday.net>=20000+n*8000]];return kinds[n%kinds.length].concat([{m:Math.round(50000*Math.pow(1.25,n)),p:5+Math.floor(n/2)}])}
+function activeGoals(){const out=[];for(let i=0;i<GOALS.length&&out.length<3;i++)if(!G.goals.done[i])out.push([i,...GOALS[i]]);if(out.length<3){for(let k=0;out.length<3;k++)out.push(['p'+(G.goals.proc+k),...procGoal(G.goals.proc+k)])}return out}
+function checkGoals(){for(const[i,txt,f,r]of activeGoals()){let ok=false;try{ok=f()}catch(e){}if(ok){if(String(i)[0]==='p'){G.goals.proc++}else G.goals.done[i]=1;G.money+=r.m||0;G.pearls+=r.p||0;G.goals.claimed++;G.notice.push(['gold',`Goal done: ${txt}. +${fmt(r.m||0)}${r.p?` +${r.p} pearls`:''}`])}}}
+/* ================= advisor: what each island needs most ================= */
+function advise(I,s){if(!s||!I.unlocked)return[];const out=[],add=(t,sev,why)=>{const D=B[t];if(!D)return;if(D.era==='modern'&&!isModern())return;if(thLvl()<(D.req||0))return;if(D.unique==='island'&&I.b.some(b=>b.t===t))return;out.push({t,sev,why})};
+  const labor=I.c.filter(c=>c.c<2).length,emp=I.c.filter(c=>c.j).length,u=labor?1-emp/labor:0;const pend=t=>I.b.some(b=>b.t===t&&(b.state==='build'||(needsRoad(t)&&!roadAdj(I,b))));
+  if(I.i>0&&!I.b.some(b=>b.t==='office'))add('office',9,'Without an Island Office this island pays half its taxes');
+  const unc=I.b.filter(b=>needsRoad(b.t)&&b.state!=='build'&&!roadAdj(I,b)).length;if(unc)out.push({t:'road',sev:9,why:`${unc} building${unc>1?'s are':' is'} not next to a road`});
+  if(s.waterR<1.05&&!pend('well')&&!pend('desal'))add(isModern()&&thLvl()>=4?'desal':'well',8*(1.1-s.waterR)+3,`Water covers ${pct(s.waterR)} of people`);
+  if(s.foodR<1.02&&!pend('farm')&&!pend('fishing'))add(I.b.some(b=>b.t==='fishing')||Math.random()<.5?'farm':'fishing',8*(1.05-s.foodR)+3,`Food covers ${pct(s.foodR)} of people`);
+  if(isModern()&&s.pr<1&&!pend('diesel')&&!pend('solar')&&!pend('wind'))add(thLvl()>=5&&!law('green')?'solar':'diesel',9,`Power covers ${pct(s.pr)} of demand`);
+  const svc=[['police','polR','Safety'],['fire','fireR','Fire cover'],['clinic','healthR','Health'],['school','eduR','Education'],['waste','cleanR','Cleanliness']];
+  for(const[t,k,n]of svc)if(s[k]<.95&&!pend(t)&&I.c.length>=(t==='school'||t==='clinic'?25:12))add(t,6*(1-s[k])+1.5,`${n} is at ${pct(s[k])}`);
+  if((s.roadR<.8||(!I.b.some(b=>b.t==='depot')&&Object.keys(I.road).length>16))&&!pend('depot'))add('depot',3+4*(1-s.roadR),s.roadR<.8?`Roads are at ${pct(s.roadR)} condition`:'Roads wear down over time. A depot sends crews to fix them');
+  if(u>.12&&labor>8){const jobs=[];if(s.shopR<1.3)jobs.push('market');jobs.push('workshop','fishing');if(thLvl()>=2)jobs.push('hotel');if(thLvl()>=3)jobs.push('resort');add(jobs[Math.floor(G.day/3)%jobs.length],4+6*u,`${Math.round(u*100)}% of workers have no job`)}
+  if(s.homeless>0||(s.free<4&&u<.2)){const h=isModern()&&thLvl()>=5&&I.c.length>300?'tower':thLvl()>=2&&I.c.length>60?'apart':I.c.length<30?'hut':'house';add(h,s.homeless?5+s.homeless/Math.max(10,I.c.length)*10:3.5,s.homeless?`${s.homeless} people are homeless`:'Few free homes left for newcomers')}
+  const sk=I.c.filter(c=>c.c===1).length;if(sk>12&&s.vfree<2&&!pend('villa'))add('villa',3,`${sk} skilled families want to move up to a villa`);
+  if(s.funR<.75)add(s.funR<.4&&thLvl()>=2?'plaza':'park',2+3*(1-s.funR),`Fun is at ${pct(s.funR)}`);
+  if(thLvl()>=2&&s.tourists>=s.beds*.9&&s.tourCap>s.beds)add(thLvl()>=3?'resort':'hotel',3,'Tourists want more beds');
+  if(thLvl()>=2&&ISLES[I.i].f.reef&&!I.b.some(b=>b.t==='dive'))add('dive',3,'The reef is waiting for divers');
+  const th=G.isl[0].b.find(b=>b.t==='townhall');if(I.i===0&&canUpgrade(G.isl[0],th).ok)out.push({t:'upth',sev:7,why:'The Town Hall can be upgraded'});
+  return out.sort((a,b)=>b.sev-a.sev)}
+
+/* ================= rendering ================= */
+const cv=$('#cv'),ctx=cv.getContext('2d');let W=390,H=800,DPR=1,SC=1;
+const cam={x:0,y:0,z:1};let view='isle';// isle | world
+function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);SC=clamp(W/400,.8,1.3)}
+const PAL=['#f4efe4','#ffd9b0','#ffb8a8','#bfe3f2','#c9efd6','#f6e7a0','#d8cfe8','#ffe2c4','#e0f0f8','#f8d0d8'];
+const hashC=(id,arr)=>arr[(id*2654435761>>>0)%arr.length];
+const FH=11;// floor height in world px
+/* ---------- terrain cache ---------- */
+function terrain(I){if(I._cv&&!I._dirty)return I._cv;const n=I.n,c=I._cv||document.createElement('canvas');c.width=c.height=n*TS;const g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);const sd=I.i*101+(G.seed%997);
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){const v=I.tiles[y*n+x],px=x*TS,py=y*TS;
+    if(v===1){g.fillStyle='rgba(120,240,230,.45)';g.fillRect(px,py,TS,TS)}
+    else if(v>=2){g.fillStyle=v===2?'#f0deb0':v===5?'#9a9a8a':'#7cc46a';g.fillRect(px,py,TS,TS);const r=noise(sd,x,y);
+      if(v===3||v===4){g.fillStyle=r>.5?'#86ce72':'#72b860';g.fillRect(px+(r*20|0),py+((r*97)%20|0),6,4)}
+      if(v===2){g.fillStyle='rgba(200,170,110,.35)';g.fillRect(px+(r*24|0),py+((r*61)%24|0),2,2);g.fillRect(px+((r*53)%26|0),py+((r*17)%26|0),2,2)}
+      if(v===5){g.fillStyle='#7a7a6a';g.beginPath();g.ellipse(px+16,py+18,12,8,0,0,7);g.fill()}}}
+  // shoreline foam
+  g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=2;for(let y=0;y<n;y++)for(let x=0;x<n;x++){const v=I.tiles[y*n+x];if(v<2)continue;const px=x*TS,py=y*TS;g.beginPath();if(tileAt(I,x,y-1)<2){g.moveTo(px,py);g.lineTo(px+TS,py)}if(tileAt(I,x,y+1)<2){g.moveTo(px,py+TS);g.lineTo(px+TS,py+TS)}if(tileAt(I,x-1,y)<2){g.moveTo(px,py);g.lineTo(px,py+TS)}if(tileAt(I,x+1,y)<2){g.moveTo(px+TS,py);g.lineTo(px+TS,py+TS)}g.stroke()}
+  // roads
+  const mod=isModern();for(const k in I.road){const x=k%n,y=k/n|0,px=x*TS,py=y*TS,cnd=I.road[k];const col=mod?mix('#7a7f88','#4a4f58',cnd):mix('#cdb48a','#e8d4a8',cnd);
+    g.fillStyle=col;const m=5;g.fillRect(px+m,py+m,TS-2*m,TS-2*m);if(isRoad(I,x,y-1))g.fillRect(px+m,py,TS-2*m,m);if(isRoad(I,x,y+1))g.fillRect(px+m,py+TS-m,TS-2*m,m);if(isRoad(I,x-1,y))g.fillRect(px,py+m,m,TS-2*m);if(isRoad(I,x+1,y))g.fillRect(px+TS-m,py+m,m,TS-2*m);
+    if(mod){g.fillStyle='rgba(255,230,120,.7)';if(isRoad(I,x-1,y)||isRoad(I,x+1,y))g.fillRect(px+4,py+TS/2-1,TS-8,2);else if(isRoad(I,x,y-1)||isRoad(I,x,y+1))g.fillRect(px+TS/2-1,py+4,2,TS-8)}
+    if(cnd<.35){g.fillStyle='rgba(60,40,20,.5)';const r=noise(3,x,y);g.beginPath();g.ellipse(px+8+r*14,py+10+((r*7)%1)*12,3+r*3,2,0,0,7);g.fill()}}
+  // jungle trees
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){if(I.tiles[y*n+x]!==4)continue;const px=x*TS,py=y*TS,r=noise(sd+3,x,y);g.fillStyle='#2f8a4c';g.beginPath();g.arc(px+10+r*8,py+12,10,0,7);g.arc(px+20,py+20-r*6,9,0,7);g.fill();g.fillStyle='#3fa65a';g.beginPath();g.arc(px+12+r*6,py+10,6,0,7);g.fill()}
+  I._cv=c;I._dirty=false;return c}
+/* ---------- building drawing ---------- */
+function box(g,x,y,w,d,h,wall,roof,o){o=o||{};
+  g.fillStyle='rgba(10,30,40,.18)';g.beginPath();g.moveTo(x+w,y+d);g.lineTo(x+w+Math.min(h*.45,40),y+d-Math.min(h*.2,16));g.lineTo(x+w+Math.min(h*.45,40),y-h*.1);g.lineTo(x+w,y);g.fill();
+  g.fillStyle=shade(wall,-.12);g.fillRect(x,y+d-h,w,h);
+  if(o.win!==false&&h>8){const fl=Math.max(1,Math.round(h/FH)),fh=h/fl;const glass=o.win==='glass',cols=Math.max(1,Math.floor(w/(glass?7:9)));const night=lightAmt();
+    for(let f=0;f<fl;f++){const wy=y+d-h+f*fh;if(o.balcony&&f>0){g.fillStyle='rgba(255,255,255,.55)';g.fillRect(x,wy-1,w,2)}
+      for(let c=0;c<cols;c++){const wx=x+(c+.5)*w/cols;const on=night>0&&((c*7+f*13+(o.id||0))%5)<3;
+        g.fillStyle=on?`rgba(255,220,130,${.4+night*.6})`:glass?'rgba(140,200,240,.85)':o.win==='arched'?'#3a5a7a':'#2a4258';
+        if(glass)g.fillRect(wx-w/cols/2+1,wy+1.5,w/cols-2,fh-3);else if(o.win==='wide')g.fillRect(wx-w/cols*.38,wy+fh*.3,w/cols*.76,fh*.4);else if(o.win==='arched'){g.beginPath();g.moveTo(wx-2.5,wy+fh*.8);g.lineTo(wx-2.5,wy+fh*.4);g.arc(wx,wy+fh*.4,2.5,Math.PI,0);g.lineTo(wx+2.5,wy+fh*.8);g.fill()}else g.fillRect(wx-2,wy+fh*.3,4,fh*.45)}}}
+  if(o.door){g.fillStyle='#6a4a2a';g.fillRect(x+w/2-3,y+d-8,6,8)}
+  roofDraw(g,x,y-h,w,d,roof,o.roof||'flat',o)}
+function roofDraw(g,x,y,w,d,col,type,o){const cx=x+w/2,cy=y+d/2;
+  switch(type){
+  case 'pyramid':case 'thatch':{const c=type==='thatch'?(col||'#d8b060'):col;const ov=type==='thatch'?3:1;const X=x-ov,Y=y-ov,Ww=w+ov*2,D=d+ov*2;g.fillStyle=c;g.beginPath();g.moveTo(X,Y);g.lineTo(X+Ww,Y);g.lineTo(cx,cy);g.fill();g.fillStyle=shade(c,-.18);g.beginPath();g.moveTo(X+Ww,Y);g.lineTo(X+Ww,Y+D);g.lineTo(cx,cy);g.fill();g.fillStyle=shade(c,-.3);g.beginPath();g.moveTo(X,Y+D);g.lineTo(X+Ww,Y+D);g.lineTo(cx,cy);g.fill();g.fillStyle=shade(c,.1);g.beginPath();g.moveTo(X,Y);g.lineTo(X,Y+D);g.lineTo(cx,cy);g.fill();
+    if(type==='thatch'){g.strokeStyle='rgba(120,80,30,.35)';g.lineWidth=1;for(let i=1;i<4;i++){const k=i/4;g.beginPath();g.moveTo(lerp(X,cx,k),lerp(Y,cy,k));g.lineTo(lerp(X+Ww,cx,k),lerp(Y,cy,k));g.lineTo(lerp(X+Ww,cx,k),lerp(Y+D,cy,k));g.lineTo(lerp(X,cx,k),lerp(Y+D,cy,k));g.closePath();g.stroke()}}break}
+  case 'dome':{g.fillStyle=col;g.fillRect(x,y,w,d);g.strokeStyle=shade(col,-.2);g.lineWidth=1.5;g.strokeRect(x+1,y+1,w-2,d-2);const r=Math.min(w,d)*.36;const dc=o.domeC||'#ffd23f';const gr=g.createRadialGradient(cx-r*.3,cy-r*.6,1,cx,cy-r*.2,r*1.2);gr.addColorStop(0,shade(dc,.5));gr.addColorStop(1,shade(dc,-.25));g.fillStyle=gr;g.beginPath();g.ellipse(cx,cy,r,r*.55,0,Math.PI,0);g.lineTo(cx+r,cy);g.ellipse(cx,cy,r,r*1.05,0,0,Math.PI,true);g.fill();break}
+  case 'garden':{g.fillStyle='#8aa070';g.fillRect(x,y,w,d);g.fillStyle='#4aa860';for(let i=0;i<Math.max(2,w*d/300);i++){const r=noise(i,x,y);g.beginPath();g.arc(x+4+r*(w-8),y+4+((r*31)%1)*(d-8),3.5,0,7);g.fill()}break}
+  case 'helipad':{g.fillStyle='#4a4f58';g.fillRect(x,y,w,d);g.strokeStyle='#ffd23f';g.lineWidth=1.5;g.beginPath();g.arc(cx,cy,Math.min(w,d)*.32,0,7);g.stroke();g.fillStyle='#fff';g.font=`900 ${Math.min(w,d)*.3}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText('H',cx,cy+1);g.textBaseline='alphabetic';break}
+  case 'pool':{g.fillStyle=col;g.fillRect(x,y,w,d);g.fillStyle='#3fc8e8';rr(g,x+w*.18,y+d*.2,w*.64,d*.6,3);g.fill();g.strokeStyle='#fff';g.lineWidth=1;g.stroke();break}
+  default:{g.fillStyle=col;g.fillRect(x,y,w,d);g.strokeStyle=shade(col,-.22);g.lineWidth=1.5;g.strokeRect(x+1,y+1,w-2,d-2);if(o.tank){g.fillStyle='#8a9aa8';g.beginPath();g.arc(x+w*.75,y+d*.35,Math.min(w,d)*.12,0,7);g.fill()}}}}
+function palmAt(g,x,y,s,t){s=s||1;g.strokeStyle='#8a5a2a';g.lineWidth=2.5*s;g.lineCap='round';g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x+3*s,y-10*s,x+1*s,y-20*s);g.stroke();for(let i=0;i<6;i++){const a=-Math.PI/2+(i-2.5)*.6+Math.sin((t||0)*1.3+i)*.05;g.strokeStyle=i%2?'#2f8a4c':'#3fa65a';g.lineWidth=3*s;g.beginPath();g.moveTo(x+1*s,y-20*s);g.quadraticCurveTo(x+Math.cos(a)*8*s,y-20*s+Math.sin(a)*5*s-3*s,x+Math.cos(a)*14*s,y-20*s+Math.sin(a)*6*s+5*s);g.stroke()}g.lineCap='butt'}
+function poolAt(g,x,y,w,d){g.fillStyle='#e8e2d0';g.fillRect(x-2,y-2,w+4,d+4);g.fillStyle='#3fc8e8';g.fillRect(x,y,w,d);g.fillStyle='rgba(255,255,255,.4)';g.fillRect(x+2,y+2,w*.4,2)}
+function umbrella(g,x,y,c){g.strokeStyle='#ddd';g.lineWidth=1;g.beginPath();g.moveTo(x,y);g.lineTo(x,y-9);g.stroke();g.fillStyle=c;g.beginPath();g.arc(x,y-9,6,Math.PI,0);g.fill()}
+function flag(g,x,y,h,c,t){g.strokeStyle='#ddd';g.lineWidth=1.2;g.beginPath();g.moveTo(x,y);g.lineTo(x,y-h);g.stroke();g.fillStyle=c;g.beginPath();g.moveTo(x,y-h);g.quadraticCurveTo(x+6,y-h+2+Math.sin((t||0)*4)*1.5,x+11,y-h+1);g.lineTo(x+11,y-h+7);g.quadraticCurveTo(x+6,y-h+8+Math.sin((t||0)*4)*1.5,x,y-h+6);g.fill()}
+function drawB(g,b,t,o){o=o||{};const D=bdef(b);const x=b.x*TS,y=b.y*TS,w=b.w*TS,d=b.h*TS,L=b.lvl,id=b.id||1,I=o.I;
+  if(b.state==='build'&&!o.ghost){const p=clamp(1-(b.end-now())/(b.dur*1000),0,1);g.fillStyle='#b8a888';g.fillRect(x+3,y+3,w-6,d-6);const h=6+p*Math.min(60,w*.5);g.strokeStyle='#c87a2a';g.lineWidth=1.5;g.strokeRect(x+4,y+d-4-h,w-8,h);for(let k=0;k<h;k+=7){g.beginPath();g.moveTo(x+4,y+d-4-k);g.lineTo(x+w-4,y+d-4-k);g.stroke()}g.beginPath();g.moveTo(x+4,y+d-4);g.lineTo(x+w-4,y+d-4-h);g.stroke();crane(g,x+w-6,y+d-4,h+22,t);return}
+  if(b.state==='ruin'){g.fillStyle='#5a4a40';g.fillRect(x+3,y+3,w-6,d-6);g.fillStyle='#3a302a';for(let i=0;i<w*d/90;i++){const r=noise(i,id,3);g.fillRect(x+4+r*(w-12),y+4+((r*37)%1)*(d-12),6,4)}return}
+  switch(b.t){
+  case 'hut':box(g,x+4,y+5,w-8,d-8,12+L*3,'#c8a070','#d8b060',{roof:'thatch',id,door:1});break;
+  case 'house':{const c=hashC(id,PAL);if(L>=3)palmAt(g,x+5,y+d-3,.7,t);box(g,x+5,y+8,w-10,d-14,12+Math.ceil(L/2)*FH,c,'#d8664a',{roof:'pyramid',id,door:1,win:L>=4?'arched':'small'});if(L>=5)flag(g,x+w-8,y+10,14,'#3fd6cf',t);break}
+  case 'apart':{const c=hashC(id+3,PAL);box(g,x+3,y+4,w-6,d-8,(1+L)*FH,c,shade(c,-.25),{id,tank:1,balcony:L>=3,win:L>=6&&isModern()?'glass':'wide'});break}
+  case 'villa':{const c='#f8f4ea';poolAt(g,x+w*.5,y+d*.62,w*.42,d*.28);palmAt(g,x+w*.15,y+d-3,.8,t);if(L>=3)palmAt(g,x+w*.9,y+d*.45,.7,t+1);box(g,x+4,y+6,w*.55,d*.55,FH*(1+(L>=4?1:0)),c,L>=5?'#8aa070':'#e8dcc8',{roof:L>=5?'garden':'flat',id,win:'wide'});if(L>=2)umbrella(g,x+w*.88,y+d*.95,'#ff7a59');break}
+  case 'tower':{const fl=4+L*3,c=hashC(id,['#9fb8cc','#7aa0c0','#b8c8d8','#4a6a8a']);box(g,x+6,y+6,w-12,d-12,fl*FH,c,'#4a5a6a',{id,win:'glass',roof:L>=5?'helipad':'flat'});if(L>=7){g.strokeStyle='#ccc';g.lineWidth=1.5;g.beginPath();g.moveTo(x+w/2,y+6-fl*FH);g.lineTo(x+w/2,y-fl*FH-14);g.stroke();g.fillStyle=Math.sin(t*4)>0?'#ff4a4a':'#7a1a1a';g.beginPath();g.arc(x+w/2,y-fl*FH-14,2,0,7);g.fill()}break}
+  case 'townhall':{const fl=1+Math.floor(L/3),ins=Math.max(4,14-L);g.fillStyle='#e8dcc0';g.fillRect(x+2,y+2,w-4,d-4);box(g,x+ins,y+ins,w-ins*2,d-ins*2-6,fl*FH+6,'#f4efe4','#e8dcc8',{roof:'dome',domeC:L>=6?'#ffcc33':'#3fb8d6',id,win:'arched',door:1});flag(g,x+ins+4,y+ins-fl*FH-4,18+L*2,'#ff5a4a',t);if(L>=4)flag(g,x+w-ins-4,y+ins-fl*FH-4,18+L*2,'#3fd6cf',t+1);if(L>=8){palmAt(g,x+5,y+d-3,.8,t);palmAt(g,x+w-5,y+d-3,.8,t+2)}break}
+  case 'office':box(g,x+5,y+6,w-10,d-12,FH*(1+Math.floor(L/4))+4,'#eae2d0','#c8b898',{roof:'pyramid',id,win:'arched',door:1});flag(g,x+8,y+8-FH,16,'#ff5a4a',t);break;
+  case 'police':box(g,x+4,y+6,w-8,d-12,FH*(1+Math.floor(L/3)),'#5a8ad8','#3a5a9a',{id,door:1});g.fillStyle=Math.sin(t*6)>0?'#ff4a4a':'#4a8aff';g.fillRect(x+w/2-4,y+6-FH*(1+Math.floor(L/3))+d*.3,8,3);break;
+  case 'fire':{box(g,x+4,y+6,w-8,d-12,FH*(1+Math.floor(L/3)),'#e04a3a','#9a2a20',{id,win:false});g.fillStyle='#3a2a20';for(let i=0;i<2;i++){g.fillRect(x+8+i*(w-16)/2,y+d-6-10,(w-24)/2,10)}if(L>=3){box(g,x+w-14,y+4,9,9,FH*(2+Math.floor(L/2)),'#c84a3a','#7a2a20',{id,win:false})}break}
+  case 'clinic':{const big=L>=5;box(g,x+4,y+5,w-8,d-10,FH*(big?2+Math.floor(L/3):1+Math.floor(L/3)),'#f6f6f6',big?'#5a6a7a':'#d8e0e8',{id,roof:big?'helipad':'flat',win:'wide'});const h=FH*(big?2+Math.floor(L/3):1+Math.floor(L/3));g.fillStyle='#e8302a';g.fillRect(x+w/2-2,y+d-5-h+3,4,10);g.fillRect(x+w/2-5,y+d-5-h+6,10,4);break}
+  case 'school':{g.fillStyle='#6aba5a';g.fillRect(x+3,y+d*.55,w-6,d*.42);g.strokeStyle='#fff';g.lineWidth=1;g.strokeRect(x+6,y+d*.6,w-12,d*.32);box(g,x+4,y+5,w-8,d*.45,FH*(1+Math.floor(L/3)),'#ffd86a','#c8503a',{roof:'pyramid',id,win:'wide'});flag(g,x+w-8,y+8,16,'#3fd6cf',t);break}
+  case 'depot':{g.fillStyle='#b0a090';g.beginPath();g.ellipse(x+w*.75,y+d*.75,8,5,0,0,7);g.fill();box(g,x+4,y+5,w*.62,d-12,FH+L*2,'#9aa0a8','#6a707a',{id,win:false});g.fillStyle='#ffb43a';g.fillRect(x+w*.62,y+d*.35,10,6);g.fillStyle='#333';g.fillRect(x+w*.62+1,y+d*.35+5,3,2);g.fillRect(x+w*.62+6,y+d*.35+5,3,2);break}
+  case 'waste':{g.strokeStyle='#8a8a7a';g.lineWidth=1.5;g.strokeRect(x+4,y+4,w-8,d-8);for(let i=0;i<2+L;i++){g.fillStyle=['#4a8a4a','#3a6aa8','#8a8a8a'][i%3];g.fillRect(x+8+(i%4)*12,y+8+Math.floor(i/4)*14,9,10)}g.fillStyle='#6a5a3a';g.beginPath();g.ellipse(x+w*.7,y+d*.7,9,6,0,0,7);g.fill();break}
+  case 'well':{g.fillStyle='#9a9a8a';g.beginPath();g.ellipse(x+w/2,y+d*.6,9,6,0,0,7);g.fill();g.fillStyle='#2a5a8a';g.beginPath();g.ellipse(x+w/2,y+d*.58,6,3.5,0,0,7);g.fill();g.strokeStyle='#6b4a2a';g.lineWidth=1.5;g.beginPath();g.moveTo(x+w/2-8,y+d*.6);g.lineTo(x+w/2-8,y+d*.6-14-L*2);g.moveTo(x+w/2+8,y+d*.6);g.lineTo(x+w/2+8,y+d*.6-14-L*2);g.stroke();roofDraw(g,x+w/2-11,y+d*.6-22-L*2,22,9,'#c8503a','pyramid',{});break}
+  case 'desal':{for(let i=0;i<Math.min(4,1+Math.ceil(L/2));i++){const cx=x+10+(i%2)*(w-20),cy=y+12+Math.floor(i/2)*(d-24);g.fillStyle='#d8e0e8';g.fillRect(cx-7,cy,14,8);g.fillStyle='#eef4f8';g.beginPath();g.ellipse(cx,cy,7,4,0,0,7);g.fill()}g.strokeStyle='#7a8a9a';g.lineWidth=2;g.beginPath();g.moveTo(x+10,y+d/2);g.lineTo(x+w-10,y+d/2);g.stroke();break}
+  case 'diesel':{box(g,x+4,y+8,w-8,d-14,FH+L*2,'#8a8f98','#5a5f68',{id,win:false});const ch=FH+L*2+20;g.fillStyle='#5a5a5a';g.fillRect(x+w-12,y+8-ch+FH,6,ch);smoke(g,x+w-9,y+8-ch+FH,t,b.id);break}
+  case 'solar':{g.fillStyle='#d8d0b8';g.fillRect(x+2,y+2,w-4,d-4);const n=Math.min(9,2+L);for(let i=0;i<n;i++){const cx=x+5+(i%3)*(w-10)/3,cy=y+5+Math.floor(i/3)*(d-10)/3;g.fillStyle='#1f3a6a';g.fillRect(cx,cy,(w-10)/3-3,(d-10)/3-4);g.strokeStyle='rgba(160,200,255,.6)';g.lineWidth=.6;g.beginPath();g.moveTo(cx,cy+4);g.lineTo(cx+(w-10)/3-3,cy+4);g.stroke()}break}
+  case 'wind':{const h=36+L*8,cx=x+w/2,cy=y+d*.75;g.strokeStyle='#e8eef2';g.lineWidth=2.5;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx,cy-h);g.stroke();g.save();g.translate(cx,cy-h);g.rotate(t*2+id);g.fillStyle='#fff';for(let k=0;k<3;k++){g.rotate(Math.PI*2/3);g.beginPath();g.moveTo(0,0);g.lineTo(-1.5,-14-L);g.lineTo(1.5,-14-L);g.fill()}g.restore();g.fillStyle='#ccc';g.beginPath();g.arc(cx,cy-h,2,0,7);g.fill();break}
+  case 'farm':{g.fillStyle='#8aa060';g.fillRect(x+2,y+2,w-4,d-4);const n=Math.min(9,2+L*1.4|0);for(let i=0;i<n;i++)palmAt(g,x+8+(i%3)*(w-16)/2,y+16+Math.floor(i/3)*(d-18)/2.2,.6,t+i);break}
+  case 'taro':{g.fillStyle='#6a8a4a';g.fillRect(x+2,y+2,w-4,d-4);for(let r=0;r<4;r++){g.fillStyle=r%2?'#4aa060':'#5ab86a';g.fillRect(x+5,y+6+r*(d-10)/4,w-10,(d-10)/4-3)}if(L>=3){g.fillStyle='rgba(80,160,220,.6)';g.fillRect(x+w*.7,y+6,w*.22,d*.25)}break}
+  case 'fishing':{const sea=seaDir(I,b);pier(g,b,sea,6+L*3);g.fillStyle='#a87b4c';g.fillRect(x+4,y+4,w*.45,d*.45);roofDraw(g,x+3,y+2,w*.5,d*.42,'#c8503a','pyramid',{});for(let i=0;i<Math.min(3,1+Math.floor(L/2));i++)boatIcon(g,x+w/2+sea[0]*(14+i*10)+(i-1)*9,y+d/2+sea[1]*(14+i*10)+(i-1)*6,t+i,'#f3efe4');break}
+  case 'market':{const n=Math.min(6,1+L);const cols=['#ff7a59','#3fd6cf','#ffc94a','#c07bff','#5fdc8c','#ff6a9a'];for(let i=0;i<n;i++){const sx=x+5+(i%3)*(w-10)/3,sy=y+8+Math.floor(i/3)*(d-12)/2;g.fillStyle='#a87b4c';g.fillRect(sx+2,sy+6,(w-10)/3-4,7);g.fillStyle=cols[i];g.fillRect(sx,sy,(w-10)/3-1,6);g.fillStyle='#fff';for(let k=0;k<3;k++)g.fillRect(sx+k*((w-10)/9),sy,((w-10)/18),6)}if(L>=5)box(g,x+4,y+4,w-8,d*.3,FH,'#f4e8d0','#d8664a',{roof:'pyramid',id,win:false});break}
+  case 'workshop':{box(g,x+4,y+6,w-8,d-12,FH+L*1.5,'#b8875a','#8a6040',{id,win:'wide'});g.fillStyle='#c8a070';for(let i=0;i<Math.min(4,L);i++)g.fillRect(x+w-10-i*7,y+d-8,6,6);break}
+  case 'boatyard':{const sea=seaDir(I,b);g.fillStyle='#a8a090';g.fillRect(x+3,y+3,w-6,d-6);g.fillStyle='#8a5a2a';g.beginPath();g.ellipse(x+w/2,y+d/2,w*.32,d*.14,sea[0]?0:Math.PI/2,0,7);g.fill();g.strokeStyle='#ffb43a';g.lineWidth=3;g.beginPath();g.moveTo(x+8,y+d-6);g.lineTo(x+8,y+6);g.lineTo(x+w*.6,y+10);g.stroke();break}
+  case 'harbor':{const sea=seaDir(I,b);pier(g,b,sea,10+L*4);g.fillStyle='#a87b4c';g.fillRect(x+3,y+3,w-6,d-6);for(let i=0;i<4;i++){g.fillStyle='#5a4030';g.fillRect(x+6+i*(w-12)/3,y+5,3,3)}if(L>=3&&isModern()){g.fillStyle='#ff7a59';g.fillRect(x+6,y+d-14,10,8);g.fillStyle='#3a6ad0';g.fillRect(x+18,y+d-14,10,8)}if(L>=2)boatIcon(g,x+w/2+sea[0]*(30+L*3),y+d/2+sea[1]*(30+L*3),t,isModern()?'#ffffff':'#f3efe4',isModern()&&L>=3);flag(g,x+w-6,y+6,16,'#3fd6cf',t);break}
+  case 'airstrip':{g.fillStyle='#4a4f58';g.fillRect(x+4,y+2,w-8,d-4);g.fillStyle='#fff';for(let k=0;k<d/14;k++)g.fillRect(x+w/2-1,y+6+k*14,2,7);g.fillStyle='#e8eef2';g.fillRect(x-2,y+d*.4,6,16);if(L>=3)box(g,x+w-2,y+d*.3,10,16,FH,'#eae2d0','#c8b898',{id,win:false});break}
+  case 'hotel':{const c=hashC(id,['#fff4e0','#e0f4f0','#f8e8f0']);palmAt(g,x+5,y+d-3,.7,t);box(g,x+6,y+6,w-12,d-14,FH*(1+Math.ceil(L/2)),c,'#3a8ab8',{roof:'pyramid',id,win:'wide',balcony:1});break}
+  case 'resort':{const n=Math.min(8,2+L);poolAt(g,x+w*.35,y+d*.4,w*.32,d*.22);for(let i=0;i<n;i++){const a=i/n*Math.PI*2;const bx=x+w/2+Math.cos(a)*w*.36-7,by=y+d/2+Math.sin(a)*d*.36-5;box(g,bx,by,14,10,8,'#c8a070','#d8b060',{roof:'thatch',id:id+i,win:false})}palmAt(g,x+w*.15,y+d*.2,.8,t);palmAt(g,x+w*.85,y+d*.85,.8,t+1);umbrella(g,x+w*.7,y+d*.65,'#ff7a59');break}
+  case 'dive':{box(g,x+5,y+8,w-10,d-14,9+L,'#c8a070','#d8b060',{roof:'thatch',id,win:false});g.fillStyle='#e8302a';g.fillRect(x+w-9,y+2,8,6);g.strokeStyle='#fff';g.lineWidth=1.3;g.beginPath();g.moveTo(x+w-9,y+2);g.lineTo(x+w-1,y+8);g.stroke();break}
+  case 'bar':{box(g,x+5,y+9,w-10,d-14,8,'#a87b4c','#d8b060',{roof:'thatch',id,win:false});umbrella(g,x+5,y+d-2,'#3fd6cf');umbrella(g,x+w-4,y+d-4,'#ffc94a');break}
+  case 'park':{g.fillStyle='#6aba5a';rr(g,x+2,y+2,w-4,d-4,6);g.fill();for(let i=0;i<2+L;i++){g.fillStyle=['#ff7a8a','#ffd23f','#ffffff','#c07bff'][i%4];g.beginPath();g.arc(x+6+((i*7)%20),y+20+((i*5)%8),2,0,7);g.fill()}g.fillStyle='#2f8a4c';g.beginPath();g.arc(x+w*.6,y+d*.4,7+L,0,7);g.fill();break}
+  case 'palm':palmAt(g,x+w/2,y+d*.85,1,t+id);break;
+  case 'plaza':{g.fillStyle='#e8dcc8';g.fillRect(x+2,y+2,w-4,d-4);g.strokeStyle='rgba(160,140,110,.4)';g.lineWidth=1;for(let i=6;i<w;i+=8){g.beginPath();g.moveTo(x+i,y+2);g.lineTo(x+i,y+d-2);g.stroke()}g.fillStyle='#9ac8e0';g.beginPath();g.arc(x+w/2,y+d/2,9+L,0,7);g.fill();g.fillStyle='#c8c0b0';g.beginPath();g.arc(x+w/2,y+d/2,3,0,7);g.fill();g.fillStyle='rgba(255,255,255,.8)';for(let k=0;k<5;k++){const a=t*3+k*1.25;g.beginPath();g.arc(x+w/2+Math.cos(a)*5,y+d/2-6+Math.sin(t*6+k)*2,1.2,0,7);g.fill()}break}
+  case 'stage':{g.fillStyle='#6a4a2a';g.fillRect(x+4,y+6,w-8,d*.5);box(g,x+4,y+4,w-8,6,FH*1.6,'#3a3a4a','#2a2a3a',{id,win:false});for(let i=0;i<3;i++){g.fillStyle=`hsl(${(t*90+i*120)%360},90%,60%)`;g.beginPath();g.arc(x+10+i*(w-20)/2,y+4-FH*1.6+3,2.5,0,7);g.fill()}break}
+  case 'statue':{g.fillStyle='#c8c0b0';g.fillRect(x+9,y+16,14,10);g.fillStyle=L>=3?'#ffcc33':'#9aa8b0';g.fillRect(x+13,y+2,6,14);g.beginPath();g.arc(x+16,y+1,3.5,0,7);g.fill();break}
+  case 'lamp':{g.strokeStyle='#4a4f58';g.lineWidth=2;g.beginPath();g.moveTo(x+w/2,y+d*.8);g.lineTo(x+w/2,y+d*.8-22);g.stroke();g.fillStyle=lightAmt()>0?'#fff4b0':'#d8d8c8';g.beginPath();g.arc(x+w/2,y+d*.8-23,3,0,7);g.fill();break}
+  case 'lighthouse':{const h=60+L*14;box(g,x+w/2-9,y+d/2-6,18,14,h,'#ffffff','#e8302a',{id,win:false});g.fillStyle='#e8302a';for(let k=0;k<h;k+=20)g.fillRect(x+w/2-9,y+d/2+8-h+k,18,8);g.fillStyle='#ffd23f';g.beginPath();g.arc(x+w/2,y+d/2-6-h+6,4,0,7);g.fill();break}
+  case 'coralpalace':{box(g,x+6,y+8,w-12,d-14,FH*(2+L),'#ffb8c8','#ff8ab0',{roof:'dome',domeC:'#ff6a9a',id,win:'arched'});for(const sx of[x+8,x+w-8]){g.fillStyle='#ff8ab0';g.fillRect(sx-3,y+10-FH*(3+L),6,FH*(3+L));g.beginPath();g.moveTo(sx-4,y+10-FH*(3+L));g.lineTo(sx,y-FH*(3+L));g.lineTo(sx+4,y+10-FH*(3+L));g.fill()}break}
+  case 'floatmarket':{g.fillStyle='#a87b4c';g.fillRect(x+3,y+3,w-6,d-6);g.fillStyle='rgba(80,180,220,.7)';g.fillRect(x+10,y+10,w-20,d-20);for(let i=0;i<3+L;i++){boatIcon(g,x+18+(i%3)*(w-36)/2,y+18+Math.floor(i/3)*(d-36)/2,t+i,['#ff7a59','#ffc94a','#3fd6cf','#c07bff'][i%4])}break}
+  case 'sanctuary':{g.fillStyle='#e8dcc0';g.fillRect(x+3,y+3,w-6,d-6);for(let i=0;i<3;i++){g.fillStyle='#4ac0d8';g.beginPath();g.ellipse(x+w*(.25+i*.25),y+d*.6,12,8,0,0,7);g.fill();g.fillStyle='#5a8a3a';g.beginPath();g.ellipse(x+w*(.25+i*.25)+Math.sin(t+i)*4,y+d*.6,4,3,0,0,7);g.fill()}box(g,x+w*.3,y+6,w*.4,d*.25,FH,'#f4efe4','#d8b060',{roof:'thatch',id,win:false});break}
+  case 'observatory':{box(g,x+5,y+8,w-10,d-14,FH*(1+L*.5),'#e8eef2','#c8d0d8',{roof:'dome',domeC:'#c8d0e0',id,win:'small'});g.strokeStyle='#4a5a6a';g.lineWidth=3;g.beginPath();g.moveTo(x+w/2,y+d/2-FH*(1+L*.5));g.lineTo(x+w/2+10,y+d/2-FH*(1+L*.5)-12);g.stroke();break}
+  case 'festival':{g.fillStyle='#8aca6a';g.fillRect(x+3,y+3,w-6,d-6);for(let i=0;i<4;i++){const tx=x+12+(i%2)*(w*.45),ty=y+16+Math.floor(i/2)*(d*.4);g.fillStyle=['#ff7a59','#3fd6cf','#ffc94a','#c07bff'][i];g.beginPath();g.moveTo(tx,ty+14);g.lineTo(tx+10,ty);g.lineTo(tx+20,ty+14);g.fill()}const cx=x+w*.72,cy=y+d*.35,r=16+L*2;g.strokeStyle='#e8eef2';g.lineWidth=1.5;g.beginPath();g.arc(cx,cy,r,0,7);g.stroke();for(let k=0;k<8;k++){const a=t*.5+k*Math.PI/4;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);g.stroke();g.fillStyle=['#ff7a59','#ffc94a'][k%2];g.fillRect(cx+Math.cos(a)*r-2,cy+Math.sin(a)*r-2,4,4)}break}
+  case 'seabridge':{g.fillStyle='#e8dcc0';g.fillRect(x+3,y+d*.55,w-6,d*.4);g.strokeStyle='#f4efe4';g.lineWidth=7;g.beginPath();g.arc(x+w/2,y+d*.85,w*.38,Math.PI,0);g.stroke();g.strokeStyle='#ffc94a';g.lineWidth=2;g.beginPath();g.arc(x+w/2,y+d*.85,w*.38,Math.PI,0);g.stroke();break}
+  case 'skytower':{const fl=20+L*6;box(g,x+w/2-14,y+d/2-12,28,26,fl*FH,'#bcd8ec','#4a5a6a',{id,win:'glass'});g.strokeStyle='#dde';g.lineWidth=2;g.beginPath();g.moveTo(x+w/2,y+d/2-12-fl*FH);g.lineTo(x+w/2,y+d/2-fl*FH-50);g.stroke();break}
+  case 'design':drawDesign(g,b,x,y,w,d,t);break;
+  default:box(g,x+4,y+4,w-8,d-8,FH,'#ccc','#999',{id})}
+  if(b.state==='up'){const p=clamp(1-(b.end-now())/(b.dur*1000),0,1);crane(g,x+w-4,y+d-2,50+b.lvl*6,t);bar(g,x+4,y-12,w-8,p,'#ffc94a')}
+  if(b.state==='fire'){for(let i=0;i<3;i++){const fx=x+w*(.25+i*.25),fy=y+d*.4;const k=Math.sin(t*12+i*2);g.fillStyle='rgba(255,120,30,.85)';g.beginPath();g.moveTo(fx-6,fy);g.quadraticCurveTo(fx-2,fy-16-k*4,fx,fy-24-k*5);g.quadraticCurveTo(fx+3,fy-14,fx+6,fy);g.fill();g.fillStyle='rgba(255,220,80,.9)';g.beginPath();g.moveTo(fx-3,fy);g.quadraticCurveTo(fx,fy-10-k*2,fx,fy-14);g.quadraticCurveTo(fx+2,fy-8,fx+3,fy);g.fill()}smoke(g,x+w/2,y-10,t,id)}}
+function drawDesign(g,b,x,y,w,d,t){const dd=b.dd||(G.designs||[]).find(z=>z.id===b.d);if(!dd)return;const s=designStats(dd),L=b.lvl||1;const ext=dd.ext||{};const wall=WALLS[dd.wall%WALLS.length];
+  const bw=w*s.body,bd=d*s.body,bx=x+(w-bw)/2*(s.body<1?.3:1),by=y+(d-bd)*(s.body<1?.15:.5);
+  g.fillStyle=ext.garden?'#7cc46a':'#efe6cf';g.fillRect(x+2,y+2,w-4,d-4);
+  if(ext.pool)poolAt(g,x+w*.52,y+d*.66,w*.42,d*.26);if(ext.fountain){g.fillStyle='#9ac8e0';g.beginPath();g.arc(x+w*.2,y+d*.8,6,0,7);g.fill()}
+  if(ext.garden){g.fillStyle='#4aa860';for(let i=0;i<4;i++){g.beginPath();g.arc(x+6+i*(w-12)/3,y+d-6,3.5,0,7);g.fill()}}
+  if(ext.umbrellas){umbrella(g,x+w*.75,y+d-4,'#ff7a59');umbrella(g,x+w*.9,y+d*.75,'#3fd6cf')}
+  if(dd.type==='resort'){const n=Math.min(6,1+L);for(let i=0;i<n;i++){const bxx=x+4+i*(w-20)/Math.max(1,n-1);box(g,bxx,y+d-16,12,9,7,'#c8a070','#d8b060',{roof:'thatch',id:i,win:false})}}
+  const h=dd.floors*FH;box(g,bx+3,by+3,bw-6,bd-6-(dd.type==='resort'?14:0),h,wall,dd.roof==='thatch'?'#d8b060':dd.roof==='garden'?'#8aa070':shade(wall,-.25),{roof:dd.roof,win:dd.win,balcony:ext.balcony,id:b.id||1,domeC:'#3fb8d6'});
+  if(ext.palms){palmAt(g,x+6,y+d-3,.8,t);palmAt(g,x+w-6,y+d*.55,.7,t+1)}
+  if(ext.lights&&lightAmt()>0){g.fillStyle=`rgba(255,220,130,${lightAmt()})`;for(let i=0;i<4;i++){g.beginPath();g.arc(x+4+i*(w-8)/3,y+d-2,2,0,7);g.fill()}}
+  if(L>=2)flag(g,bx+6,by+3-h,12+L*2,'#ff7a59',t);if(L>=4)flag(g,bx+bw-8,by+3-h,12+L*2,'#3fd6cf',t+1)}
+function seaDir(I,b){if(!I)return[0,1];let best=[0,1],bc=-1;for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0]]){let c=0;for(let k=1;k<5;k++){const x=b.x+b.w/2+dx*(b.w/2+k),y=b.y+b.h/2+dy*(b.h/2+k);if(tileAt(I,Math.floor(x),Math.floor(y))<=1)c++}if(c>bc){bc=c;best=[dx,dy]}}return best}
+function pier(g,b,sea,len){const x=b.x*TS,y=b.y*TS,w=b.w*TS,d=b.h*TS;const cx=x+w/2,cy=y+d/2;g.fillStyle='#8a5a2a';const L=w/2+len;if(sea[0])g.fillRect(cx+(sea[0]>0?0:-L),cy-4,L,8);else g.fillRect(cx-4,cy+(sea[1]>0?0:-L),8,L);g.fillStyle='#6b4a2a';for(let k=0;k<L;k+=8){if(sea[0])g.fillRect(cx+sea[0]*k-1,cy-5,2,10);else g.fillRect(cx-5,cy+sea[1]*k-1,10,2)}}
+function boatIcon(g,x,y,t,c,ferry){g.save();g.translate(x,y+Math.sin(t*2)*1.2);g.fillStyle='rgba(255,255,255,.35)';g.beginPath();g.ellipse(0,4,12,3,0,0,7);g.fill();g.fillStyle=c;g.beginPath();g.moveTo(-10,0);g.lineTo(10,0);g.quadraticCurveTo(12,-3,13,-6);g.quadraticCurveTo(9,5,-7,5);g.closePath();g.fill();if(ferry){g.fillStyle='#3a6ad0';g.fillRect(-6,-6,10,6)}else{g.strokeStyle='#6b4a2a';g.lineWidth=1;g.beginPath();g.moveTo(-1,0);g.lineTo(-1,-14);g.stroke();g.fillStyle='#fff';g.beginPath();g.moveTo(0,-13);g.lineTo(7,-4);g.lineTo(0,-3);g.fill()}g.restore()}
+function crane(g,x,y,h,t){g.strokeStyle='#ffb43a';g.lineWidth=2;g.beginPath();g.moveTo(x,y);g.lineTo(x,y-h);g.lineTo(x-24,y-h);g.moveTo(x,y-h);g.lineTo(x+8,y-h);g.stroke();const sw=Math.sin(t*1.5)*3;g.strokeStyle='#666';g.lineWidth=.8;g.beginPath();g.moveTo(x-18,y-h);g.lineTo(x-18+sw,y-h+18);g.stroke();g.fillStyle='#c87a2a';g.fillRect(x-21+sw,y-h+18,6,4)}
+function bar(g,x,y,w,p,c){rr(g,x,y,w,5,2.5);g.fillStyle='rgba(0,0,0,.5)';g.fill();rr(g,x,y,Math.max(5,w*p),5,2.5);g.fillStyle=c;g.fill()}
+function smoke(g,x,y,t,id){for(let i=0;i<4;i++){const ph=((t*.4+i/4+(id%7)*.1)%1);g.fillStyle=`rgba(90,90,100,${.45*(1-ph)})`;g.beginPath();g.arc(x+Math.sin(ph*6+id)*5+ph*10,y-ph*36,3+ph*9,0,7);g.fill()}}
+/* ---------- day/night ---------- */
+let _glow=null;function glowSpr(){if(_glow)return _glow;const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const gr=x.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,200,110,1)');gr.addColorStop(.5,'rgba(255,190,100,.45)');gr.addColorStop(1,'rgba(255,190,100,0)');x.fillStyle=gr;x.fillRect(0,0,64,64);return _glow=c}
+const dayAmt=()=>{const h=G.tod*24;if(h<5||h>=20)return 0;if(h<7)return(h-5)/2;if(h>=18)return(20-h)/2;return 1};
+const lightAmt=()=>G?clamp(1-dayAmt()*1.4,0,1):0;
+/* ---------- life: walkers, cars, boats, planes ---------- */
+let walkers=[],boats=[],planes=[],floats=[],fx=[];
+function roadList(I){if(I._rl&&I._rlN===Object.keys(I.road).length)return I._rl;I._rl=Object.keys(I.road).map(Number);I._rlN=I._rl.length;return I._rl}
+function lifeUpdate(I,dt,t){const rl=roadList(I);const want=Math.min(70,Math.round(I.c.length/3)),wantCars=isModern()?Math.min(25,Math.round(I.c.length/12)):0;
+  if(rl.length){while(walkers.filter(w=>!w.car).length<want){const k=pick(rl);walkers.push({x:k%I.n+.5,y:(k/I.n|0)+.5,tx:k%I.n,ty:k/I.n|0,c:pick(['#ff7a59','#3fd6cf','#ffc94a','#ffffff','#c07bff','#5fdc8c','#ff6a9a']),s:.8+Math.random()*.6})}
+    while(walkers.filter(w=>w.car).length<wantCars){const k=pick(rl);walkers.push({car:1,x:k%I.n+.5,y:(k/I.n|0)+.5,tx:k%I.n,ty:k/I.n|0,c:pick(['#e8302a','#3a6ad0','#f4f4f4','#ffc94a','#2a2a2a']),s:2.4})}}
+  walkers=walkers.filter(w=>rl.length&&isRoad(I,Math.floor(w.x),Math.floor(w.y)));if(walkers.length>want+wantCars)walkers.length=want+wantCars;
+  for(const w of walkers){const gx=w.tx+.5,gy=w.ty+.5,dx=gx-w.x,dy=gy-w.y,dd=Math.hypot(dx,dy);if(dd<.05){const opts=[[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b])=>isRoad(I,w.tx+a,w.ty+b));const back=opts.filter(([a,b])=>!(a===-w.dx&&b===-w.dy));const o=pick(back.length?back:opts.length?opts:[[0,0]]);w.dx=o[0];w.dy=o[1];w.tx+=o[0];w.ty+=o[1]}else{const sp=w.s*dt;w.x+=dx/dd*Math.min(sp,dd);w.y+=dy/dd*Math.min(sp,dd)}}
+  for(const B2 of boats){B2.t+=dt/B2.dur;if(B2.t>=1&&!B2.done){B2.done=true;if(B2.n)floats.push({txt:`+${B2.n} newcomers`,x:B2.x1,y:B2.y1-20,l:2})}}boats=boats.filter(b=>b.t<1.6);
+  for(const f of floats){f.y-=12*dt;f.l-=dt}floats=floats.filter(f=>f.l>0);
+  // ambient fishing boats and planes
+  if(Math.random()<dt*.15){const j=I.b.filter(b=>b.t==='fishing'&&b.state==='ok');if(j.length){const b=pick(j),sea=seaDir(I,b);const x0=(b.x+b.w/2)*TS,y0=(b.y+b.h/2)*TS;boats.push({x0,y0,x1:x0+sea[0]*TS*7+rnd(-60,60),y1:y0+sea[1]*TS*7+rnd(-60,60),t:0,dur:9,c:'#f3efe4',rt:1})}}
+  if(isModern()&&Math.random()<dt*.06){const a=I.b.find(b=>b.t==='airstrip'&&b.state==='ok');if(a&&planes.length<1)planes.push({b:a,t:0})}for(const p of planes)p.t+=dt/7;planes=planes.filter(p=>p.t<1)}
+function visArrive(I,n){if(view!=='isle'||!I._cv)return;const h=I.b.find(b=>b.t==='harbor'&&b.state!=='build');let tx,ty,sea=[0,1];if(h){sea=seaDir(I,h);tx=(h.x+h.w/2)*TS+sea[0]*TS*1.8;ty=(h.y+h.h/2)*TS+sea[1]*TS*1.8}else{const k=I.n*TS;tx=k/2;ty=k*.85}
+  boats.push({x0:tx+sea[0]*TS*9+rnd(-80,80),y0:ty+sea[1]*TS*9+rnd(-80,80),x1:tx,y1:ty,t:0,dur:6,n,c:isModern()?'#ffffff':'#c8a070',raft:!isModern(),ferry:isModern()})}
+/* ---------- main isle render ---------- */
+let ghost=null,selB=null,roadA=null,roadPrev=null,hoverTile=null;
+function renderIsle(g,t){const I=G.isl[G.cur];const day=dayAmt();
+  const sea=g.createLinearGradient(0,0,0,H);sea.addColorStop(0,mix('#0a2a5a','#1a8ac0',day));sea.addColorStop(1,mix('#061a3a','#0d5f93',day));g.fillStyle=sea;g.fillRect(0,0,W,H);
+  g.save();g.translate(W/2,H/2);g.scale(cam.z,cam.z);g.translate(-cam.x,-cam.y);
+  // waves
+  g.strokeStyle=`rgba(255,255,255,${.06+.06*day})`;g.lineWidth=2/cam.z;const n=I.n*TS;for(let i=-4;i<16;i++){g.beginPath();for(let x=-400;x<=n+400;x+=24)g.lineTo(x,i*n/12+Math.sin(x*.02+t*.8+i)*6);g.stroke()}
+  g.drawImage(terrain(I),0,0);
+  // treasure sparkles
+  for(const s of I.trs){if(s.found)continue;const px=(s.x+.5)*TS,py=(s.y+.5)*TS,p=.5+.5*Math.sin(t*5);g.save();g.translate(px,py);g.rotate(t);g.fillStyle=`rgba(255,240,150,${.6+.4*p})`;g.beginPath();for(let k=0;k<8;k++){const a=k*Math.PI/4,r=k%2?3:8+p*4;g.lineTo(Math.cos(a)*r,Math.sin(a)*r)}g.fill();g.restore()}
+  // boats on water
+  for(const b of boats){const u=clamp(b.t,0,1),k=b.rt?Math.sin(u*Math.PI):u*u*(3-2*u);const x=lerp(b.x0,b.x1,b.rt?k:k),y=lerp(b.y0,b.y1,b.rt?k:k);if(b.raft){g.save();g.translate(x,y+Math.sin(t*2)*1.5);g.fillStyle='#b8905a';g.fillRect(-10,-6,20,12);g.strokeStyle='#8a6a3a';g.lineWidth=1;for(let i=-6;i<=6;i+=4){g.beginPath();g.moveTo(-10,i);g.lineTo(10,i);g.stroke()}for(let i=0;i<Math.min(4,b.n||0);i++){g.fillStyle=['#ff7a59','#3fd6cf','#ffc94a','#fff'][i];g.beginPath();g.arc(-6+i*4,-2,2.2,0,7);g.fill()}g.strokeStyle='#6b4a2a';g.beginPath();g.moveTo(0,-6);g.lineTo(0,-20);g.stroke();g.fillStyle='#f4efe4';g.beginPath();g.moveTo(1,-19);g.lineTo(9,-9);g.lineTo(1,-8);g.fill();g.restore()}else boatIcon(g,x,y,t,b.c,b.ferry)}
+  // buildings sorted
+  const list=[...I.b].sort((a,b)=>(a.y+a.h)-(b.y+b.h)||a.x-b.x);
+  for(const b of list){drawB(g,b,t,{I});if(b===selB){g.strokeStyle='#ffc94a';g.lineWidth=2.5/cam.z;g.setLineDash([6/cam.z,4/cam.z]);g.strokeRect(b.x*TS+1,b.y*TS+1,b.w*TS-2,b.h*TS-2);g.setLineDash([])}
+    if(b.state!=='build'&&b.state!=='ruin'){const D=bdef(b);let ic=null;if(needsRoad(b.t)&&!roadAdj(I,b))ic='road';else if(D.era==='modern'&&!isModern())ic='era';else if(G._S&&G._S.isl[I.i]&&D.sec&&D.st&&G._S.isl[I.i].sr[D.sec]===0)ic='staff';else if(isModern()&&D.pw&&G._S&&G._S.isl[I.i]&&G._S.isl[I.i].pr<.5)ic='power';
+      if(ic){const ix=(b.x+b.w/2)*TS,iy=b.y*TS-6;g.fillStyle=ic==='staff'?'#ffb648':'#ff6363';g.beginPath();g.arc(ix,iy,8,0,7);g.fill();g.fillStyle='#fff';g.font='900 10px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(ic==='road'?'R':ic==='power'?'⚡':ic==='staff'?'!':'M',ix,iy+1);g.textBaseline='alphabetic'}}}
+  // walkers & cars
+  for(const w of walkers){const px=w.x*TS,py=w.y*TS;if(w.car){g.save();g.translate(px+(w.dy?-6:0),py+(w.dx?-6:0));g.rotate(Math.atan2(w.dy||0,w.dx||1));g.fillStyle=w.c;rr(g,-6,-3.5,12,7,2);g.fill();g.fillStyle='rgba(160,220,255,.9)';g.fillRect(1,-2.5,3,5);g.restore()}else{g.fillStyle='rgba(0,0,0,.2)';g.beginPath();g.ellipse(px+1,py+3,2.5,1.2,0,0,7);g.fill();g.fillStyle=w.c;g.beginPath();g.arc(px,py-2,2.6,0,7);g.fill();g.fillStyle='#c98a5a';g.beginPath();g.arc(px,py-5.5,1.7,0,7);g.fill()}}
+  // planes
+  for(const p of planes){const b=p.b,u=p.t;const x=(b.x+b.w/2)*TS,y0=(b.y-3)*TS,y1=(b.y+b.h+3)*TS;const py=lerp(y0,y1,u),alt=Math.sin(Math.min(1,u*1.6)*Math.PI/2)*0;const hgt=u<.5?(1-u*2)*60:0;g.fillStyle='rgba(0,0,0,.2)';g.beginPath();g.ellipse(x+hgt*.3,py+4,10,3,0,0,7);g.fill();g.save();g.translate(x,py-hgt);g.fillStyle='#f4f6f8';g.fillRect(-2,-10,4,20);g.fillRect(-12,-2,24,4);g.fillRect(-5,7,10,2);g.fillStyle='#ff7a59';g.fillRect(-2,-11,4,3);g.restore()}
+  // ghost
+  if(ghost){const D=ghost.t==='design'?{w:ghost.dd.size,h:ghost.dd.size}:B[ghost.t];const ok=ghost.ok;g.globalAlpha=.75;drawB(g,{id:1,t:ghost.t,x:ghost.x,y:ghost.y,w:D.w,h:D.h,lvl:1,state:'ok',dd:ghost.dd},t,{I,ghost:1});g.globalAlpha=1;g.fillStyle=ok?'rgba(95,220,140,.3)':'rgba(255,99,99,.35)';g.fillRect(ghost.x*TS,ghost.y*TS,D.w*TS,D.h*TS);g.strokeStyle=ok?'#5fdc8c':'#ff6363';g.lineWidth=2/cam.z;g.strokeRect(ghost.x*TS,ghost.y*TS,D.w*TS,D.h*TS)}
+  if(roadPrev){for(const[x,y]of roadPrev){const ok=roadValid(I,x,y);g.fillStyle=ok?'rgba(255,201,74,.5)':'rgba(255,99,99,.45)';g.fillRect(x*TS+3,y*TS+3,TS-6,TS-6)}}
+  if(roadA){g.strokeStyle='#ffc94a';g.lineWidth=3/cam.z;g.strokeRect(roadA[0]*TS+1,roadA[1]*TS+1,TS-2,TS-2)}
+  for(const f of floats){g.font=`900 ${14/cam.z+4}px Nunito Sans, sans-serif`;g.textAlign='center';g.fillStyle=`rgba(255,240,180,${clamp(f.l,0,1)})`;g.fillText(f.txt,f.x,f.y)}
+  g.restore();
+  // night & weather
+  const night=lightAmt();if(night>0){g.fillStyle=`rgba(5,12,40,${night*.62})`;g.fillRect(0,0,W,H)}
+  if(G.evt.storm>0){g.fillStyle='rgba(40,50,70,.25)';g.fillRect(0,0,W,H);g.strokeStyle='rgba(200,215,235,.35)';g.lineWidth=1;g.beginPath();for(let i=0;i<80;i++){const x=((i*73.3+t*240)%(W+40))-20,y=((i*41.7+t*700)%H);g.moveTo(x,y);g.lineTo(x-5,y+14)}g.stroke()}
+  if(night>.2){g.save();g.translate(W/2,H/2);g.scale(cam.z,cam.z);g.translate(-cam.x,-cam.y);g.globalCompositeOperation='lighter';const pwrOk=!isModern()||!G._S||!G._S.isl[I.i]||G._S.isl[I.i].pr>=.5;for(const b of I.b){if(b.state!=='ok'&&b.state!=='up')continue;const D=bdef(b);if(pwrOk&&!D.nature&&b.t!=='lamp'&&b.t!=='lighthouse'&&D.cat!=='prod'){const x=(b.x+b.w/2)*TS,y=(b.y+b.h/2)*TS-8,r=(b.w+b.h)*TS*.3;g.globalAlpha=(isModern()?.3:.22)*night;g.drawImage(glowSpr(),x-r,y-r,r*2,r*2);g.globalAlpha=1}if(b.t==='lamp'||(b.t==='lighthouse')){const x=(b.x+.5)*TS,y=(b.y+.2)*TS-(b.t==='lighthouse'?60+b.lvl*14:16);const gr=g.createRadialGradient(x,y,0,x,y,b.t==='lighthouse'?60:28);gr.addColorStop(0,`rgba(255,220,130,${.5*night})`);gr.addColorStop(1,'rgba(255,220,130,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,b.t==='lighthouse'?60:28,0,7);g.fill();if(b.t==='lighthouse'){g.save();g.translate(x,y);g.rotate(t*.8);g.fillStyle=`rgba(255,240,180,${.18*night})`;g.beginPath();g.moveTo(0,0);g.lineTo(400,-30);g.lineTo(400,30);g.fill();g.restore()}}}g.restore()}}
+/* ---------- world map ---------- */
+const miniC={};
+function islandMini(I){if(miniC[I.i])return miniC[I.i];const c=document.createElement('canvas'),s=4;c.width=c.height=I.n*s;const g=c.getContext('2d');for(let y=0;y<I.n;y++)for(let x=0;x<I.n;x++){const v=I.tiles[y*I.n+x];if(v===0)continue;g.fillStyle=v===1?'rgba(120,240,230,.5)':v===2?'#f0deb0':v===4?'#3a9a50':v===5?'#9a9a8a':'#7cc46a';g.fillRect(x*s,y*s,s,s)}return miniC[I.i]=c}
+const wcam={x:500,y:820,z:.55};
+function renderWorld(g,t){const sea=g.createLinearGradient(0,0,0,H);sea.addColorStop(0,'#0d5f93');sea.addColorStop(1,'#063a66');g.fillStyle=sea;g.fillRect(0,0,W,H);
+  g.save();g.translate(W/2,H/2);g.scale(wcam.z,wcam.z);g.translate(-wcam.x,-wcam.y);
+  g.strokeStyle='rgba(255,255,255,.06)';g.lineWidth=2/wcam.z;for(let i=0;i<30;i++){g.beginPath();for(let x=-200;x<=1200;x+=30)g.lineTo(x,i*60+Math.sin(x*.01+t*.5+i)*8);g.stroke()}
+  const lk=G.isl.filter(I=>linked(I));g.setLineDash([10,8]);g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=3;for(const I of lk)if(I.i!==0&&linked(G.isl[0])){const a=ISLES[0],b=ISLES[I.i];g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke()}g.setLineDash([]);
+  for(const I of lk)if(I.i!==0&&linked(G.isl[0])){const a=ISLES[0],b=ISLES[I.i];const u=(t*.05+I.i*.17)%1,k=u<.5?u*2:2-u*2;boatIcon(g,lerp(a.x,b.x,k),lerp(a.y,b.y,k),t,isModern()?'#fff':'#f3efe4',isModern());if(isModern()&&I.b.some(b=>b.t==='airstrip')){const u2=(t*.08+I.i*.3)%1;g.save();g.translate(lerp(b.x,a.x,u2),lerp(b.y,a.y,u2)-30);g.rotate(Math.atan2(a.y-b.y,a.x-b.x)+Math.PI/2);g.fillStyle='#fff';g.fillRect(-2,-9,4,18);g.fillRect(-11,-2,22,4);g.restore()}}
+  for(const I of G.isl){const S=ISLES[I.i],m=islandMini(I),sz=I.n*4*1.6;g.globalAlpha=I.unlocked?1:.45;g.drawImage(m,S.x-sz/2,S.y-sz/2,sz,sz);g.globalAlpha=1;
+    if(I.i===G.cur){g.strokeStyle='#ffc94a';g.lineWidth=4;g.beginPath();g.arc(S.x,S.y,sz*.42,0,7);g.stroke()}
+    g.font='900 26px Nunito Sans, sans-serif';g.textAlign='center';g.lineWidth=5;g.strokeStyle='rgba(4,16,30,.8)';g.strokeText(S.n,S.x,S.y+sz*.45+26);g.fillStyle=I.unlocked?'#fff':'#bcd';g.fillText(S.n,S.x,S.y+sz*.45+26);
+    g.font='800 18px Nunito Sans, sans-serif';const sub=I.unlocked?`${num(I.c.length)} people`:`Locked · ${fmtk(S.cost)}`;g.strokeText(sub,S.x,S.y+sz*.45+48);g.fillStyle=I.unlocked?'#ffc94a':'#8fb2bd';g.fillText(sub,S.x,S.y+sz*.45+48)}
+  g.restore();
+  g.fillStyle='rgba(4,16,30,.75)';rr(g,W/2-130,H-150,260,34,17);g.fill();g.fillStyle='#eaf6f7';g.font='800 13px Nunito Sans, sans-serif';g.textAlign='center';g.fillText('Tap an island to visit or unlock it',W/2,H-128)}
+/* ---------- thumbnails ---------- */
+const thumbC={};
+function thumb(t,dd){const k=t+(dd?JSON.stringify(dd):'')+(isModern()?'m':'');if(thumbC[k])return thumbC[k];const c=document.createElement('canvas');c.width=200;c.height=150;const g=c.getContext('2d');
+  const gr=g.createLinearGradient(0,0,0,150);gr.addColorStop(0,'#2bb5c4');gr.addColorStop(1,'#0d5f93');g.fillStyle=gr;g.fillRect(0,0,200,150);
+  const D=t==='design'?{w:dd.size,h:dd.size}:B[t];const fake={id:7,t,x:0,y:0,w:D.w,h:D.h,lvl:t==='townhall'?3:2,state:'ok',dd};
+  let hgt=40;if(t==='tower')hgt=10*FH;else if(t==='skytower')hgt=34*FH;else if(t==='design')hgt=dd.floors*FH;else if(t==='apart')hgt=3*FH;else if(t==='lighthouse')hgt=90;else if(t==='wind')hgt=60;
+  const s=Math.min(150/(D.w*TS+30),120/(D.h*TS+hgt+10));g.save();g.translate(100-D.w*TS*s/2,140-D.h*TS*s);g.scale(s,s);g.fillStyle='#f0deb0';g.fillRect(-6,-6,D.w*TS+12,D.h*TS+12);
+  const fakeI={n:D.w+20,tiles:new Uint8Array((D.w+20)*(D.h+20)).fill(2),i:0};drawB(g,fake,1.5,{I:null});g.restore();return thumbC[k]=c.toDataURL()}
+
+/* ================= sound ================= */
+let AC=null;function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume().catch(()=>{})}
+function tone(f,d,type,v,slide,delay){if(!AC||!G||G.mute)return;const t0=AC.currentTime+(delay||0),o=AC.createOscillator(),gn=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t0);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t0+d);gn.gain.setValueAtTime(v||.08,t0);gn.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(gn);gn.connect(AC.destination);o.start(t0);o.stop(t0+d+.02)}
+const sfx=k=>{try{({tap:()=>tone(700,.04,'triangle',.04),build:()=>{tone(220,.12,'square',.05);tone(330,.12,'square',.04,null,.08)},coin:()=>{tone(1100,.06,'square',.035);tone(1650,.1,'square',.035,null,.05)},done:()=>[523,659,784].forEach((f,i)=>tone(f,.15,'triangle',.07,null,i*.07)),bad:()=>tone(180,.15,'square',.05),big:()=>[523,659,784,1046,1318].forEach((f,i)=>tone(f,.2,'triangle',.08,null,i*.09))})[k]()}catch(e){}};
+/* ================= toasts & modals ================= */
+function toast(m,k){const t=document.createElement('div');t.className='toast '+(k||'');t.textContent=m;const b=$('#toasts');b.prepend(t);while(b.children.length>3)b.lastChild.remove();setTimeout(()=>t.remove(),3400)}
+let modalQ=[];function modal(html,bind){modalQ.push({html,bind});if($('#modal').hidden)nextModal()}
+function nextModal(){const m=modalQ.shift();if(!m){$('#modal').hidden=true;return}$('#mbox').innerHTML=m.html;$('#modal').hidden=false;m.bind&&m.bind($('#mbox'))}
+function closeModal(){nextModal()}
+function showAsk(){if(!askQ.length)return;const a=askQ.shift();modal(`<h2>${esc(a.title)}</h2><p>${esc(a.text)}</p><div class="btns">${a.opts.map((o,i)=>`<button class="btn ${i?'':'p'}" data-o="${i}">${esc(o[0])}</button>`).join('')}</div>`,box=>box.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{a.opts[+b.dataset.o][1]();closeModal();save();ui()}))}
+/* ================= camera & input ================= */
+function fitIsle(){const I=G.isl[G.cur];cam.z=clamp(W/(13*TS),.5,1.6);const th=I.b.find(b=>b.t==='townhall'||b.t==='office')||I.b.find(b=>b.t==='harbor');if(th){cam.x=(th.x+th.w/2)*TS;cam.y=(th.y+th.h)*TS}else{const[cx,cy]=centerOf(I);cam.x=(cx+.5)*TS;cam.y=(cy+.5)*TS}}
+function clampCam(){if(view!=='isle')return;const n=G.isl[G.cur].n*TS;cam.x=clamp(cam.x,0,n);cam.y=clamp(cam.y,0,n);cam.z=clamp(cam.z,.3,2.6)}
+const toWorld=(sx,sy)=>view==='isle'?[(sx-W/2)/cam.z+cam.x,(sy-H/2)/cam.z+cam.y]:[(sx-W/2)/wcam.z+wcam.x,(sy-H/2)/wcam.z+wcam.y];
+const toTile=(sx,sy)=>{const[wx,wy]=toWorld(sx,sy);return[Math.floor(wx/TS),Math.floor(wy/TS)]};
+const ptrs=new Map();let drag=null,pinch=null;
+cv.addEventListener('pointerdown',e=>{ac();try{cv.setPointerCapture(e.pointerId)}catch(x){}ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:view==='isle'?cam.z:wcam.z};drag=null}else drag={x:e.clientX,y:e.clientY,cx:view==='isle'?cam.x:wcam.x,cy:view==='isle'?cam.y:wcam.y,moved:false}});
+cv.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pinch&&ptrs.size===2){const[a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);const z=pinch.z*d/pinch.d;if(view==='isle')cam.z=clamp(z,.3,2.6);else wcam.z=clamp(z,.25,1.6);clampCam();return}
+  if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>8)drag.moved=true;if(drag.moved){const z=view==='isle'?cam.z:wcam.z,c=view==='isle'?cam:wcam;c.x=drag.cx-dx/z;c.y=drag.cy-dy/z;if(view==='world'){wcam.x=clamp(wcam.x,0,1000);wcam.y=clamp(wcam.y,200,1400)}clampCam()}}});
+const pUp=e=>{const had=ptrs.has(e.pointerId);ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(drag&&had&&!drag.moved&&ptrs.size===0)tap(e.clientX,e.clientY);if(ptrs.size===0)drag=null};
+cv.addEventListener('pointerup',pUp);cv.addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId);drag=null;pinch=null});
+cv.addEventListener('wheel',e=>{e.preventDefault();const c=view==='isle'?cam:wcam;c.z=clamp(c.z*(e.deltaY<0?1.12:.89),view==='isle'?.3:.25,view==='isle'?2.6:1.6);clampCam()},{passive:false});
+let mode=null,buildT=null,buildDD=null,bullT=null,roadRemove=false;
+function tap(sx,sy){if(!G)return;if(view==='world'){const[wx,wy]=toWorld(sx,sy);let best=null,bd=1e9;for(const I of G.isl){const S=ISLES[I.i];const d=Math.hypot(S.x-wx,S.y-wy);if(d<I.n*3.2&&d<bd){bd=d;best=I}}if(best){openSheet('isle',best.i)}return}
+  const I=G.isl[G.cur];const[tx,ty]=toTile(sx,sy);
+  if(mode==='build'){const D=buildT==='design'?{w:buildDD.size,h:buildDD.size}:B[buildT];const gx=tx-Math.floor((D.w-1)/2),gy=ty-Math.floor((D.h-1)/2);const c=canPlace(I,buildT,gx,gy,buildDD);ghost={t:buildT,dd:buildDD,x:gx,y:gy,ok:c.ok,why:c.why,cost:c.cost};sfx('tap');modeBar();return}
+  if(mode==='road'){if(roadRemove){if(removeRoad(I,tx,ty)){sfx('tap');toast('Road removed')}modeBar();return}if(!roadA){roadA=[tx,ty];roadPrev=[[tx,ty]]}else{roadPrev=roadPath(I,roadA,[tx,ty])}sfx('tap');modeBar();return}
+  if(mode==='bull'){const b=bAt(I,tx,ty);bullT=b&&b.t!=='townhall'?b:null;selB=bullT;modeBar();return}
+  const t=I.trs.find(s=>!s.found&&s.x===tx&&s.y===ty);if(t){digModal(I,t);return}
+  const b=bAt(I,tx,ty);if(b){selB=b;openSheet('info',b.id);sfx('tap')}else{selB=null;if(sheet==='info')closeSheet()}}
+/* ================= mode bar ================= */
+function setMode(m,t,dd){mode=m;buildT=t||null;buildDD=dd||null;ghost=null;roadA=null;roadPrev=null;bullT=null;roadRemove=false;if(m)closeSheet(true);modeBar();ui()}
+function modeBar(){const el=$('#mode');if(!mode){el.hidden=true;return}el.hidden=false;const I=G.isl[G.cur];let h='';
+  if(mode==='build'){const D=buildT==='design'?bdef({t:'design',dd:buildDD}):B[buildT];const cost=placeCost(buildT,buildDD);
+    h=`<div class="mt"><span>Place: ${esc(D.n)} <span class="lbl">${D.w}×${D.h}</span></span><b style="color:var(--gold)">${fmt(cost)}</b></div><div class="md">${ghost?(ghost.ok?'Good spot. Tap Build, or tap somewhere else.':esc(ghost.why)):'Tap the island where it should go.'}${D.coast?' Must touch the sea.':''}${needsRoad(buildT)?' Needs a road next to it.':''}</div>
+    <div class="btns"><button class="btn" data-m="cancel">Done</button><button class="btn p" data-m="place" ${ghost&&ghost.ok?'':'disabled'}>Build here</button></div>`}
+  else if(mode==='road'){const p=roadPrev||[];const nn=p.filter(([x,y])=>roadValid(I,x,y)&&!isRoad(I,x,y));const cost=nn.reduce((a,[x,y])=>a+roadCost()+(tileAt(I,x,y)===4?40:0),0);
+    h=`<div class="mt"><span>${roadRemove?'Remove roads':'Lay a road'}</span><b style="color:var(--gold)">${roadRemove?'':fmt(cost)}</b></div><div class="md">${roadRemove?'Tap road tiles to remove them.':roadA?(p.length>1?`${nn.length} new tiles. Tap Build road, or tap another end point.`:'Now tap where the road should end.'):`Tap where the road starts. ${isModern()?'Paved road':'Sand road'}: ${fmt(roadCost())} a tile.`}</div>
+    <div class="btns"><button class="btn" data-m="cancel">Done</button><button class="btn" data-m="rrem">${roadRemove?'Lay roads':'Remove'}</button>${roadRemove?'':`<button class="btn p" data-m="road" ${nn.length&&G.money>=cost?'':'disabled'}>Build road</button>`}</div>`}
+  else if(mode==='bull'){h=`<div class="mt"><span>Demolish</span></div><div class="md">${bullT?`Remove the ${esc(bdef(bullT).n)}? You get back ${fmt(Math.round(placeCost(bullT.t,bullT.dd)*.25*(bdef(bullT).wonder?0:1)))}.`:'Tap a building to remove it.'}</div><div class="btns"><button class="btn" data-m="cancel">Done</button><button class="btn d" data-m="bull" ${bullT?'':'disabled'}>Demolish</button></div>`}
+  el.innerHTML=h}
+$('#mode').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b||b.disabled)return;const I=G.isl[G.cur];const a=b.dataset.m;
+  if(a==='cancel'){selB=null;setMode(null);return}
+  if(a==='place'&&ghost&&ghost.ok){const nb=place(I,buildT,ghost.x,ghost.y,buildDD);if(nb){sfx('build');toast(`Building the ${bdef(nb).n}`,'good');ghost=null;save()}modeBar();ui();return}
+  if(a==='road'&&roadPrev){const n=buildRoads(I,roadPrev,false);if(n>0){sfx('build');toast(`${n} road tiles built`,'good')}else if(n<0)toast('Not enough money','bad');roadA=null;roadPrev=null;save();modeBar();ui();return}
+  if(a==='rrem'){roadRemove=!roadRemove;roadA=null;roadPrev=null;modeBar();return}
+  if(a==='bull'&&bullT){const r=demolish(I,bullT);toast(`Demolished. +${fmt(r)}`);bullT=null;selB=null;save();modeBar();ui()}});
+/* ================= sheets ================= */
+let sheet=null,sheetArg=null,tabs={build:'house',city:'adv',jobs:'jobs',collect:'treas',more:'main'},design=null;
+function openSheet(n,arg){if(mode&&n!=='info')setMode(null);sheet=n;sheetArg=arg;$('#sheet').hidden=false;renderSheet();document.querySelectorAll('#bar button').forEach(b=>b.classList.toggle('on',b.dataset.s===n||(n==='isle'&&b.dataset.s==='map')||(n==='design'&&b.dataset.s==='more')||(n==='goals'&&b.dataset.s==='more')));sfx('tap')}
+function closeSheet(keep){sheet=null;$('#sheet').hidden=true;if(!keep)selB=null;document.querySelectorAll('#bar button').forEach(b=>b.classList.remove('on'))}
+$('#sclose').onclick=()=>{closeSheet();if(view==='world'&&!mode){}};
+$('#bar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const s=b.dataset.s;if(s==='roads'){if(view==='world')goIsle(G.cur);mode==='road'?setMode(null):setMode('road');return}if(s==='map'){if(view==='world'){view='isle';closeSheet()}else{view='world';openSheet('map')}return}if(sheet===s)closeSheet();else{if(view==='world'&&s!=='collect'&&s!=='more'&&s!=='city')goIsle(G.cur);openSheet(s)}});
+function goIsle(i){G.cur=i;view='isle';walkers=[];boats=[];planes=[];fitIsle();ui()}
+const TITLES={build:'Build',info:'Building',jobs:'Jobs & Citizens',city:'City Hall',map:'Islands',isle:'Island',collect:'Collection',more:'More',design:'Design Studio',goals:'Goals'};
+function renderSheet(){if(!sheet)return;const body=$('#sbody'),st=body.scrollTop;let title=TITLES[sheet];let h='';try{const r=SH[sheet](sheetArg);if(typeof r==='object'){h=r.h;title=r.t||title}else h=r}catch(e){h=`<p class="desc">Could not show this panel: ${esc(e.message)}</p>`;console.error(e)}$('#stitle').textContent=title;body.innerHTML=h;body.scrollTop=st;if(sheet==='design')drawDesignPreview()}
+const tabRow=(key,list)=>`<div class="tabs">${list.map(([k,n])=>`<button class="tab ${tabs[key]===k?'on':''}" data-a="tab" data-v="${key}:${k}">${n}</button>`).join('')}</div>`;
+const mb=(v,c)=>`<span class="mbar"><i style="width:${clamp(v,0,1)*100}%;background:${c||(v>.75?'var(--good)':v>.45?'var(--warn)':'var(--bad)')}"></i></span>`;
+const isS=()=>G._S&&G._S.isl[G.cur]?G._S.isl[G.cur]:null;
+function lockWhy(t){const D=B[t];if(D.era==='modern'&&!isModern())return'Modern era';if(thLvl()<(D.req||0))return`Town Hall ${D.req}`;if(D.wonder&&!G.wonderBP[t])return'Needs blueprint';if(D.unique==='city'&&G.isl.some(J=>J.b.some(b=>b.t===t)))return'Built';if(D.unique==='island'&&G.isl[G.cur].b.some(b=>b.t===t))return'One per island';return''}
+const SH={
+build(){const c=tabs.build;let h=tabRow('build',Object.entries(CATS));
+  if(c==='design'){if(!G.designs.length)return h+`<p class="desc">You have no designs yet. Make your own villas, resorts, apartments and towers in the Design Studio.</p><button class="btn p" data-a="studio">Open the Design Studio</button>`;
+    return h+`<div class="bgrid">${G.designs.map(d=>{const s=designStats(d),T=DTYPES[d.type];const lk=T.era==='modern'&&!isModern()?'Modern era':thLvl()<(T.req||2)?`Town Hall ${T.req||2}`:'';return `<button class="bc ${lk?'lock':''}" data-a="bdesign" data-v="${d.id}"><img src="${thumb('design',d)}" alt=""><b>${esc(d.name)}</b><span class="c">${fmt(s.cost)}</span><span>${T.n} · ${d.size}×${d.size} · ${d.floors} floors${lk?' · '+lk:''}</span></button>`}).join('')}</div><button class="btn" data-a="studio">Open the Design Studio</button>`}
+  const ks=BK.filter(k=>B[k].cat===c&&k!=='townhall');
+  return h+`<div class="bgrid">${ks.map(k=>{const D=B[k],lk=lockWhy(k);return `<button class="bc ${lk?'lock':''}" data-a="bpick" data-v="${k}"><img src="${thumb(k)}" alt=""><b>${esc(D.n)}</b><span class="c">${fmt(placeCost(k))}</span><span>${D.w}×${D.h}${D.coast?' · coast':''}${lk?' · '+lk:''}</span></button>`}).join('')}</div><p class="desc">Crews busy: ${busy()} of ${crews()}. More crews come with Town Hall upgrades.</p>`},
+info(id){const I=G.isl[G.cur];const b=I.b.find(x=>x.id===id);if(!b)return'<p class="desc">This building is gone.</p>';const D=bdef(b),s=isS();let h='';
+  const pips=`<span style="display:flex;gap:3px">${Array.from({length:D.max},(_,i)=>`<i style="width:10px;height:6px;border-radius:3px;background:${i<b.lvl?'var(--sea)':'rgba(255,255,255,.15)'}"></i>`).join('')}</span>`;
+  h+=`<div class="row"><span><b>Level ${b.lvl}</b> <span class="k">of ${D.max}</span></span>${pips}</div><p class="desc">${esc(D.desc||'')}</p>`;
+  if(b.state==='build'||b.state==='up'){const left=(b.end-now())/1000,p=clamp(1-left/b.dur,0,1);h+=`<div class="card"><div class="t"><span>${b.state==='build'?'Under construction':'Upgrading to level '+(b.lvl+1)}</span><span class="lbl" data-left="${b.id}">${mmss(left)}</span></div>${mb(p,'var(--gold)')}<div class="btns"><button class="btn g" data-a="rush" data-v="${b.id}" ${G.pearls>=rushCost(b)?'':'disabled'}>Finish now · ${rushCost(b)} pearls</button></div></div>`}
+  if(b.state==='fire')h+=`<div class="card" style="outline:2px solid var(--bad)"><b>On fire!</b><p class="desc">Firefighters on this island put fires out. More fire coverage saves more buildings.</p></div>`;
+  if(b.state==='ruin')h+=`<div class="card"><b>Burned down</b><p class="desc">Rebuild it at half price, or clear it away.</p><div class="btns"><button class="btn p" data-a="rebuild" data-v="${b.id}">Rebuild ${fmt(Math.round(placeCost(b.t,b.dd)*.5))}</button></div></div>`;
+  const lines=[];if(needsRoad(b.t)&&!roadAdj(I,b))lines.push(['Road','<b class="neg">Not connected. Lay a road next to it.</b>']);if(D.era==='modern'&&!isModern())lines.push(['Era','<b class="neg">Idle in the traditional era</b>']);
+  if(D.cap){const res=I.c.filter(c=>c.home===b.id);const hp=res.length?res.reduce((a,c)=>a+c.h,0)/res.length:0;lines.push(['Residents',`<b>${res.length} / ${capOf(b)}</b>`]);if(res.length)lines.push(['Their happiness',`<b>${Math.round(hp)}%</b>`]);lines.push(['Lives here',D.cls===2?'Wealthy citizens':'Workers and skilled']);}
+  if(D.sec&&D.st&&s){const slots=Math.round(D.st*effLvl(b));const fl=Math.round(slots*(s.sr[D.sec]||0));lines.push([`${SECTORS[D.sec].n} staff`,`<b>${fl} / ${slots}</b>`])}
+  if(D.svc)lines.push(['Covers',`about ${num(D.svc*D.st*b.lvl)} people when fully staffed`]);if(D.water)lines.push(['Water',`${num(D.water*b.lvl)} people`]);if(D.food)lines.push(['Food',`${num(D.food*b.lvl)} a day`]);if(D.pwo)lines.push(['Power',`${num(D.pwo*b.lvl)} units`]);if(D.pw&&isModern())lines.push(['Uses power',`${(D.pw*b.lvl).toFixed(1)} units`]);if(D.beds)lines.push(['Beds',`${num((D.beds+(D.bedsi||0)*(b.lvl-1))*(D.bedsi?1:b.lvl))}`]);if(D.app)lines.push(['Beauty',`+${Math.round(D.app*b.lvl)}`]);if(D.poll)lines.push(['Pollution',`<b class="neg">${(D.poll*b.lvl).toFixed(1)}</b>`]);
+  lines.push(['Upkeep',`${fmt(D.up*b.lvl)} a day`]);
+  if(b.t==='townhall')lines.push(['Building crews',`${crews()} (${busy()} busy)`],['Upgrade cap','Other buildings can reach level '+(b.lvl+1)]);
+  h+=`<div class="card">${lines.map(([k,v])=>`<div class="row"><span class="k">${k}</span><span style="text-align:right">${v}</span></div>`).join('')}</div>`;
+  if(b.state==='ok'){const c=canUpgrade(I,b);if(b.lvl<D.max){const cost=Math.round(upCost(b.t,b.lvl,b)*(1+lawSum('build'))),tm=Math.round(upTime(b.t,b.lvl,b)*speedMul(b.t));h+=`<div class="card"><div class="t"><span>Upgrade to level ${b.lvl+1}</span><span class="lbl">${mmss(tm)}</span></div><p class="desc">${b.t==='townhall'?'Raises the upgrade cap for every building and unlocks new ones.':'Bigger and better: more '+(D.cap?'homes':D.beds?'beds':D.st?'jobs and output':'beauty')+'.'}</p><div class="btns"><button class="btn p" data-a="up" data-v="${b.id}" ${c.ok?'':'disabled'}>${c.ok?'Upgrade '+fmt(cost):esc(c.why)}</button></div></div>`}else h+=`<p class="desc">Fully upgraded.</p>`}
+  if(D.sec&&D.st)h+=`<button class="btn" data-a="gojobs">Set ${SECTORS[D.sec].n.toLowerCase()} staff</button>`;
+  if(b.t!=='townhall')h+=`<button class="btn d" data-a="demo" data-v="${b.id}">Demolish…</button>`;
+  return{t:D.n,h}},
+jobs(){const I=G.isl[G.cur],s=isS();let h=tabRow('jobs',[['jobs','Staffing'],['cit','Citizens']]);
+  if(tabs.jobs==='cit'){const list=[...I.c].sort((a,b)=>a.h-b.h);const cls=[0,1,2].map(k=>I.c.filter(c=>c.c===k).length);
+    return h+`<div class="stats3">${CLS.map((c,i)=>`<div><b style="color:${c.c}">${cls[i]}</b><span class="lbl">${c.n}</span></div>`).join('')}</div><p class="desc">Everyone has a dream job. People who get it are happier. Least happy are listed first.</p><div class="list">${list.slice(0,60).map(c=>{const hm=I.b.find(b=>b.id===c.home);const nb=c.nb!=null?NOTABLES[c.nb]:null;return `<div class="item"><div class="m"><b>${esc(nb?nb.n:NAMES[c.n])} ${nb?'<span class="pill y">Famous</span>':''}</b><span>${CLS[c.c].n} · ${c.j?SECTORS[c.j].n+(c.ji!==I.i?' (commutes)':''):c.c===2?'Lives on wealth':'Looking for work'} · dreams of ${SECTORS[c.w].n}${hm?'':' · <b class="neg">homeless</b>'}${c.sk>0?' · sick':''}</span></div><b style="color:${c.h>65?'var(--good)':c.h>40?'var(--warn)':'var(--bad)'}">${Math.round(c.h)}%</b></div>`}).join('')}</div>${I.c.length>60?`<p class="desc">…and ${I.c.length-60} more.</p>`:''}`}
+  if(!s)return h+'<p class="desc">Run a day first.</p>';
+  const labor=I.c.filter(c=>c.c<2).length,emp=I.c.filter(c=>c.j).length;
+  h+=`<div class="stats3"><div><b>${labor}</b><span class="lbl">Can work</span></div><div><b class="pos">${emp}</b><span class="lbl">Employed</span></div><div><b class="${labor-emp>labor*.15?'neg':''}">${labor-emp}</b><span class="lbl">Jobless</span></div></div>
+  <p class="desc">Each workplace has job slots. Set how many people you want in each service. Citizens fill jobs they dream of first; others take what is left.</p>`;
+  h+=SECK.map(k=>{const S=SECTORS[k],slots=s.slots[k],tg=I.tgt[k],want=I.c.filter(c=>c.w===k).length;const tv=tg==null?slots:Math.min(tg,slots);
+    return `<div class="card"><div class="t"><span style="color:${S.c}">${S.n}</span><span class="lbl">${S.pub?'Public':'Private'} · ${want} dream of it</span></div><div class="row"><span class="k">Working ${s.fill[k]} of ${slots} slots</span><span class="stp"><button data-a="tg" data-v="${k}:-1" ${slots?'':'disabled'}>−</button><b>${tg==null?'All':tv}</b><button data-a="tg" data-v="${k}:1" ${slots?'':'disabled'}>+</button><button data-a="tg" data-v="${k}:auto" style="width:auto;padding:0 8px;font-size:11px">All</button></span></div>${mb(slots?s.fill[k]/slots:0,S.c)}</div>`}).join('');
+  h+=`<div class="card"><div class="t"><span>Public wages</span><b>${Math.round(G.pubWage*100)}%</b></div><div class="sl"><span class="lbl">Low</span><input type="range" id="pubW" min="60" max="160" step="10" value="${Math.round(G.pubWage*100)}"><span class="lbl">High</span></div><p class="desc">Police, fire, health, school, maintenance and utility staff are paid by the city. Low wages save money, but fewer people take those jobs.</p></div>`;
+  return h},
+city(){const t=tabs.city;let h=tabRow('city',[['adv','Advisor'],['over','Overview'],['budget','Budget'],['tax','Taxes'],['laws','Laws'],['era','Era']]);const s=isS();
+  if(t==='adv'){const a=advise(G.isl[G.cur],s).slice(0,6);if(!a.length)return h+'<p class="desc">Everything looks good here. Keep growing: upgrade buildings, attract tourists and unlock new islands.</p>';return h+`<p class="desc">Your advisor's top needs for ${esc(ISLES[G.cur].n)}.</p><div class="list">${a.map(x=>`<div class="item"><div class="m"><b>${x.t==='road'?'Connect roads':x.t==='upth'?'Upgrade the Town Hall':esc(B[x.t].n)}</b><span>${esc(x.why)}</span></div>${x.t==='road'?'<button class="btn s p" data-a="roadmode">Roads</button>':x.t==='upth'?'<button class="btn s g" data-a="gotoTH">Open</button>':`<button class="btn s p" data-a="bpick" data-v="${x.t}">Build</button>`}</div>`).join('')}</div>`}
+  if(t==='over'){const hap=cityHap();h+=`<div class="stats3"><div><b>${num(totalPop())}</b><span class="lbl">Citizens</span></div><div><b style="color:${hap>70?'var(--good)':hap>45?'var(--warn)':'var(--bad)'}">${Math.round(hap)}%</b><span class="lbl">Happy</span></div><div><b>${num(touristsToday())}</b><span class="lbl">Tourists/day</span></div></div>`;
+    h+=histChart();
+    if(s){const C=s.comp,L={housing:'Homes',jobs:'Jobs',safety:'Safety',fire:'Fire cover',health:'Health',edu:'Education',water:'Water',food:'Food',power:'Power',roads:'Roads',clean:'Cleanliness',fun:'Fun',tax:'Taxes'};
+      h+=`<div class="sec"><h3>${esc(ISLES[G.cur].n)}: what makes people happy</h3>${Object.keys(L).map(k=>`<div class="row"><span class="k" style="width:96px">${L[k]}</span>${mb(C[k])}<b style="width:40px;text-align:right">${pct(C[k])}</b></div>`).join('')}</div>`;
+      h+=`<div class="card"><div class="row"><span class="k">Homes</span><b>${num(s.pop)} / ${num(s.cap)}${s.homeless?` <span class="neg">· ${s.homeless} homeless</span>`:''}</b></div><div class="row"><span class="k">Arrived today</span><b>${s.arrived||0}${s.left?` · left ${s.left}`:''}</b></div><div class="row"><span class="k">Food</span><b>${pct(s.foodR)}${G.yday&&G.yday.imported?` · imported ${G.yday.imported}`:''}</b></div><div class="row"><span class="k">Water</span><b>${pct(s.waterR)}</b></div>${isModern()&&G._power?`<div class="row"><span class="k">Power grid</span><b>${num(G._power.sup)} / ${num(G._power.dem)} needed</b></div>`:''}<div class="row"><span class="k">Tourists</span><b>${s.tourists} · beds ${Math.round(s.beds)} · liked it ${pct(s.tSat||0)}</b></div><div class="row"><span class="k">Crimes today</span><b>${s.crimes}</b></div><div class="row"><span class="k">Road condition</span><b>${pct(s.roadR)}</b></div></div>`}
+    return h}
+  if(t==='budget'){const y=G.yday;if(!y)return h+'<p class="desc">Your first budget arrives after the first day.</p>';const r=(k,v,neg)=>`<div class="row"><span class="k">${k}</span><b class="${neg?'neg':'pos'}">${neg?'−':'+'}${fmt(Math.abs(v))}</b></div>`;
+    return h+`<div class="card"><h3 class="lbl">Yesterday's income</h3>${r('Resident taxes',y.tax)}${r('Business taxes',y.biz)}${r('Tourist taxes',y.ttax)}</div><div class="card"><h3 class="lbl">Yesterday's costs</h3>${r('Building upkeep',y.up,1)}${r('Public wages',y.wages,1)}${r('Laws',y.laws,1)}${r('Food imports',y.imp,1)}${r('Crime losses',y.crime,1)}</div><div class="row" style="font-size:16px"><b>Net per day</b><b class="${y.net>=0?'pos':'neg'}">${y.net>=0?'+':''}${fmt(y.net)}</b></div><p class="desc">Most city money comes from taxes on residents and businesses. Markets, farms, fishing, workshops and tourism all pay business tax. Islands without an Island Office pay half their resident tax.</p>`}
+  if(t==='tax'){const T=[['c0','Workers'],['c1','Skilled'],['c2','Wealthy'],['biz','Businesses'],['tour','Tourists']];return h+`<p class="desc">Higher taxes bring more money but make residents less happy. Business and tourist taxes don't upset residents.</p>`+T.map(([k,n])=>`<div class="card"><div class="t"><span>${n}</span><b>${Math.round(G.taxes[k]*100)}%</b></div><div class="sl"><input type="range" data-tax="${k}" min="0" max="35" step="1" value="${Math.round(G.taxes[k]*100)}"></div></div>`).join('')}
+  if(t==='laws')return h+`<p class="desc">Laws shape daily life. Turn them on and off at any time.</p>`+Object.keys(LAWS).map(k=>{const L=LAWS[k],off=L.era&&L.era!==G.era;return `<div class="tog ${G.laws[k]?'on':''}" data-a="law" data-v="${k}" role="switch" aria-checked="${!!G.laws[k]}" style="${off?'opacity:.5':''}"><span class="m"><b>${esc(L.n)}</b><span>${esc(L.d)}</span></span><span class="sw"></span></div>`}).join('');
+  if(t==='era'){const m=isModern();return h+`<div class="card"><div class="t"><span>${m?'Modern era':'Traditional era'}</span><span class="pill ${m?'s':'y'}">Now</span></div><p class="desc">${m?'Electricity, paved roads, ferries, prop planes, high-rises and desalination. Needs power plants and brings some pollution.':'Sails, sand roads and lantern light. No power needed, +3 happiness from the calm, and tourists pay for the authentic charm (+10% tourism). Buildings stay low.'}</p></div>
+    <div class="card"><b>${m?'Return to traditional':'Modernize the city'}</b><p class="desc">${m?'Power plants, high-rises, desalination and airstrips stop working. Apartments drop to 3 floors of homes.':'Unlocks power, high-rises, desalination, wind and solar, airstrips, glass towers and paved roads. Buildings that use power will need power plants.'}</p><div class="btns"><button class="btn ${m?'':'g'}" data-a="era" ${(!m&&(thLvl()<3||G.money<5000))?'disabled':''}>${m?'Go traditional (free)':thLvl()<3?'Needs Town Hall 3':'Modernize for $5,000'}</button></div></div>`}
+  return h},
+map(){return{t:'Islands',h:`<p class="desc">Each island has its own people, jobs and services. A Harbor links it to the others: ferries carry commuters, power cables share electricity, and food is traded.</p><div class="list">${G.isl.map(I=>{const S=ISLES[I.i];const w=unlockWhy(I.i);return `<div class="item"><img src="${islandMini(I).toDataURL()}" alt="" style="width:46px;height:46px;border-radius:10px;background:#0d5f93"><div class="m"><b>${esc(S.n)} ${I.i===G.cur?'<span class="pill s">Here</span>':''}</b><span>${I.unlocked?`${num(I.c.length)} people · ${I.b.length} buildings`:`Needs ${[thLvl()<S.th?'Town Hall '+S.th:'',totalPop()<S.pop?num(S.pop)+' citizens':'',fmtk(S.cost)].filter(Boolean).join(', ')}`}</span></div>${I.unlocked?`<button class="btn s p" data-a="visit" data-v="${I.i}">Visit</button>`:`<button class="btn s g" data-a="unlock" data-v="${I.i}" ${w?'disabled':''}>Unlock</button>`}</div>`}).join('')}</div>`}},
+isle(i){const I=G.isl[i],S=ISLES[i];const w=unlockWhy(i);const feats=Object.keys(S.f).map(k=>({spring:'Fresh spring',fertile:'Fertile soil',reef:'Coral reef',beach:'Perfect beach',lagoon:'Lagoon',fish:'Rich fishing',sunset:'Sunsets',whale:'Whale sharks',pearl:'Pearl beds',geo:'Geothermal power'})[k]).join(' · ');
+  return{t:S.n,h:`<img src="${islandMini(I).toDataURL()}" alt="" style="width:120px;height:120px;border-radius:16px;align-self:center;background:#0d5f93"><p class="desc">${esc(S.d)}</p><div class="row"><span class="k">Size</span><b>${S.sz} × ${S.sz} tiles</b></div><div class="row"><span class="k">Features</span><b style="text-align:right">${feats}</b></div>
+  ${I.unlocked?`<div class="row"><span class="k">Citizens</span><b>${num(I.c.length)}</b></div><button class="btn p" data-a="visit" data-v="${i}">Visit ${esc(S.n)}</button>`:`<div class="card"><div class="row"><span class="k">Town Hall</span><b class="${thLvl()>=S.th?'pos':'neg'}">${S.th}</b></div><div class="row"><span class="k">Citizens</span><b class="${totalPop()>=S.pop?'pos':'neg'}">${num(S.pop)}</b></div><div class="row"><span class="k">Cost</span><b class="${G.money>=S.cost?'pos':'neg'}">${fmt(S.cost)}</b></div></div><button class="btn g" data-a="unlock" data-v="${i}" ${w?'disabled':''}>${w?'Needs '+esc(w):'Unlock '+esc(S.n)}</button>`}`}},
+collect(){const t=tabs.collect;let h=tabRow('collect',[['treas','Treasures'],['people','Famous people'],['wonder','Wonders']]);
+  if(t==='treas'){const n=Object.keys(G.treasure).length;h+=`<p class="desc">${n} of ${TREAS.length} found. Sparkles appear on your islands; tap one to dig. Builders sometimes dig treasures up too. Each finished set gives a lasting bonus and a wonder blueprint.</p>`;
+    return h+TSETS.map((S2,si)=>{const items=TREAS.map((x,i)=>[x,i]).filter(([x])=>x[1]===si);const got=items.filter(([,i])=>G.treasure[i]).length;return `<div class="card" style="${got===6?'outline:2px solid var(--gold)':''}"><div class="t"><span>${esc(S2.n)}</span><span class="lbl">${got}/6</span></div><div class="grid4" style="grid-template-columns:repeat(6,minmax(0,1fr))">${items.map(([x,i])=>`<div class="col"><img src="${treasThumb(si,i,!!G.treasure[i])}" alt=""><span>${G.treasure[i]?esc(x[0]):'???'}</span></div>`).join('')}</div><p class="desc" style="${got===6?'color:var(--gold)':''}">Bonus: ${esc(S2.b)} · Blueprint: ${esc(B[S2.w].n)}</p></div>`}).join('')}
+  if(t==='people'){const met=NOTABLES.filter((n,i)=>G.notables[i]).length;h+=`<p class="desc">Famous people visit happy cities. Give them a villa and they stay, bringing a bonus. ${met} of ${NOTABLES.length} met.</p>`;
+    if(G.pendNot){const N=NOTABLES[G.pendNot.i];h+=`<div class="card" style="outline:2px solid var(--gold)"><div class="t"><span>${esc(N.n)} wants to move in</span><span class="pill y">${esc(N.r)}</span></div><p class="desc">${esc(N.b)}. Needs a free villa room. Leaves in ${12-(G.day-G.pendNot.day)} days.</p><div class="btns"><button class="btn g" data-a="notyes">Welcome them</button></div></div>`}
+    return h+`<div class="grid4">${NOTABLES.map((N,i)=>`<div class="col"><img src="${portrait(i,!!G.notables[i])}" alt=""><span><b style="color:var(--txt)">${G.notables[i]?esc(N.n):'???'}</b><br>${esc(N.r)}${G.notables[i]==='home'?'<br><span class="pos">Living here</span>':G.notables[i]==='left'?'<br>Left':''}</span></div>`).join('')}</div>`}
+  return h+`<p class="desc">Wonders are unique. Finish a treasure set to get each blueprint.</p>`+BK.filter(k=>B[k].wonder).map(k=>{const D=B[k],bp=G.wonderBP[k],built=hasWonder(k);return `<div class="item"><img src="${thumb(k)}" alt="" style="width:62px;height:46px;border-radius:8px"><div class="m"><b>${esc(D.n)} ${built?'<span class="pill g">Built</span>':bp?'<span class="pill y">Blueprint</span>':''}</b><span>${esc(D.desc)}</span></div></div>`}).join('')},
+goals(){const a=activeGoals();return`<p class="desc">${G.goals.claimed} goals done. New ones keep coming forever.</p><div class="list">${a.map(([i,txt,f,r])=>`<div class="item"><div class="m"><b>${esc(txt)}</b><span>Reward ${fmt(r.m||0)}${r.p?` · ${r.p} pearls`:''}</span></div></div>`).join('')}</div>`},
+more(){return `<div class="list"><button class="item" data-a="studio" style="text-align:left"><div class="m"><b>Design Studio</b><span>Design your own villas, resorts, apartments and towers</span></div><b>›</b></button><button class="item" data-a="goals" style="text-align:left"><div class="m"><b>Goals</b><span>${G.goals.claimed} done · rewards waiting</span></div><b>›</b></button><button class="item" data-a="bullmode" style="text-align:left"><div class="m"><b>Demolish</b><span>Remove buildings you don't need</span></div><b>›</b></button></div>
+  <div class="tog ${G.mute?'':'on'}" data-a="mute" role="switch" aria-checked="${!G.mute}"><span class="m"><b>Sound</b></span><span class="sw"></span></div>
+  <div class="sec"><h3>Save</h3><p class="desc">The city saves itself every few seconds on this device, with a backup copy. Copy a backup code to move to another device.</p><div class="btns"><button class="btn p" data-a="save">Save now</button><button class="btn" data-a="code">Copy backup code</button></div><textarea id="bk" placeholder="Paste a backup code here"></textarea><button class="btn" data-a="load">Load backup code</button></div>
+  <div class="sec"><h3>How to play</h3><p class="desc">Build homes and lay roads so newcomers on rafts have a place to live. Give them work: farms and fishing feed the city, markets and tourism pay business tax. Keep people safe, healthy, educated and entertained, and they stay happy and pay more. Upgrade the Town Hall to raise every building's limit, unlock new islands, collect treasures and famous citizens, and build wonders.</p></div>
+  <div class="sec"><h3>Start over</h3>${G._rst?'<div class="btns"><button class="btn d" data-a="reset">Yes, erase my city</button><button class="btn" data-a="noreset">Cancel</button></div>':'<button class="btn d" data-a="askreset">New city…</button>'}</div><p class="desc" style="text-align:center">Atoll City · version 1.0</p>`},
+design(){return designSheet()}};
+function histChart(){const h=G.stats.hist;if(h.length<2)return'';const w=320,ht=70;const line=(k,c)=>{const v=h.map(x=>x[k]),mx=Math.max(...v,1),mn=Math.min(...v,0);return `<polyline fill="none" stroke="${c}" stroke-width="2" points="${v.map((y,i)=>`${(i/(v.length-1)*w).toFixed(1)},${(ht-4-(y-mn)/(mx-mn||1)*(ht-8)).toFixed(1)}`).join(' ')}"/>`};
+  return `<div class="card"><div class="row"><span class="lbl" style="color:#3fd6cf">Population</span><span class="lbl" style="color:#ffc94a">Money</span><span class="lbl" style="color:#5fdc8c">Happiness</span></div><svg viewBox="0 0 ${w} ${ht}" style="width:100%;height:70px">${line('p','#3fd6cf')}${line('m','#ffc94a')}${line('h','#5fdc8c')}</svg><span class="lbl">Last ${h.length} days</span></div>`}
+const tthC={};
+function treasThumb(si,i,got){const k=i+(got?'y':'n');if(tthC[k])return tthC[k];const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.fillStyle=got?'#15405f':'#0c2238';g.fillRect(0,0,64,64);const cols=['#ffcc33','#c8a070','#ff8ab0','#e8dcc0','#9ad0ff','#f4f4ff'];const col=got?cols[si]:'#2b4f61';g.fillStyle=col;g.strokeStyle=got?shade(col,-.4):'#2b4f61';g.lineWidth=2;
+  if(si===0){g.beginPath();g.arc(32,32,17,0,7);g.fill();g.stroke();g.beginPath();g.arc(32,32,10,0,7);g.stroke()}else if(si===1){g.beginPath();g.moveTo(20,44);g.lineTo(44,44);g.lineTo(40,24);g.lineTo(24,24);g.closePath();g.fill();g.stroke();g.fillRect(29,14,6,10)}else if(si===2){rr(g,22,14,20,36,8);g.fill();g.stroke();if(got){g.fillStyle='#1a1010';g.beginPath();g.arc(28,26,2.5,0,7);g.arc(36,26,2.5,0,7);g.fill()}}else if(si===3){g.fillRect(16,18,32,28);g.strokeRect(16,18,32,28);if(got){g.strokeStyle='#a87b4c';g.beginPath();g.moveTo(20,40);g.lineTo(28,28);g.lineTo(36,34);g.lineTo(44,22);g.stroke()}}else if(si===4){g.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,r=k%2?8:18;g.lineTo(32+Math.cos(a)*r,33+Math.sin(a)*r)}g.closePath();g.fill();g.stroke()}else{const gr=g.createRadialGradient(28,28,2,32,32,16);gr.addColorStop(0,'#fff');gr.addColorStop(1,col);g.fillStyle=got?gr:col;g.beginPath();g.arc(32,32,15,0,7);g.fill()}
+  if(!got){g.fillStyle='#8fb2bd';g.font='900 22px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('?',32,33)}return tthC[k]=c.toDataURL()}
+const porC={};
+function portrait(i,got){const k=i+(got?'y':'n');if(porC[k])return porC[k];const c=document.createElement('canvas');c.width=c.height=80;const g=c.getContext('2d');const bg=['#ff7a59','#3fd6cf','#ffc94a','#c07bff','#5fdc8c','#ff6a9a','#4a8aff','#ffa04a'][i%8];g.fillStyle=got?bg:'#14324c';g.fillRect(0,0,80,80);
+  const skin=['#c98a5a','#a86a3a','#e0a878','#8a5a3a'][i%4];g.fillStyle=got?shade(bg,-.35):'#1d4a6e';g.beginPath();g.ellipse(40,82,28,22,0,0,7);g.fill();g.fillStyle=got?skin:'#2b4f61';g.beginPath();g.arc(40,36,15,0,7);g.fill();
+  if(got){g.fillStyle='#2a1a10';if(i%2){g.beginPath();g.arc(40,30,16,Math.PI,0);g.fill()}else{g.beginPath();g.arc(40,33,16,Math.PI*1.05,-.05);g.fill();g.fillRect(24,32,6,18);g.fillRect(50,32,6,18)}g.fillStyle='#111';g.beginPath();g.arc(35,37,1.6,0,7);g.arc(45,37,1.6,0,7);g.fill();g.strokeStyle='#5a2a1a';g.lineWidth=1.5;g.beginPath();g.arc(40,41,4,.3,Math.PI-.3);g.stroke()}else{g.fillStyle='#8fb2bd';g.font='900 26px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('?',40,38)}return porC[k]=c.toDataURL()}
+function digModal(I,t){const c=digCost(I);modal(`<h2>Something glints here</h2><p>Dig it up for ${fmt(c)}? It could be a treasure for your collection.</p><div class="btns"><button class="btn g" id="dg" ${G.money<c?'disabled':''}>Dig for ${fmt(c)}</button><button class="btn" id="dn">Not now</button></div>`,box=>{box.querySelector('#dn').onclick=closeModal;box.querySelector('#dg').onclick=()=>{const r=dig(I,t);closeModal();if(r!=null&&r>=0){const T=TREAS[r];sfx('big');modal(`<img src="${treasThumb(T[1],r,true)}" alt="" style="width:110px;height:110px;align-self:center;border-radius:16px"><h2>${esc(T[0])}</h2><p>Part of the set <b>${esc(TSETS[T[1]].n)}</b>: ${TREAS.filter((x,i)=>x[1]===T[1]&&G.treasure[i]).length} of 6 found. +1 pearl.</p><div class="btns"><button class="btn p" id="ok">Wonderful</button></div>`,b2=>b2.querySelector('#ok').onclick=closeModal)}else if(r===-1)toast('Just old coins: +$2,000 and a pearl','gold');save();ui()}})}
+/* sheet clicks */
+$('#sbody').addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const a=el.dataset.a,v=el.dataset.v;const I=G.isl[G.cur];sfx('tap');
+  switch(a){
+  case 'tab':{const[k,t]=v.split(':');tabs[k]=t;break}
+  case 'bpick':{const lk=lockWhy(v);if(lk){toast(lk==='Built'?'You already built this':'Locked: '+lk,'bad');return}setMode('build',v);return}
+  case 'bdesign':{const d=G.designs.find(x=>x.id===+v);const T=DTYPES[d.type];if(T.era==='modern'&&!isModern()){toast('Needs the modern era','bad');return}if(thLvl()<(T.req||2)){toast(`Needs Town Hall ${T.req||2}`,'bad');return}setMode('build','design',d);return}
+  case 'studio':openSheet('design');return;
+  case 'roadmode':setMode('road');return;
+  case 'gotoTH':{const th=G.isl[0].b.find(b=>b.t==='townhall');goIsle(0);selB=th;openSheet('info',th.id);return}
+  case 'goals':openSheet('goals');return;
+  case 'bullmode':setMode('bull');return;
+  case 'rush':{const b=I.b.find(x=>x.id===+v);if(b&&rush(b)){finishWork();sfx('done');toast('Finished!','good')}break}
+  case 'up':{const b=I.b.find(x=>x.id===+v);if(b&&upgrade(I,b)){sfx('build');toast(`Upgrading the ${bdef(b).n}`,'good')}break}
+  case 'rebuild':{const b=I.b.find(x=>x.id===+v);if(b&&rebuild(I,b))toast('Rebuilding','good');else toast('Not enough money or crews','bad');break}
+  case 'demo':{const b=I.b.find(x=>x.id===+v);if(b){setMode('bull');bullT=b;selB=b;modeBar()}return}
+  case 'gojobs':tabs.jobs='jobs';openSheet('jobs');return;
+  case 'tg':{const[k,d]=v.split(':');const s=isS();const slots=s?s.slots[k]:0;if(d==='auto')delete I.tgt[k];else{const cur=I.tgt[k]==null?slots:Math.min(I.tgt[k],slots);I.tgt[k]=clamp(cur+(+d),0,slots)}break}
+  case 'law':{const L=LAWS[v];if(L.era&&L.era!==G.era){toast('Only in the modern era','bad');return}G.laws[v]=!G.laws[v];toast(`${L.n} ${G.laws[v]?'passed':'repealed'}`,G.laws[v]?'good':'');break}
+  case 'era':{if(isModern()){G.era='trad';toast('Back to the traditional era','gold')}else{if(thLvl()<3||G.money<5000)return;G.money-=5000;G.era='modern';toast('The city goes modern! Build power plants.','gold');sfx('big')}for(const J of G.isl)J._dirty=true;for(const k in thumbC)delete thumbC[k];break}
+  case 'visit':{goIsle(+v);closeSheet();return}
+  case 'unlock':{const r=unlockIsland(+v);if(r.ok){sfx('big');toast(`${ISLES[+v].n} is yours!`,'gold');goIsle(+v);closeSheet();save();return}toast('Needs '+r.why,'bad');break}
+  case 'notyes':{const r=acceptNotable();if(r.ok){sfx('big');toast('They moved in! +2 pearls','gold')}else toast(r.why,'bad');break}
+  case 'mute':G.mute=!G.mute;break;
+  case 'save':toast(save()?'Saved':'Saving failed. Use a backup code','good');return;
+  case 'code':{save();const code=btoa(unescape(encodeURIComponent(packSave())));const ta=$('#bk');ta.value=code;try{navigator.clipboard.writeText(code).then(()=>toast('Backup code copied','good'),()=>{ta.select();toast('Select and copy the code')})}catch(x){ta.select()}return}
+  case 'load':{try{const st=unpack(decodeURIComponent(escape(atob($('#bk').value.trim()))));if(!st)throw 0;startGame(st);toast('City loaded','good');closeSheet()}catch(x){toast('That code did not work','bad')}return}
+  case 'askreset':G._rst=1;break;case 'noreset':G._rst=0;break;
+  case 'reset':{try{localStorage.removeItem(SAVE)}catch(x){}closeSheet();eraChoice();return}
+  default:if(designClick(a,v,el))return}
+  save();renderSheet();ui()});
+$('#sbody').addEventListener('input',e=>{const t=e.target;if(t.id==='pubW'){G.pubWage=+t.value/100;t.closest('.card').querySelector('b').textContent=t.value+'%'}else if(t.dataset.tax){G.taxes[t.dataset.tax]=+t.value/100;t.closest('.card').querySelector('b').textContent=t.value+'%'}else if(t.id==='dname'&&design){design.name=t.value.slice(0,24)}});
+$('#sbody').addEventListener('change',()=>save());
+/* ================= design studio ================= */
+function newDesign(type){const T=DTYPES[type];return{id:0,name:`My ${T.n}`,type,size:T.sizes[0],floors:type==='tower'?12:type==='apart'?4:2,wall:0,roof:type==='villa'?'flat':type==='resort'?'thatch':'flat',win:type==='tower'?'glass':'wide',ext:type==='villa'?{pool:1,palms:1}:type==='resort'?{pool:1,palms:1,umbrellas:1}:{balcony:1}}}
+function designSheet(){if(!design){let h=`<p class="desc">Design your own buildings. Saved designs appear in Build › My designs. Bigger, taller and fancier designs cost more and take longer to build (never more than 35 minutes).</p><div class="btns">${Object.keys(DTYPES).map(k=>{const T=DTYPES[k];const lk=T.era==='modern'&&!isModern();return `<button class="btn ${lk?'':'p'}" data-a="dnew" data-v="${k}" ${lk?'disabled':''}>New ${T.n.toLowerCase()}${lk?' (modern)':''}</button>`}).join('')}</div>`;
+    if(G.designs.length)h+=`<div class="sec"><h3>Your designs</h3><div class="list">${G.designs.map(d=>{const s=designStats(d);return `<div class="item"><img src="${thumb('design',d)}" alt="" style="width:62px;height:46px;border-radius:8px"><div class="m"><b>${esc(d.name)}</b><span>${DTYPES[d.type].n} · ${d.floors} floors · ${fmt(s.cost)}</span></div><button class="btn s" data-a="dedit" data-v="${d.id}">Edit</button><button class="btn s p" data-a="bdesign" data-v="${d.id}">Build</button></div>`}).join('')}</div></div>`;return h}
+  const d=design,T=DTYPES[d.type],s=designStats(d),maxF=!isModern()&&T.tradF?T.tradF:T.maxF;
+  const chips=(key,obj)=>`<div class="tabs" style="flex-wrap:wrap">${Object.keys(obj).filter(k=>!obj[k].era||obj[k].era===G.era).map(k=>`<button class="tab ${d[key]===k?'on':''}" data-a="dset" data-v="${key}:${k}">${obj[k].n}</button>`).join('')}</div>`;
+  return `<canvas id="dprev" style="width:100%;height:190px;border-radius:14px;display:block;background:#0d5f93"></canvas>
+  <input type="text" id="dname" value="${esc(d.name)}" maxlength="24" aria-label="Design name">
+  <div class="stats3"><div><b>${s.cap?s.cap:s.beds}</b><span class="lbl">${s.cap?'Residents':'Tourist beds'}</span></div><div><b>+${s.app}</b><span class="lbl">Beauty</span></div><div><b class="pos">${fmtk(s.cost)}</b><span class="lbl">Cost</span></div></div>
+  <div class="row"><span class="k">Build time</span><b>${mmss(s.bt)}</b></div>${isModern()?`<div class="row"><span class="k">Power use</span><b>${s.pw}</b></div>`:''}<div class="row"><span class="k">Upkeep</span><b>${fmt(s.up)} a day</b></div>
+  <div class="sec"><h3>Footprint</h3><div class="tabs">${T.sizes.map(z=>`<button class="tab ${d.size===z?'on':''}" data-a="dset" data-v="size:${z}">${z}×${z}</button>`).join('')}</div></div>
+  <div class="sec"><h3>Floors</h3><div class="stp"><button data-a="dfl" data-v="-1">−</button><b>${d.floors}</b><button data-a="dfl" data-v="1">+</button><span class="k">up to ${maxF}${!isModern()&&T.tradF?' (modern allows more)':''}</span></div></div>
+  <div class="sec"><h3>Walls</h3><div class="sw8">${WALLS.map((c,i)=>`<button class="${d.wall===i?'on':''}" style="background:${c}" data-a="dset" data-v="wall:${i}" aria-label="Wall colour ${i+1}"></button>`).join('')}</div></div>
+  <div class="sec"><h3>Roof</h3>${chips('roof',ROOFS)}</div><div class="sec"><h3>Windows</h3>${chips('win',WINS)}</div>
+  <div class="sec"><h3>Extras</h3>${Object.keys(EXTRAS).map(k=>`<div class="tog ${d.ext[k]?'on':''}" data-a="dext" data-v="${k}" role="switch" aria-checked="${!!d.ext[k]}"><span class="m"><b>${EXTRAS[k].n}</b><span>+${EXTRAS[k].app} beauty · ${fmt(EXTRAS[k].c)}${EXTRAS[k].yard?' · uses yard space':''}</span></span><span class="sw"></span></div>`).join('')}</div>
+  <div class="btns"><button class="btn" data-a="dcancel">Cancel</button>${d.id?'<button class="btn d" data-a="ddel">Delete</button>':''}<button class="btn p" data-a="dsave">Save design</button></div>`}
+function designClick(a,v){const d=design;switch(a){
+  case 'dnew':design=newDesign(v);break;case 'dedit':design=JSON.parse(JSON.stringify(G.designs.find(x=>x.id===+v)));break;
+  case 'dset':{const[k,x]=v.split(':');d[k]=k==='size'||k==='wall'?+x:x;break}
+  case 'dfl':{const T=DTYPES[d.type],maxF=!isModern()&&T.tradF?T.tradF:T.maxF;d.floors=clamp(d.floors+(+v),1,maxF);break}
+  case 'dext':d.ext[v]=d.ext[v]?0:1;break;
+  case 'dcancel':design=null;break;
+  case 'ddel':G.designs=G.designs.filter(x=>x.id!==d.id);design=null;toast('Design deleted');break;
+  case 'dsave':{const nm=$('#dname');if(nm)d.name=nm.value.trim().slice(0,24)||d.name;if(!d.id){d.id=G.nextId++;G.designs.push(d)}else{const i=G.designs.findIndex(x=>x.id===d.id);G.designs[i]=d}design=null;for(const k in thumbC)if(k.startsWith('design'))delete thumbC[k];toast('Design saved. Find it in Build › My designs','good');sfx('done');break}
+  default:return false}save();renderSheet();return true}
+let dprevRAF=0;function drawDesignPreview(){cancelAnimationFrame(dprevRAF);const c=$('#dprev');if(!c||!design)return;const r=c.getBoundingClientRect(),dp=Math.min(2,devicePixelRatio||1);c.width=r.width*dp;c.height=r.height*dp;const g=c.getContext('2d');
+  const loop=now=>{if(!$('#dprev'))return;const t=now/1000;g.setTransform(dp,0,0,dp,0,0);const w=r.width,h=r.height;const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#3ba8e8');gr.addColorStop(.7,'#bfe9ff');gr.addColorStop(.7,'#2bb5c4');gr.addColorStop(1,'#0d5f93');g.fillStyle=gr;g.fillRect(0,0,w,h);
+    const d=design,hh=d.floors*FH;const sz=d.size*TS;const s=Math.min((w*.7)/(sz+40),(h-20)/(sz+hh+20));g.save();g.translate(w/2-sz*s/2,h-12-sz*s);g.scale(s,s);g.fillStyle='#f0deb0';g.fillRect(-10,-6,sz+20,sz+12);drawB(g,{id:5,t:'design',x:0,y:0,w:d.size,h:d.size,lvl:1,state:'ok',dd:d},t,{});g.restore();dprevRAF=requestAnimationFrame(loop)};dprevRAF=requestAnimationFrame(loop)}
+
+/* ================= save / load ================= */
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0).toString(36)}
+const SKIP=new Set(['tiles','occ']);
+const b36=n=>Math.round(n).toString(36),si=v=>v?SECK.indexOf(v):-1;
+function packCits(a){return a.map(c=>[b36(c.i),b36(c.n),c.c,si(c.j),c.ji,si(c.w),b36(c.h),b36(c.home),b36(c.d),c.sk,c.nb==null?'':c.nb].join(',')).join(';')}
+function unpackCits(s){if(!s)return[];return s.split(';').map(r=>{const f=r.split(','),c={i:parseInt(f[0],36),n:parseInt(f[1],36),c:+f[2],j:SECK[+f[3]]||'',ji:+f[4],w:SECK[+f[5]]||SECK[0],h:parseInt(f[6],36),home:parseInt(f[7],36),d:parseInt(f[8],36),sk:+f[9]};if(f[10]!=='')c.nb=isNaN(+f[10])?f[10]:+f[10];return c})}
+function packSave(){G.last=now();const d=JSON.stringify(G,(k,v)=>k[0]==='_'||SKIP.has(k)?undefined:(k==='c'&&Array.isArray(v))?{z:packCits(v)}:v);return JSON.stringify({v:2,sum:hashStr(d),d})}
+function unpack(raw){try{const o=typeof raw==='string'?JSON.parse(raw):raw;let st=o;if(o&&typeof o.d==='string'){if(hashStr(o.d)!==o.sum)return null;st=JSON.parse(o.d)}if(!st||!Array.isArray(st.isl)||st.isl.length!==ISLES.length||typeof st.money!=='number')return null;for(const I of st.isl)if(I&&I.c&&typeof I.c.z==='string')I.c=unpackCits(I.c.z);return st}catch(e){return null}}
+let lastBak=0;
+let saveWarned=false;
+function save(){if(!G||G._noSave)return false;let p;try{p=packSave()}catch(e){return false}
+  try{localStorage.setItem(SAVE,p)}catch(e){try{localStorage.removeItem(SAVE+'-b0');localStorage.removeItem(SAVE+'-b1');localStorage.setItem(SAVE,p)}catch(e2){if(!saveWarned){saveWarned=true;toast('Storage is full. Use More → Backup code to keep your city safe.')}return false}}
+  if(now()-lastBak>300000){lastBak=now();try{const i=(+(localStorage.getItem(SAVE+'-bi')||0)+1)%2;localStorage.setItem(SAVE+'-b'+i,p);localStorage.setItem(SAVE+'-bi',String(i))}catch(e){try{localStorage.removeItem(SAVE+'-b0');localStorage.removeItem(SAVE+'-b1')}catch(e2){}}}return true}
+function loadSave(){const c=[];for(const k of[SAVE,SAVE+'-b0',SAVE+'-b1']){try{const st=unpack(localStorage.getItem(k));if(st)c.push(st)}catch(e){}}c.sort((a,b)=>(b.last||0)-(a.last||0));return c[0]||null}
+function repairState(st){const d={money:8000,pearls:0,day:1,tod:.3,speed:1,taxes:{c0:.1,c1:.12,c2:.15,biz:.12,tour:.08},pubWage:1,laws:{},cur:0,designs:[],treasure:{},notables:{},wonderBP:{},goals:{i:0,done:{},proc:0,claimed:0},stats:{hist:[],peakPop:0,tourists:0,arrived:0,left:0,fires:0,crimes:0,digs:0,days:0},nextId:1000,nextCit:1000,evt:{},notice:[],era:'trad'};
+  for(const k in d)if(st[k]==null||typeof st[k]!==typeof d[k])st[k]=d[k];for(const k in d.taxes)if(typeof st.taxes[k]!=='number')st.taxes[k]=d.taxes[k];for(const k in d.stats)if(st.stats[k]==null)st.stats[k]=d.stats[k];
+  if(!isFinite(st.money))st.money=0;if(!ISLES[st.cur]||!st.isl[st.cur].unlocked)st.cur=0;st.isl[0].unlocked=true;
+  let maxId=0;for(const I of st.isl){I.b=(I.b||[]).filter(b=>b&&(B[b.t]||b.t==='design'&&b.dd));I.c=(I.c||[]).filter(c=>c&&typeof c.c==='number');I.road=I.road||{};I.clr=I.clr||[];I.tgt=I.tgt||{};I.trs=I.trs||[];for(const b of I.b){maxId=Math.max(maxId,b.id);b.lvl=clamp(Math.round(b.lvl)||1,1,bdefRaw(b).max||10);if(!['ok','build','up','fire','ruin'].includes(b.state))b.state='ok'}}
+  st.nextId=Math.max(st.nextId,maxId+1);for(const d2 of st.designs)if(d2.id>=st.nextId)st.nextId=d2.id+1;return st}
+const bdefRaw=b=>b.t==='design'?{max:6}:B[b.t];
+/* ================= game start ================= */
+let booted=false;
+function startGame(st,isNew){G=repairState(st);G._noSave=false;hydrate();for(const I of G.isl)settleHomes(I);finishWork();
+  // offline progress
+  const away=Math.max(0,(now()-(G.last||now()))/1000);const days=isNew?0:Math.min(240,Math.floor(away/DAYLEN*Math.max(1,G.speed||1)));
+  if(days>0){const m0=G.money,p0=totalPop();for(let i=0;i<days;i++)simDay();G.notice=G.notice.slice(-3);const dm=G.money-m0,dp=totalPop()-p0;setTimeout(()=>modal(`<h2>Welcome back, Mayor</h2><p>${days} days passed while you were away.</p><div class="stats3"><div><b class="${dm>=0?'pos':'neg'}">${dm>=0?'+':''}${fmtk(dm)}</b><span class="lbl">Money</span></div><div><b class="${dp>=0?'pos':'neg'}">${dp>=0?'+':''}${dp}</b><span class="lbl">Citizens</span></div><div><b>${Math.round(cityHap())}%</b><span class="lbl">Happy</span></div></div><div class="btns"><button class="btn p" id="wb">Back to work</button></div>`,b=>b.querySelector('#wb').onclick=closeModal),300)}
+  else if(!G._S)simDay();
+  view='isle';walkers=[];boats=[];fitIsle();ui();save();if(!booted){booted=true;requestAnimationFrame(frame)}hideBoot()}
+function hideBoot(){const b=$('#boot');if(b){b.classList.add('out');setTimeout(()=>b.remove(),450)}}
+function eraChoice(){hideBoot();G=null;$('#modal').hidden=true;modalQ=[];
+  modal(`<h2>Found your island city</h2><p>Rafts are already drifting toward Home Isle. How should your city live?</p>
+  <div class="card"><div class="t"><span>Traditional</span><span class="pill y">Recommended start</span></div><p class="desc">Sails, sand roads and lantern light. No power plants needed, calmer and happier people, and tourists love the charm. You can modernize later.</p><button class="btn g" data-e="trad">Start traditional</button></div>
+  <div class="card"><div class="t"><span>Modern</span></div><p class="desc">Electricity from day one, paved roads, ferries and later prop planes and glass towers. Needs power plants and creates some pollution. You get a starter diesel generator.</p><button class="btn p" data-e="modern">Start modern</button></div>`,box=>box.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{ac();const e=b.dataset.e;newGame(e);if(e==='modern'){const I=G.isl[0];const th=I.b.find(x=>x.t==='townhall');const s=findSpot(I,'diesel',th.x+5,th.y,null,true)||findSpot(I,'diesel',th.x+5,th.y);if(s){const d=place(I,'diesel',s[0],s[1],null,true);if(d&&!roadAdj(I,d))connect(I,d,[th.x+3,th.y+3])}}closeModal();startGame(G,true);
+    modal(`<h2>Welcome, Mayor!</h2><p>Your first families live in palm huts by the Town Hall. Here's how a city grows:</p><div class="list"><div class="item"><div class="m"><b>Build homes and roads</b><span>Newcomers arrive on rafts every day and need a place to live. Most buildings need a road next to them.</span></div></div><div class="item"><div class="m"><b>Give people jobs</b><span>Farms, fishing, markets and services all hire. Set staff numbers in Jobs.</span></div></div><div class="item"><div class="m"><b>Keep them happy</b><span>Water, food, safety, health, schools, fun and fair taxes. City Hall shows what's missing.</span></div></div><div class="item"><div class="m"><b>Grow forever</b><span>Upgrade buildings (up to 35 min), unlock 12 islands, collect treasures and famous citizens, and build wonders.</span></div></div></div><div class="btns"><button class="btn p" id="go">Let's build</button></div>`,b2=>b2.querySelector('#go').onclick=closeModal)}))}
+/* ================= HUD ================= */
+let hudT=0,saveT=0,lastPend=null;
+function ui(){if(!G)return;$('#hM').textContent=fmtk(G.money);const y=G.yday;$('#hMd').textContent=y?(y.net>=0?'+':'')+fmtk(y.net):'';$('#hMd').className=y&&y.net<0?'neg':'pos';
+  $('#hP').textContent=num(totalPop());const ar=G._S?G._S.isl.reduce((a,s)=>a+(s?s.arrived||0:0),0):0;$('#hPd').textContent=ar?'+'+ar:'';const hp=cityHap();$('#hH').textContent=Math.round(hp)+'%';$('#hHf').textContent=hp>70?'☺':hp>45?'😐':'☹';$('#hHf').style.color=hp>70?'var(--good)':hp>45?'var(--warn)':'var(--bad)';
+  $('#hPe').textContent=G.pearls;$('#hIn').textContent=view==='world'?'Atoll map':ISLES[G.cur].n;$('#hD').textContent='Day '+G.day;const hh=Math.floor(G.tod*24),mm=Math.floor(G.tod*24*60%60/10)*10;$('#hT').textContent=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;$('#hW').textContent=G.evt.storm>0?'⛈':lightAmt()>.5?'☾':'☀';
+  $('#hS').textContent=G.speed?G.speed+'×':'❚❚';$('#hG').textContent=G.goals.claimed;$('#cDot').hidden=!G.pendNot;$('#bar').style.display=mode?'none':''}
+$('#hSpd').onclick=()=>{G.speed=G.speed===1?2:G.speed===2?4:G.speed===4?0:1;toast(G.speed?`Speed ${G.speed}×`:'Paused');ui()};
+$('#hIsl').onclick=()=>{if(view==='world'){view='isle';closeSheet()}else{view='world';openSheet('map')}ui()};
+$('#hGoal').onclick=()=>openSheet('goals');$('#hDay').onclick=()=>{tabs.city='over';openSheet('city')};$('#hHap').onclick=()=>{tabs.city='over';openSheet('city')};$('#hMoney').onclick=()=>{tabs.city='budget';openSheet('city')};$('#hPop').onclick=()=>{tabs.jobs='cit';openSheet('jobs')};
+/* ================= loop ================= */
+let lastT=performance.now(),perfT=0;
+function frame(ts){requestAnimationFrame(frame);const dt=Math.min(.05,Math.max(0,(ts-lastT)/1000));lastT=ts;perfT=ts/1000;if(!G)return;
+  try{if(G.speed>0){G.tod+=dt*G.speed/DAYLEN;if(G.tod>=1){G.tod-=1;simDay();dayEnd()}}
+    const done=finishWork();for(const[I,b]of done){const D=bdef(b);toast(b.lvl>1?`${D.n} reached level ${b.lvl}!`:`${D.n} is finished!`,'good');sfx('done');if(sheet==='info'||sheet==='build')renderSheet();if(b.t==='townhall')sfx('big')}if(done.length)save();
+    if(view==='isle'){lifeUpdate(G.isl[G.cur],dt,perfT);ctx.setTransform(DPR,0,0,DPR,0,0);renderIsle(ctx,perfT)}else{ctx.setTransform(DPR,0,0,DPR,0,0);renderWorld(ctx,perfT)}
+    hudT-=dt;if(hudT<=0){hudT=.25;ui();drainNotices();if(askQ.length&&$('#modal').hidden)showAsk();
+      if(G.pendNot&&lastPend!==G.pendNot.i+':'+G.pendNot.day){lastPend=G.pendNot.i+':'+G.pendNot.day;notableModal()}
+      if(sheet==='info')document.querySelectorAll('[data-left]').forEach(el=>{const b=G.isl[G.cur].b.find(x=>x.id===+el.dataset.left);if(b)el.textContent=mmss((b.end-now())/1000)})}
+    saveT+=dt;if(saveT>15){saveT=0;save()}}catch(e){console.error(e);if(!frame._err||performance.now()-frame._err>5000){frame._err=performance.now();toast('Small glitch: '+e.message,'bad')}}}
+function dayEnd(){G.isl[G.cur]._dirty=true;if(sheet&&['city','jobs','info','goals'].includes(sheet))renderSheet();if(G.day%2===0)save()}
+function drainNotices(){if(!G.notice.length)return;const n=G.notice.splice(0,2);for(const[k,m]of n)toast(m,k);if(n.some(x=>x[0]==='gold'))sfx('coin')}
+function notableModal(){const p=G.pendNot;if(!p)return;const N=NOTABLES[p.i];modal(`<img src="${portrait(p.i,true)}" alt="" style="width:96px;height:96px;border-radius:20px;align-self:center"><h2>${esc(N.n)} wants to move here!</h2><p><b>${esc(N.r)}.</b> ${esc(N.b)} while living in your city.</p><p class="desc">Famous people need a villa with a free room. They'll wait 12 days.</p><div class="btns"><button class="btn g" id="ny">Welcome them</button><button class="btn" id="nn">Later</button></div>`,box=>{box.querySelector('#nn').onclick=closeModal;box.querySelector('#ny').onclick=()=>{const r=acceptNotable();closeModal();if(r.ok){sfx('big');toast(`${N.n} moved to ${ISLES[r.isl].n}! +2 pearls`,'gold');save()}else toast(r.why+'. Find them later in Collect.','bad')}})}
+/* ================= boot ================= */
+addEventListener('resize',()=>{resize();if(G&&view==='isle')clampCam()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});addEventListener('pagehide',save);
+document.addEventListener('gesturestart',e=>e.preventDefault());
+resize();
+window.__city={get G(){return G},addCitizen,settleHomes,upTime,get mode(){return mode},get view(){return view},scr:(x,y)=>[((x+.5)*TS-cam.x)*cam.z+W/2,((y+.5)*TS-cam.y)*cam.z+H/2],advise,needsRoad,isLand,tileAt,simDay,place,canPlace,findSpot,upgrade,canUpgrade,unlockIsland,buildRoads,connect,acceptNotable,finishWork,openSheet,closeSheet,setMode,tap,goIsle,startGame,newGame,save,loadSave,unpack,packSave,totalPop,cityHap,thLvl,roadAdj,dig,activeGoals,rush,demolish,toTile,cam,get view(){return view},set view(v){view=v},renderSheet,tabs,get design(){return design},B,ISLES,designStats,eraChoice};
+function boot(data){let st=null;try{if(data&&data.save)st=unpack(data.save)}catch(e){}if(!st)st=loadSave();if(st)startGame(st);else eraChoice()}
+try{window.claude?.hot?.snapshot?.(()=>({save:G?packSave():''}))}catch(e){}
+setTimeout(()=>{const hot=window.claude&&window.claude.hot;if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{})},60);
+
+</script>
+<script>
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+if('serviceWorker' in navigator&&location.protocol!=='file:'){const had=!!navigator.serviceWorker.controller;addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').then(reg=>{
+  reg.addEventListener('updatefound',()=>{const nw=reg.installing;if(nw)nw.addEventListener('statechange',()=>{if(nw.state==='activated'&&had){const b=document.createElement('button');b.className='btn p';b.textContent='New version ready · Tap to update';b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 120px);z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.4);flex:none';b.onclick=()=>{try{window.__city.save()}catch(e){}location.reload()};document.body.appendChild(b)}})});
+  const chk=()=>reg.update().catch(()=>{});setInterval(chk,30*60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk()})}).catch(()=>{})})}
+</script>
+</body>
+</html>
