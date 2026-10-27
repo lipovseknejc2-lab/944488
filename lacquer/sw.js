@@ -1,8 +1,8 @@
-// Lacquer offline worker (v1).
+// Lacquer offline worker (v2).
 // Lives in its own folder and only handles requests inside it, so it never touches
 // other apps on the same site (their pages, caches or saves).
 // Install only finishes once the game page itself is saved, so "ready" really means ready offline.
-const VERSION = 'lacquer-v1';
+const VERSION = 'lacquer-v2';
 const PREFIX = 'lacquer-';
 const SCOPE = new URL('./', self.location).pathname;
 const PAGE = SCOPE + 'index.html';
