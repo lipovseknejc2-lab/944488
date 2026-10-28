@@ -1,7 +1,7 @@
 // Leeway offline worker (v5).
 // Lives in its own folder and only handles requests inside it, so it never touches
 // other apps on the same site (their pages, caches or saves).
-const VERSION = 'leeway-v6';
+const VERSION = 'leeway-v7';
 const PREFIX = 'leeway-';
 const SCOPE = new URL('./', self.location).pathname;
 const PAGE = SCOPE + 'index.html';

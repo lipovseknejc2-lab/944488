@@ -659,6 +659,16 @@ svg.world .wlab{font-family:var(--f-mono);font-weight:700;fill:var(--ink);paint-
 .kbtns.light button{background:var(--card);border:1px solid var(--line);color:var(--ink)}
 .reveal{margin:6px 0 14px;animation:cardIn 1.1s var(--ease) both}
 @keyframes cardIn{0%{transform:perspective(900px) rotateY(-180deg) scale(.6);opacity:0}60%{opacity:1}100%{transform:none}}
+
+/* ===== v6: recap, year, next steps ===== */
+.recapgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;border-radius:var(--r-m);overflow:hidden;background:var(--line);border:1px solid var(--line)}
+.recapgrid div{background:var(--card);padding:14px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.recapgrid b{font:750 24px var(--f-display);letter-spacing:-.03em}.recapgrid span{font-size:11px;color:var(--ink3)}
+.recapscore{padding:16px;background:linear-gradient(150deg,var(--card),rgba(244,184,60,.12))}
+.yearhero{padding:18px;border-radius:var(--r-l);background:linear-gradient(155deg,#0F2131,#173A4D);color:#fff}
+.yearhero .worldbox{height:150px}
+.nstep{align-items:center}
+.screen.enter .nstep{animation:rowin .45s var(--ease) both}.screen.enter .nstep:nth-child(2){animation-delay:.06s}.screen.enter .nstep:nth-child(3){animation-delay:.12s}
 </style></head><body><div id="stage"><div class="device">
 <div id="splash" role="img" aria-label="Leeway"><svg class="contours" viewBox="0 0 400 860" preserveAspectRatio="xMidYMid slice"><path d="M-40 60 C120 0 260 110 420 40 S640 20 760 70" style="animation-delay:0.00s"/><path d="M-40 130 C120 70 260 180 420 110 S640 90 760 140" style="animation-delay:0.08s"/><path d="M-40 200 C120 140 260 250 420 180 S640 160 760 210" style="animation-delay:0.16s"/><path d="M-40 270 C120 210 260 320 420 250 S640 230 760 280" style="animation-delay:0.24s"/><path d="M-40 340 C120 280 260 390 420 320 S640 300 760 350" style="animation-delay:0.32s"/><path d="M-40 410 C120 350 260 460 420 390 S640 370 760 420" style="animation-delay:0.40s"/><path d="M-40 480 C120 420 260 530 420 460 S640 440 760 490" style="animation-delay:0.48s"/><path d="M-40 550 C120 490 260 600 420 530 S640 510 760 560" style="animation-delay:0.56s"/><path d="M-40 620 C120 560 260 670 420 600 S640 580 760 630" style="animation-delay:0.64s"/><path d="M-40 690 C120 630 260 740 420 670 S640 650 760 700" style="animation-delay:0.72s"/><path d="M-40 760 C120 700 260 810 420 740 S640 720 760 770" style="animation-delay:0.80s"/><path d="M-40 830 C120 770 260 880 420 810 S640 790 760 840" style="animation-delay:0.88s"/></svg>
 <div style="position:relative;display:flex;flex-direction:column;align-items:center"><svg class="mark" width="96" height="96" viewBox="0 0 48 48"><path d="M13.6 13.6L33.4 33.4" stroke="#F4B83C" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="0.01 4.25" fill="none" class="mk-dots"/><path class="mk-track" d="M10.2 16.7V27.2a10 10 0 0 0 10 10h10.5" fill="none" stroke="currentColor" stroke-width="4.3" stroke-linecap="round" pathLength="60"/><circle cx="10.2" cy="10.2" r="4.2" fill="none" stroke="currentColor" stroke-width="2.6"/><circle class="mk-buoy" cx="37.2" cy="37.2" r="4.85" fill="#F4B83C"/></svg><span class="wordmark">leeway</span><span class="tag">Room to roam</span><div class="bar"><i></i></div></div>
@@ -2492,7 +2502,7 @@ const WORLD_PATH="M334.5 472.3L332.9 475.0L320.9 474.8L315.9 472.9L328.1 473.3L3
 const KEY='leeway.v1';
 const store={get(){try{return JSON.parse(localStorage.getItem(KEY))||null;}catch(e){return null;}},set(v){try{localStorage.setItem(KEY,JSON.stringify(v));}catch(e){}}};
 let S=store.get()||{profile:null,trips:[],alerts:true,theme:'system'};
-const save=()=>store.set(S);
+const save=()=>{store.set(S);if(typeof clearMemo==='function')clearMemo();};
 const UI={stack:[],stayTab:0,fsort:'best',rsort:'best',nonstop:false,showAllOrigins:false,exVibe:'all',exMonth:0,exQ:'',tripTab:'plan',sheet:null,booking:null};
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2563,14 +2573,14 @@ V.onboard=()=>{const p=UI.onb||(UI.onb={name:'',home:'ljubljana',adults:2,childr
   </div>`;};
 function stepper(key,val,min,max){return `<div class="stepper"><button data-a="step:${key}:-1:${min}:${max}" aria-label="Decrease" ${val<=min?'disabled style="opacity:.3"':''}>${ic('minus',16)}</button><b>${val}</b><button data-a="step:${key}:1:${min}:${max}" aria-label="Increase" ${val>=max?'disabled style="opacity:.3"':''}>${ic('plus',16)}</button></div>`;}
 
-V.home=()=>{const p=S.profile; const h=new Date().getHours(); const greet=h<5?'Late night':h<12?'Morning':h<18?'Afternoon':'Evening';
+V.home=()=>{const p=S.profile; const h=Math.floor((typeof nowMin==='function'?nowMin():new Date().getHours()*60)/60); const greet=h<5?'Late night':h<12?'Morning':h<18?'Afternoon':'Evening';
   const booked=S.trips.filter(t=>t.status==='booked'&&t.snap&&D.diff(D.today(),t.snap.retArr)>=0).sort((a,b)=>a.depart.localeCompare(b.depart));
   const drafts=S.trips.filter(t=>t.status==='draft'&&t.destId);
   const next=booked[0]; const heroDest=next?next.destId:(drafts[0]?.destId||'cyclades');
-  const nm=(new Date().getMonth()+1)%12+1; const good=DESTINATIONS.filter(d=>d.best.includes(nm)||d.best.includes(nm%12+1)).slice(0,8);
+  const nm=D.month(D.today())%12+1; const good=DESTINATIONS.filter(d=>d.best.includes(nm)||d.best.includes(nm%12+1)).slice(0,8);
   const pick=(good.length?good:DESTINATIONS).slice(0,8);
   const tips=['Leeway compares every airport within driving distance and adds the bus, fuel or parking, so the cheapest ticket is the cheapest trip.','Open-jaw routes fly you in one city and home from another, so you never backtrack.','Tuesday and Wednesday departures usually price 8–12% under Fridays and Sundays.','Book 6–16 weeks out. Fares commonly climb in the final 4 weeks.'];
-  const tip=tips[new Date().getDate()%tips.length];
+  const tip=tips[D.parse(D.today()).getUTCDate()%tips.length];
   return `<div class="hero"><div class="media">${scene(heroDest,7)}<div class="shade"></div></div>
    <div class="brandbar pad safe-top"><div class="brand glass-chip">${logoMark(30,{ink:'#fff'})}${wordmark()}</div>
      <button class="avatar glass-chip" style="background:${avatarCol(p.name)}cc" data-a="tab:profile" aria-label="Profile">${initials(p.name)}</button></div>
@@ -2579,6 +2589,7 @@ V.home=()=>{const p=S.profile; const h=new Date().getHours(); const greet=h<5?'L
    ${(()=>{const lt=liveTrip();if(!lt)return '';const L=liveState(lt);const P=phaseText(lt,L);return `<button class="livehome" data-a="opentrip:${lt.id}"><span class="liveic">${ic(P.icon,20)}</span><span class="grow" style="min-width:0;text-align:left"><span class="eyebrow" style="color:#9FC0CB">Live · ${esc(DEST[lt.destId].name)}</span><b style="display:block;color:#fff">${esc(P.big)}</b><span class="tiny" style="color:#C9D9DE">${esc(P.sub)}</span></span>${ic('back',18,'" style="transform:rotate(180deg);color:#fff')}</button>`;})()}
    <button class="plan-cta glass" data-a="newplan" style="width:100%;text-align:left"><span class="go">${ic('plus',24)}</span><span class="grow"><h3>Plan a new trip</h3><span class="small muted">Flights, stays and every transfer — priced together.</span></span></button>
    <div class="row between" style="margin-top:12px">${clockChip()}<button class="row gap4 small" data-a="knots" style="font-weight:700">${knotIcon(18)}<span class="num">${kn(knotsSummary().balance)}</span></button></div>
+   ${typeof nextStepsHTML==='function'?nextStepsHTML():''}
    ${next?`<div class="sec"><div class="sec-h"><h2>Up next</h2><button class="btn-text" data-a="tab:trips">All trips</button></div>${tripCard(next)}</div>`:''}
    ${drafts.length?`<div class="sec"><div class="sec-h"><h2>Keep planning</h2><span class="faint small">${drafts.length} draft${drafts.length>1?'s':''}</span></div><div class="list">${drafts.slice(0,3).map(tripCard).join('')}</div></div>`:''}
    <div class="sec"><div class="sec-h"><h2>Good in ${MONTHS[nm-1]}</h2><button class="btn-text" data-a="tab:explore">Explore</button></div>
@@ -2608,11 +2619,11 @@ V.explore=()=>{const q=UI.exQ.toLowerCase();
    <div class="chips" style="margin-top:12px">${VIBES.map(([v,l])=>`<button class="chip ${UI.exVibe===v?'on':''}" data-a="exVibe:${v}">${l}</button>`).join('')}</div>
    <div class="chips" style="margin-top:8px"><button class="chip ${!UI.exMonth?'on':''}" data-a="exMonth:0">Any month</button>${MONTHS.map((m,i)=>`<button class="chip ${UI.exMonth===i+1?'on':''}" data-a="exMonth:${i+1}">${m}</button>`).join('')}</div>
    <div class="row between" style="margin-top:14px"><span class="small muted">${plural(list.length,'destination')}</span><button class="chip ${UI.exSort==='price'?'on':''}" data-a="exSort">${ic('swap',14)}Cheapest first</button></div>
-   <div class="list" style="margin-top:10px;gap:14px">${list.map(d=>`<button class="xcard" data-a="dest:${d.id}"><div class="media">${scene(d.id,4)}
+   <div class="list" style="margin-top:10px;gap:14px">${list.slice(0,UI.exLimit||12).map(d=>`<button class="xcard" data-a="dest:${d.id}"><div class="media">${scene(d.id,4)}
      <div class="tagrow">${d.vibes.map(v=>`<span class="glass-chip">${cap(v)}</span>`).join('')}</div></div>
      <div class="body"><div class="row between"><div class="eyebrow">${esc(d.country)}</div><span class="small num" style="font-weight:700">from ${eur(pf(d.id))}</span></div>
      <h2 style="margin-top:4px">${esc(d.name)}</h2><div class="row gap8" style="margin-top:4px">${stars(destReviewStats(d.id).avg,12)}<span class="tiny faint">${destReviewStats(d.id).avg.toFixed(1)} · ${destReviewStats(d.id).count}</span>${destBadge(d.id)}</div><p class="small muted" style="margin:6px 0 10px">${esc(d.tagline)}</p>${monthsBar(d,UI.exMonth)}</div></button>`).join('')||
-     `<div class="card" style="padding:24px;text-align:center"><h3>Nothing matches yet</h3><p class="small muted">Try another month or clear the search.</p><button class="btn btn-ghost" data-a="exReset">Clear filters</button></div>`}</div></div>`;};
+     `<div class="card" style="padding:24px;text-align:center"><h3>Nothing matches yet</h3><p class="small muted">Try another month or clear the search.</p><button class="btn btn-ghost" data-a="exReset">Clear filters</button></div>`}${list.length>(UI.exLimit||12)?`<button class="btn btn-ghost btn-block" data-a="exMore">Show ${Math.min(12,list.length-(UI.exLimit||12))} more of ${list.length}</button>`:''}</div></div>`;};
 
 function destSheet(id){const d=DEST[id];return `<div class="grab"></div>
   <div class="media" style="height:180px;border-radius:20px;margin:0 0 14px">${scene(id,5)}</div>
@@ -2880,6 +2891,7 @@ function checklist(t,d,s){const L=[{k:'passport',t:'Passport valid 6+ months aft
 /* ---------- render ---------- */
 let lastKey='';
 function render(anim){
+  if(typeof clearMemo==='function')clearMemo();
   const v=cur(); const dev=$('.device'); if(!v)return;
   const key=v.name+JSON.stringify(v.params); const scr=$('.screen',dev); const same=key===lastKey&&scr; const top=same?scr.scrollTop:0;
   const html=V[v.name](v.params);
@@ -2910,7 +2922,7 @@ const A={
   planDest:id=>{closeSheet();const t=newDraft(id);UI.stayTab=0;go('wiz',{id:t.id});},
   opentrip:id=>{const t=getTrip(id);UI.tripTab='plan';if(t.status==='booked'){UI.tripTab=liveWindow(t)?'live':'plan';go('trip',{id});}else{UI.stayTab=0;if(t.step>=3&&t.stops.length)t.step=7;go('wiz',{id});}},
   viewTrip:id=>{UI.booking=null;UI.tripTab='plan';UI.stack=[{name:'trips',params:{}},{name:'trip',params:{id}}];render('enter');},
-  exVibe:v=>{UI.exVibe=v;render();}, exMonth:m=>{UI.exMonth=+m;render();}, exReset:()=>{UI.exVibe='all';UI.exMonth=0;UI.exQ='';UI.exCont=null;render();},
+  exVibe:v=>{UI.exVibe=v;UI.exLimit=12;render();}, exMonth:m=>{UI.exMonth=+m;UI.exLimit=12;render();},exMore:()=>{UI.exLimit=(UI.exLimit||12)+12;render();}, exReset:()=>{UI.exVibe='all';UI.exMonth=0;UI.exQ='';UI.exCont=null;render();},
   toggleInt:v=>{const o=UI.onb;o.interests=o.interests.includes(v)?o.interests.filter(x=>x!==v):[...o.interests,v];render();},
   createProfile:()=>{const o=UI.onb;if(!o.name.trim())return;S.profile={...o,name:o.name.trim()};save();UI.stack=[{name:'home',params:{}}];render('enter');toast(`Welcome aboard, ${S.profile.name.split(' ')[0]}`);},
   set:(k,v)=>{const [o,f]=k.split('.');if(o==='onb')UI.onb[f]=v;else if(o==='p'){S.profile[f]=v;save();}else if(o==='t'){const t=curTrip();t[f]=v;if(f==='cabin')resetSel(t,'f');save();}render();},
@@ -2970,7 +2982,7 @@ function onInput(e){const el=e.target.closest('[data-in]');if(!el)return;const k
     else if(p[1]==='destId'){if(c.destId!==v){c.destId=v;c.stops=v?DEST[v].classic.map(([sid,n])=>({stopId:sid,nights:n,rating:0,good:'',tip:''})):[];c.fromTrip=null;}render();return;}
     else c[p[1]]=v;compRefreshBtn();return;}
   if(k.startsWith('cs.')){const p=k.split('.');UI.comp.stops[+p[2]][p[1]]=v;return;}
-  if(k==='exQ'){UI.exQ=v;if(e.type==='input'){render();const i=$('#ex-q');i.focus();i.setSelectionRange(v.length,v.length);}return;}
+  if(k==='exQ'){UI.exQ=v;if(e.type==='input'){clearTimeout(UI._qt);UI._qt=setTimeout(()=>{render();const i=$('#ex-q');if(i){i.focus();i.setSelectionRange(UI.exQ.length,UI.exQ.length);}},140);}return;}
   if(k==='wq'){UI.wq=v;if(e.type==='input'){render();const i=$('#wz-q');i.focus();i.setSelectionRange(v.length,v.length);}return;}
   if(k.startsWith('bk.')){const B=UI.booking;const p=k.split('.');if(p[1]==='n')B.names[+p[2]]=v;else B.email=v;const ready=B.names.every(n=>n.trim().length>1)&&/.+@.+\..+/.test(B.email)&&FINAL_CHECKS.every(([c])=>B.checks&&B.checks[c]);$('#bk-go').disabled=!ready;return;}
   if(k==='rv.text'){UI.rv.text=v;return;} if(k==='tr.text'){UI.tr.text=v;return;}
@@ -3122,7 +3134,7 @@ const Comm={mode:'local',uid:'me',db:null,user:null,docs:{},names:{},writing:fal
   addReview(rv){const m=this.mine();const i=m.reviews.findIndex(x=>x.id===rv.id);if(i>=0)m.reviews[i]=rv;else m.reviews.unshift(rv);this.save();},
   comment(id,text){const m=this.mine();m.comments.push({postId:id,text,ts:Date.now()});this.save();},
 };
-function rerenderCommunity(){const v=cur();if(v&&['stories','story','home','profile','trips'].includes(v.name))render();}
+function rerenderCommunity(){if(typeof clearMemo==='function')clearMemo();const v=cur();if(v&&['stories','story','home','profile','trips'].includes(v.name))render();}
 
 /* Leeway — community story views, composer and actions */
 function authorChip(p,small){const name=p.sample?p.authorName:Comm.nameOf(p.author);const col=p.sample?p.authorCol:avatarCol(name);
@@ -3238,7 +3250,7 @@ Object.assign(A,{
   sendCm:id=>{const t=(UI.cm||'').trim();if(!t)return;Comm.comment(id,t);UI.cm='';render();const s=$('.screen');s.scrollTop=s.scrollHeight;},
   useStory:id=>{const p=Comm.get(id);const t=newDraft(p.destId);t.stops=p.stops.filter(s=>stopObj(DEST[p.destId],s.stopId)).map(s=>({stopId:s.stopId,nights:+s.nights||2}));t.priority=p.style;t.fromStory=id;t.step=1;save();UI.stayTab=0;go('wiz',{id:t.id});toast('Route copied into a new plan','route');},
   saveDest:id=>{S.savedDests=S.savedDests||[];const on=S.savedDests.includes(id);S.savedDests=on?S.savedDests.filter(x=>x!==id):[...S.savedDests,id];save();renderSheet();render();toast(on?'Removed from saved':'Saved to Trips',on?'check':'heart');},
-  exCont:c=>{UI.exCont=c||null;render();}, exSort:()=>{UI.exSort=UI.exSort==='price'?null:'price';render();},
+  exCont:c=>{UI.exCont=c||null;UI.exLimit=12;render();}, exSort:()=>{UI.exSort=UI.exSort==='price'?null:'price';render();},
 });
 
 /* Leeway v3 features: rounded brand stars, journey board, route variants, Leeway Experiences,
@@ -3404,7 +3416,7 @@ V.book=({id})=>{const t=getTrip(id); const P=planOf(t);
    <div><h3>Final check</h3><p class="tiny muted" style="margin:4px 0 6px">Tick each one. It takes a minute and saves the most common travel mistakes.</p>
     ${FINAL_CHECKS.map(([k,l])=>`<button class="checkrow ${B.checks[k]?'on':''}" data-a="fcheck:${k}"><span class="checkbox">${B.checks[k]?ic('check',14):''}</span><span class="grow small" style="font-weight:600">${l}</span></button>`).join('')}</div>
    ${walletUI(P,B)}
-   <div class="earnline">${knotIcon(18)}<span class="small">You’ll earn about <b>${kn(Math.round(pay*5*knotsSummary().tier.mult))} knots</b>, posted when you’re home.</span></div>
+   <div class="earnline">${knotIcon(18)}<span class="small">You’ll earn about <b>${kn(Math.round(pay*knotsSummary().tier.mult))} knots</b>, posted when you’re home.</span></div>
    <div class="card" style="padding:16px"><div class="row between"><b>Payment</b><span class="pill warn">Demo</span></div><p class="tiny muted" style="margin:6px 0 12px">No card is charged. Bookings are simulated with sample inventory.</p>
     <div class="input row" style="color:var(--ink3)">${ic('ticket',18)}<span class="mono">4242 •••• •••• 4242</span></div></div>
    <div class="card" style="padding:16px">${[['Flights & airport transport',P.totals.flights+P.totals.ground],['Stays',P.totals.stays],['Transfers',P.totals.transfers],['Experiences & activities',P.totals.activities],['Insurance & extras',P.totals.extras]].map(([n,v])=>`<div class="row between small" style="padding:3px 0"><span class="muted">${n}</span><span class="num">${eur(v)}</span></div>`).join('')}
@@ -3483,7 +3495,8 @@ V.trip=({id})=>{const t=getTrip(id);if(!t||!t.snap)return V.trips();const d=DEST
    <div class="hero-inner pad"><div class="eyebrow" style="color:#DCEBEE">${D.fmt(t.depart,{day:'numeric',month:'short'})} – ${D.fmt(s.retArr,{day:'numeric',month:'short'})} · ${plural(s.names.length,'traveller')}</div><h1 style="margin-top:6px">${esc(d.name)}</h1>${destBadge(t.destId,true)?`<div style="margin-top:8px">${destBadge(t.destId,true)}</div>`:''}</div></div>
   <div class="pad" style="padding-top:16px">
    <div class="row between card" style="padding:14px 16px">${(()=>{const back=D.diff(D.today(),s.retArr);const onTrip=days<0&&back>=0;return `<div><div class="countdown num">${days>0?days:days===0?'Today':onTrip?'Day '+(1-days):'Done'}</div><div class="tiny muted">${days>0?(days===1?'day to go':'days to go'):days===0?'Have a great flight':onTrip?`of ${s.tripDays} · ${back} to go`:'Trip complete'}</div></div>`;})()}<div style="text-align:right"><div class="small"><b>${plural(s.nights,'night')}</b></div><div class="tiny muted">${plural(s.stays.length,'stay')} · ${plural(s.legs.length,'transfer')}</div></div></div>
-   <button class="opt rate-cta ${R?'rated':''}" style="margin-top:12px" data-a="rateTrip:${t.id}">${R?`<span class="scorebig num">${R.overall.toFixed(1)}</span>`:ic('star',20)}<span class="grow"><b class="small">${R?'Your trip score':'Rate this trip'}</b><span class="tiny muted" style="display:block">${R?stars(R.overall,11)+' · tap to edit':'Score every flight, stay, transfer and experience. +2,500 knots.'}</span></span></button>
+   <button class="opt rate-cta ${R?'rated':''}" style="margin-top:12px" data-a="rateTrip:${t.id}">${R?`<span class="scorebig num">${R.overall.toFixed(1)}</span>`:ic('star',20)}<span class="grow"><b class="small">${R?'Your trip score':'Rate this trip'}</b><span class="tiny muted" style="display:block">${R?stars(R.overall,11)+' · tap to edit':'Score every flight, stay, transfer and experience. +300 knots.'}</span></span></button>
+   <button class="opt" style="margin-top:8px" data-a="recap:${t.id}">${ic('trips',18)}<span class="grow"><b class="small">${done(t)?'Trip recap':'Trip at a glance'}</b><span class="tiny muted" style="display:block">Distances, knots, awards and highlights together</span></span></button>
    <button class="opt" style="margin-top:8px" data-a="compose:${t.id}">${ic('edit',18)}<span class="grow"><b class="small">${Comm.mine().posts.some(p=>p.fromTrip===t.id)?'Write another story':'Share this trip as a story'}</b><span class="tiny muted" style="display:block">Rate each stop, add tips, and let others plan the same route.</span></span></button>
    ${clockChip()}<div class="seg tabs5 ${live?'tabs6':''}" style="margin:16px 0">${tabs.map(([v,l])=>`<button class="${UI.tripTab===v?'on':''}" data-a="tripTab:${v}">${l}</button>`).join('')}</div>${body}</div>`;};
 
@@ -3496,7 +3509,7 @@ Object.assign(A,{
   buoys:()=>{closeSheet();go('buoys',{});},
   writeReview:id=>{closeSheet();UI.rv=null;go('review',{destId:id});},
   rvStar:n=>{UI.rv.stars=+n;render();}, rvCat:(k,n)=>{UI.rv.cats[k]=+n;render();}, rvTravel:()=>{UI.rv.travelled=!UI.rv.travelled;render();},
-  submitReview:destId=>{const R=UI.rv;if(!R.stars)return;Comm.addReview({id:'rv'+uid(),destId,stars:R.stars,cats:{...R.cats},text:R.text.trim(),travelled:R.travelled,ts:Date.now()});UI.rv=null;back();toast('Review posted · +1,000 knots','star');setTimeout(()=>A.dest(destId),50);},
+  submitReview:destId=>{const R=UI.rv;if(!R.stars)return;Comm.addReview({id:'rv'+uid(),destId,stars:R.stars,cats:{...R.cats},text:R.text.trim(),travelled:R.travelled,ts:Date.now()});UI.rv=null;back();toast('Review posted · +150 knots','star');setTimeout(()=>A.dest(destId),50);},
   rateTrip:id=>{UI.tr=null;go('rate',{id});},
   trStar:(k,n)=>{UI.tr.parts[k]=+n;render();},
   submitRating:id=>{const t=getTrip(id);const parts=tripParts(t);const R=UI.tr;if(!parts.every(p=>R.parts[p.key]))return;const overall=tripScore(parts,R.parts);const first=!t.rating;
@@ -3504,7 +3517,7 @@ Object.assign(A,{
     const avg=g=>{const v=parts.filter(p=>p.g===g).map(p=>R.parts[p.key]);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;};
     const tr=[avg('flights'),avg('transfers')].filter(x=>x!=null);
     Comm.addReview({id:'rv-'+t.id,destId:t.destId,stars:Math.max(1,Math.min(5,Math.round(overall))),exact:overall,cats:{org:avg('planning'),transport:tr.reduce((a,b)=>a+b,0)/tr.length,stays:avg('stays'),exp:avg('exps')||overall,value:avg('value')},text:t.rating.text,travelled:true,tripId:t.id,ts:Date.now()});
-    save();UI.tr=null;back();toast(`Trip score ${overall.toFixed(1)}${first?' · +2,500 knots':''}`,'star');},
+    save();UI.tr=null;back();toast(`Trip score ${overall.toFixed(1)}${first?' · +300 knots':''}`,'star');},
   credits:()=>go('credits',{}),
   fcheck:k=>{const B=UI.booking;B.checks[k]=!B.checks[k];render();},
   useCredits:()=>{UI.booking.useCredits=!UI.booking.useCredits;render();},
@@ -3752,17 +3765,17 @@ function afterSim(){_pc.k=null;if(typeof postLoyalty==='function')postLoyalty();
 function knotIcon(size=18){return `<svg class="knot" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--buoy)"/><circle cx="12" cy="12" r="11" fill="none" stroke="#0F2131" stroke-opacity=".2"/>
   <path d="M7.2 15.6c-1.7-1.7-1.6-4.4.2-6 1.9-1.7 4.6-1 4.6 1.4v2c0 2.4 2.7 3.1 4.6 1.4 1.8-1.6 1.9-4.3.2-6" fill="none" stroke="#0F2131" stroke-width="2" stroke-linecap="round"/><circle cx="6.9" cy="16" r="1.5" fill="#0F2131"/><circle cx="17.1" cy="8" r="1.5" fill="#0F2131"/></svg>`;}
 const kn=n=>Math.round(n).toLocaleString('en-US');
-const TIERS=[{id:'harbour',name:'Harbour',min:0,mult:1,col:'#7C8F9C',perks:['Earn 5 knots per €1','Members-only fares on experiences']},
-  {id:'reef',name:'Reef',min:25000,mult:1.25,col:'#1C7F86',perks:['1.25× knots on trips','Free seat selection on every flight']},
-  {id:'current',name:'Current',min:75000,mult:1.5,col:'#2A6F97',perks:['1.5× knots on trips','A lounge pass each year','Late check-out when available']},
-  {id:'horizon',name:'Horizon',min:150000,mult:1.75,col:'#5B4BB7',perks:['1.75× knots on trips','A free Leeway Original each year','Priority rebooking when plans change']},
-  {id:'polaris',name:'Polaris',min:300000,mult:2,col:'#C7741A',perks:['2× knots on trips','A premium upgrade each year','A named trip host on every journey']}];
+const TIERS=[{id:'harbour',name:'Harbour',min:0,mult:1,col:'#7C8F9C',perks:['1 knot per €1 on trips','Members-only fares on experiences']},
+  {id:'reef',name:'Reef',min:12000,mult:1.25,col:'#1C7F86',perks:['1.25× knots on trips','Free seat selection on every flight']},
+  {id:'current',name:'Current',min:35000,mult:1.5,col:'#2A6F97',perks:['1.5× knots on trips','A lounge pass each year','Late check-out when available']},
+  {id:'horizon',name:'Horizon',min:80000,mult:1.75,col:'#5B4BB7',perks:['1.75× knots on trips','A free Leeway Original each year','Priority rebooking when plans change']},
+  {id:'polaris',name:'Polaris',min:160000,mult:2,col:'#C7741A',perks:['2× knots on trips','A premium upgrade each year','A named trip host on every journey']}];
 function tierEmblem(i,size=44){const T=TIERS[i];return `<svg width="${size}" height="${size}" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="${T.col}"/><circle cx="24" cy="24" r="17.5" fill="none" stroke="#fff" stroke-opacity=".45" stroke-dasharray="1.5 2.5"/>
   ${Array.from({length:i+1},(_,k)=>{const a=-Math.PI/2+(k-(i)/2)*0.42;return `<circle cx="${(24+Math.cos(a)*12.5).toFixed(1)}" cy="${(24+Math.sin(a)*12.5).toFixed(1)}" r="2.3" fill="#F4B83C"/>`;}).join('')}
   <path d="${starPath(24,27,9.5,4)}" fill="#fff"/></svg>`;}
-const REWARDS=[['d10','€10 off a trip',2000,'discount',10,'tag'],['d25','€25 off a trip',4800,'discount',25,'tag'],['d50','€50 off a trip',9000,'discount',50,'tag'],['d100','€100 off a trip',17500,'discount',100,'tag'],
-  ['lounge','Lounge pass for two',6000,'lounge',78,'cup'],['orig','Free Leeway Original',8000,'original',200,'sparkle'],['bag','Free checked bag',3500,'bag',45,'bag'],
-  ['late','Late check-out',2500,'perk',0,'bed'],['carbon','Offset a trip’s flight CO₂',3000,'perk',0,'leaf'],['upgrade','Premium upgrade on one flight',30000,'perk',0,'plane']];
+const REWARDS=[['d10','€10 off a trip',1000,'discount',10,'tag'],['d25','€25 off a trip',2400,'discount',25,'tag'],['d50','€50 off a trip',4600,'discount',50,'tag'],['d100','€100 off a trip',9000,'discount',100,'tag'],
+  ['lounge','Lounge pass for two',3500,'lounge',78,'cup'],['orig','Free Leeway Original',6000,'original',200,'sparkle'],['bag','Free checked bag',2000,'bag',45,'bag'],
+  ['late','Late check-out',1500,'perk',0,'bed'],['carbon','Offset a trip’s flight CO₂',1500,'perk',0,'leaf'],['upgrade','Premium upgrade on one flight',15000,'perk',0,'plane']];
 const RW=Object.fromEntries(REWARDS.map(r=>[r[0],{id:r[0],name:r[1],cost:r[2],kind:r[3],value:r[4],icon:r[5]}]));
 function L$(){S.loyalty=S.loyalty||{claims:{},granted:{},awards:{},tier:0};S.wallet=S.wallet||[];return S.loyalty;}
 
@@ -3781,18 +3794,18 @@ function travelStats(){const all=S.trips.filter(t=>t.status==='booked'&&t.snap);
     altAirport:tr.some(t=>t.snap.origin!==HOMES[S.profile.home].main),charter:tr.some(t=>J(t).some(x=>x.charter)),winter:tr.some(t=>[12,1,2].includes(D.month(t.depart))&&DEST[t.destId].vibes.includes('beach'))};}
 
 /* ---------- missions: goals with a knots reward ---------- */
-const MISSIONS=[['m-first','Maiden voyage','Complete your first trip',s=>s.trips,1,5000,'route'],['m-islands','Island hopper','Stay on 3 islands',s=>s.islands,3,4000,'boat'],
-  ['m-eco','Rail & sail','Take 2 trains or boats instead of flying',s=>s.eco,2,2500,'train'],['m-exp','Experience collector','Join 5 experiences',s=>s.exps,5,3000,'sun'],
-  ['m-orig','Original seeker','Join 2 Leeway Originals',s=>s.originals,2,3500,'sparkle'],['m-star','Star chaser','Travel to a Leeway Star destination',s=>s.starred,1,3000,'star'],
-  ['m-3star','Worth the voyage','Travel to a Three Star destination',s=>s.threeStar,1,6000,'star'],['m-open','Open water','Complete an open-jaw trip',s=>s.openjaw,1,2000,'swap'],
-  ['m-review','Critic','Write 3 reviews',s=>s.reviews,3,2500,'edit'],['m-story','Storyteller','Publish a story with 10 likes',s=>s.stories?s.likes:0,10,4000,'book'],
-  ['m-conts','Two horizons','Travel on 2 continents',s=>s.conts.length,2,6000,'compass'],['m-winter','Winter sun','A beach trip in Dec–Feb',s=>s.winter?1:0,1,3000,'sun']];
+const MISSIONS=[['m-first','Maiden voyage','Complete your first trip',s=>s.trips,1,750,'route'],['m-islands','Island hopper','Stay on 3 islands',s=>s.islands,3,500,'boat'],
+  ['m-eco','Rail & sail','Take 2 trains or boats instead of flying',s=>s.eco,2,300,'train'],['m-exp','Experience collector','Join 5 experiences',s=>s.exps,5,400,'sun'],
+  ['m-orig','Original seeker','Join 2 Leeway Originals',s=>s.originals,2,450,'sparkle'],['m-star','Star chaser','Travel to a Leeway Star destination',s=>s.starred,1,400,'star'],
+  ['m-3star','Worth the voyage','Travel to a Three Star destination',s=>s.threeStar,1,750,'star'],['m-open','Open water','Complete an open-jaw trip',s=>s.openjaw,1,250,'swap'],
+  ['m-review','Critic','Write 3 reviews',s=>s.reviews,3,300,'edit'],['m-story','Storyteller','Publish a story with 10 likes',s=>s.stories?s.likes:0,10,500,'book'],
+  ['m-conts','Two horizons','Travel on 2 continents',s=>s.conts.length,2,750,'compass'],['m-winter','Winter sun','A beach trip in Dec–Feb',s=>s.winter?1:0,1,400,'sun']];
 /* ---------- traveller awards: bronze, silver, gold ---------- */
 const AWARDS=[['a-isl','Island Collector','islands',s=>s.islands,[3,10,25],'boat'],['a-cont','Continental','continents',s=>s.conts.length,[2,4,6],'compass'],['a-ctry','Flag Bearer','countries',s=>s.countries.length,[3,10,25],'home'],
   ['a-km','Long Hauler','km flown',s=>s.kmFlown,[10000,50000,150000],'plane'],['a-night','Night Keeper','nights away',s=>s.nights,[14,60,180],'bed'],['a-exp','Experience Seeker','experiences',s=>s.exps,[3,15,40],'sun'],
   ['a-eco','Rail & Sail','train and boat legs',s=>s.eco,[3,10,30],'train'],['a-orig','Original Member','Leeway Originals',s=>s.originals,[1,5,15],'sparkle'],['a-star','Star Chaser','Leeway Star trips',s=>s.starred,[1,3,8],'star'],
   ['a-rev','Critic','reviews',s=>s.reviews,[3,10,30],'edit'],['a-story','Storyteller','stories',s=>s.stories,[1,5,15],'book'],['a-rate','Full Circle','trips rated',s=>s.rated,[1,5,15],'check']];
-const AWARD_KNOTS=[1000,3000,8000];const TIER_NAMES=['Bronze','Silver','Gold'];const TIER_COL=['#C58A5A','#AEB9C2','#F4B83C'];
+const AWARD_KNOTS=[150,500,1500];const TIER_NAMES=['Bronze','Silver','Gold'];const TIER_COL=['#C58A5A','#AEB9C2','#F4B83C'];
 function awardLevel(a,s){const v=a[3](s);let l=0;a[4].forEach((th,i)=>{if(v>=th)l=i+1;});return {v,l,next:a[4][l]||null};}
 function awardMedal(icon,level,size=60){const on=level>0;const c=on?TIER_COL[level-1]:'var(--line2)';
   return `<span class="amedal ${on?'on':''}" style="width:${size}px;height:${size*1.12}px"><svg viewBox="0 0 60 67" width="${size}" height="${size*1.12}" aria-hidden="true">
@@ -3802,20 +3815,20 @@ function awardMedal(icon,level,size=60){const on=level>0;const c=on?TIER_COL[lev
    <span class="amedal-ic" style="color:${on?'#0F2131':'var(--ink3)'}">${ic(icon,20)}</span>${on?`<span class="amedal-lv">${'I'.repeat(level)}</span>`:''}</span>`;}
 
 /* ---------- the ledger (derived; pending until you’re home) ---------- */
-function tripEarn(t){const s=t.snap;const mult=t.earnMult||1;const paid=s.totals.all;const base=Math.round(paid*5);const d=DEST[t.destId];const L=[];const when=s.retArr;
-  L.push({t:`Trip to ${d.name}`,v:Math.round(base*mult),sub:`5 per €1 on ${eur(paid)}${mult>1?` · ${mult}× ${TIERS.find(x=>x.mult===mult)?.name||''}`:''}`});
-  const orig=[...(s.exps||[]),...(s.addedExps||[])].filter(e=>e.original).reduce((a,e)=>a+e.total,0);if(orig)L.push({t:'Leeway Originals · double',v:Math.round(orig*5*mult),sub:'2× on Original experiences'});
+function tripEarn(t){const s=t.snap;const mult=t.earnMult||1;const paid=s.totals.all;const base=Math.round(paid*1);const d=DEST[t.destId];const L=[];const when=s.retArr;
+  L.push({t:`Trip to ${d.name}`,v:Math.round(base*mult),sub:`1 per €1 on ${eur(paid)}${mult>1?` · ${mult}× ${TIERS.find(x=>x.mult===mult)?.name||''}`:''}`});
+  const orig=[...(s.exps||[]),...(s.addedExps||[])].filter(e=>e.original).reduce((a,e)=>a+e.total,0);if(orig)L.push({t:'Leeway Originals · double',v:Math.round(orig*mult),sub:'Double knots on Original experiences'});
   if((t.starsAt||0)>0)L.push({t:`Leeway Star destination`,v:Math.round(base*0.05*t.starsAt),sub:`+${t.starsAt*5}% for ${t.starsAt} star${t.starsAt>1?'s':''}`});
-  const eco=(s.journey||[]).filter(x=>x.k==='transfer'&&/train|rail|shinkansen|ferry|catamaran|boat/i.test(x.sub)).length;if(eco)L.push({t:'Rail & sail bonus',v:eco*500,sub:`${eco} low-carbon leg${eco>1?'s':''}`});
-  if(seasonLabel(d,D.month(t.depart))==='Low season')L.push({t:'Off-season bonus',v:Math.round(base*0.15),sub:'+15% for travelling off-peak'});
-  if(s.arrGw!==s.depGw)L.push({t:'Open-jaw bonus',v:1000,sub:'No backtracking'});
+  const eco=(s.journey||[]).filter(x=>x.k==='transfer'&&/train|rail|shinkansen|ferry|catamaran|boat/i.test(x.sub)).length;if(eco)L.push({t:'Rail & sail bonus',v:eco*150,sub:`${eco} low-carbon leg${eco>1?'s':''}`});
+  if(seasonLabel(d,D.month(t.depart))==='Low season')L.push({t:'Off-season bonus',v:Math.round(base*0.10),sub:'+10% for travelling off-peak'});
+  if(s.arrGw!==s.depGw)L.push({t:'Open-jaw bonus',v:250,sub:'No backtracking'});
   return L.map(x=>({...x,date:when,trip:t.id,kind:'trip',status:true}));}
 function ledgerAll(){const Lg=L$();const out=[];const bk=S.trips.filter(t=>t.status==='booked'&&t.snap).sort((a,b)=>a.bookedAt-b.bookedAt);
-  bk.forEach(t=>{tripEarn(t).forEach(x=>out.push(x));if(t.rating)out.push({t:`Rated ${DEST[t.destId].name}`,v:2500,date:new Date(t.rating.ts).toISOString().slice(0,10),kind:'activity',status:true});});
-  const m=Comm.mine();(m.reviews||[]).filter(r=>!r.tripId).forEach(r=>out.push({t:`Review · ${DEST[r.destId]?DEST[r.destId].name:''}`,v:1000,date:new Date(r.ts).toISOString().slice(0,10),kind:'activity',status:true}));
-  m.posts.forEach(p=>out.push({t:`Story · ${p.title}`,v:2000,date:new Date(p.created).toISOString().slice(0,10),kind:'activity',status:true}));
-  Object.entries(Lg.claims).forEach(([id,date])=>{const M=MISSIONS.find(x=>x[0]===id);if(M)out.push({t:`Mission · ${M[1]}`,v:M[5],date,kind:'mission',status:true});});
-  Object.entries(Lg.awards).forEach(([id,lv])=>{const A_=AWARDS.find(x=>x[0]===id);if(A_)lv.forEach((date,i)=>out.push({t:`${TIER_NAMES[i]} · ${A_[1]}`,v:AWARD_KNOTS[i],date,kind:'award',status:true}));});
+  bk.forEach(t=>{tripEarn(t).forEach(x=>out.push(x));if(t.rating)out.push({t:`Rated ${DEST[t.destId].name}`,v:300,date:new Date(t.rating.ts).toISOString().slice(0,10),kind:'activity',status:false});});
+  const m=Comm.mine();[...(m.reviews||[])].filter(r=>!r.tripId).sort((a,b)=>a.ts-b.ts).slice(0,10).forEach(r=>out.push({t:`Review · ${DEST[r.destId]?DEST[r.destId].name:''}`,v:150,date:new Date(r.ts).toISOString().slice(0,10),kind:'activity',status:false}));
+  [...m.posts].sort((a,b)=>a.created-b.created).slice(0,5).forEach(p=>out.push({t:`Story · ${p.title}`,v:400,date:new Date(p.created).toISOString().slice(0,10),kind:'activity',status:false}));
+  Object.entries(Lg.claims).forEach(([id,date])=>{const M=MISSIONS.find(x=>x[0]===id);if(M)out.push({t:`Mission · ${M[1]}`,v:M[5],date,kind:'mission',status:false});});
+  Object.entries(Lg.awards).forEach(([id,lv])=>{const A_=AWARDS.find(x=>x[0]===id);if(A_)lv.forEach((date,i)=>out.push({t:`${TIER_NAMES[i]} · ${A_[1]}`,v:AWARD_KNOTS[i],date,kind:'award',status:false}));});
   S.wallet.forEach(w=>{if(!w.granted)out.push({t:`Redeemed · ${RW[w.rid].name}`,v:-RW[w.rid].cost,date:new Date(w.ts).toISOString().slice(0,10),kind:'redeem',status:false});});
   const today=D.today();const posted=L$().posted||{};out.forEach(x=>x.pending=x.kind==='trip'&&!posted[x.trip]&&x.date>=today);
   return out.sort((a,b)=>b.date.localeCompare(a.date)||b.v-a.v);}
@@ -3843,15 +3856,16 @@ function knotsCard(){const K=knotsSummary();const pct=K.next?Math.min(100,(K.sta
 function accountBlock(){const s=travelStats();const Lg=L$();
   const earned=AWARDS.map(a=>({a,...awardLevel(a,s)})).sort((x,y)=>y.l-x.l||((y.next?y.v/y.next:1)-(x.next?x.v/x.next:1))).slice(0,6);
   return `<div class="sec acct">${knotsCard()}
+   <button class="opt" style="margin-top:12px" data-a="year">${ic('compass',18)}<span class="grow"><b class="small">Your ${D.today().slice(0,4)} in travel</b><span class="tiny muted" style="display:block">Every trip, km, knot and award this year</span></span></button>
    <div class="logbook">${[['Trips',s.trips],['Nights',s.nights],['Km flown',kn(s.kmFlown)],['Countries',s.countries.length],['Continents',s.conts.length],['Experiences',s.exps]].map(([k,v])=>`<div><b class="num">${v}</b><span>${k}</span></div>`).join('')}</div>
    <div class="tiny faint" style="margin-top:6px">Logbook counts trips you’ve completed${s.booked>s.trips?` · ${s.booked-s.trips} upcoming`:''}.</div>
    <div class="sec-h" style="margin-top:18px"><h3>Traveller awards</h3><button class="btn-text" data-a="awards">All ${AWARDS.length}</button></div>
    <div class="awgrid">${earned.map(({a,l,v,next})=>`<button class="awcell" data-a="awards">${awardMedal(a[5],l,52)}<b class="tiny">${a[1]}</b><span class="tiny faint">${l?TIER_NAMES[l-1]:`${kn(v)}/${kn(next)}`}</span></button>`).join('')}</div></div>`;}
 V.knots=()=>{const K=knotsSummary();return `${subHead('Leeway Knots','Card & activity')}
- <div class="pad" style="padding-top:16px">${memberCard(K,{flip:UI.cardFlip})}<div class="kbig" style="margin-top:14px">${knotIcon(40)}<div><div class="display num" style="font-size:34px;font-weight:750;line-height:1">${kn(K.balance)}</div><div class="small muted">knots to spend · worth about ${eur(K.balance/200)}${K.pending>0?` · <b>${kn(K.pending)}</b> pending until you’re home`:''}</div></div></div>
+ <div class="pad" style="padding-top:16px">${memberCard(K,{flip:UI.cardFlip})}<div class="kbig" style="margin-top:14px">${knotIcon(40)}<div><div class="display num" style="font-size:34px;font-weight:750;line-height:1">${kn(K.balance)}</div><div class="small muted">knots to spend · worth about ${eur(K.balance/100)}${K.pending>0?` · <b>${kn(K.pending)}</b> pending until you’re home`:''}</div></div></div>
   <div class="sec"><div class="sec-h"><h3>Cards</h3><button class="btn-text" data-a="cards">Compare cards</button></div><p class="tiny muted" style="margin:4px 0 10px">Card points are knots earned in the last 12 months plus knots spent counted twice. Higher cards multiply what every trip earns.</p>
    <div class="ladder">${TIERS.map((T,i)=>`<div class="rung ${i===K.ti?'cur':''} ${i<K.ti?'past':''}">${tierEmblem(i,40)}<div class="grow" style="min-width:0"><div class="row between"><b>${T.name}</b><span class="mono tiny">${i?kn(T.min)+'+':'Start'} · ${T.mult}×</span></div><div class="tiny muted">${T.perks.join(' · ')}</div></div></div>`).join('')}</div></div>
-  <div class="sec card" style="padding:6px 16px"><h3 style="padding:10px 0 4px">How to earn</h3>${[['Every trip','5 knots per €1 × your tier'],['Leeway Originals','Double knots'],['Leeway Star destinations','+5% per star'],['Train or boat instead of a flight','+500 per leg'],['Off-season travel','+15%'],['Open-jaw trips','+1,000'],['Rate a whole trip','+2,500'],['Review a destination','+1,000'],['Publish a story','+2,000'],['Missions & awards','up to +8,000 each']].map(([a,b])=>`<div class="row between small" style="padding:8px 0;border-top:1px solid var(--line)"><span>${a}</span><b>${b}</b></div>`).join('')}</div>
+  <div class="sec card" style="padding:6px 16px"><h3 style="padding:10px 0 4px">How to earn</h3><p class="tiny muted" style="margin:0 0 6px">Trip knots count toward your card. Bonus knots are for spending.</p>${[['Every trip','1 knot per €1 × your card'],['Leeway Originals','Double knots'],['Leeway Star destinations','+5% per star'],['Train or boat instead of a flight','+150 per leg'],['Off-season travel','+10%'],['Open-jaw trips','+250'],['Rate a whole trip','+300 bonus'],['Review a destination','+150 bonus · 10 a year'],['Publish a story','+400 bonus · 5 a year'],['Missions & awards','+150 to +1,500 bonus']].map(([a,b])=>`<div class="row between small" style="padding:8px 0;border-top:1px solid var(--line)"><span>${a}</span><b>${b}</b></div>`).join('')}</div>
   <div class="sec"><h3>Activity</h3><div class="list" style="margin-top:8px;gap:0">${K.L.map(x=>`<div class="row between" style="padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start;gap:10px"><div style="min-width:0"><b class="small">${esc(x.t)}</b><div class="tiny muted">${D.fmt(x.date,{day:'numeric',month:'short',year:'numeric'})}${x.sub?' · '+esc(x.sub):''}</div></div>
    <span style="text-align:right;white-space:nowrap"><b class="num" style="color:${x.v<0?'var(--bad)':x.pending?'var(--ink3)':'var(--good)'}">${x.v>0?'+':''}${kn(x.v)}</b>${x.pending?'<span class="tiny faint" style="display:block">pending</span>':''}</span></div>`).join('')||'<p class="small muted">Book a trip to start earning.</p>'}</div></div></div>`;};
 function subHead(eyebrow,title){return `<div class="topbar glass pad"><button class="iconbtn" data-a="back" aria-label="Back" style="margin-left:-10px">${ic('back',22)}</button><div class="grow"><div class="eyebrow">${eyebrow}</div><h3>${title}</h3></div><span class="row gap4 small"><b class="num">${kn(knotsSummary().balance)}</b>${knotIcon(18)}</span></div>`;}
@@ -3865,7 +3879,7 @@ V.missions=()=>{const s=travelStats();const Lg=L$();return `${subHead('Leeway Kn
   ${MISSIONS.map(M=>{const v=Math.min(M[4],M[3](s));const doneM=!!Lg.claims[M[0]];return `<div class="mission ${doneM?'done':''}"><span class="vic">${ic(M[6],18)}</span><div class="grow" style="min-width:0"><div class="row between"><b class="small">${M[1]}</b><span class="row gap4 tiny">${knotIcon(13)}<b>${kn(M[5])}</b></span></div><div class="tiny muted">${M[2]}</div>
    <div class="meter" style="margin-top:8px"><i style="width:${v/M[4]*100}%;background:${doneM?'var(--good)':'var(--buoy)'}"></i></div><div class="tiny faint" style="margin-top:4px">${doneM?`Completed ${D.fmt(Lg.claims[M[0]],{day:'numeric',month:'short'})}`:`${kn(v)} of ${kn(M[4])}`}</div></div></div>`;}).join('')}</div>`;};
 V.awards=()=>{const s=travelStats();return `${subHead('Traveller awards','Your medals')}
- <div class="pad" style="padding-top:16px"><p class="small muted" style="margin:0 0 14px">Each award has Bronze, Silver and Gold. Every level adds knots: 1,000, 3,000 and 8,000.</p>
+ <div class="pad" style="padding-top:16px"><p class="small muted" style="margin:0 0 14px">Each award has Bronze, Silver and Gold. Every level adds bonus knots: 150, 500 and 1,500.</p>
   <div class="stack gap12">${AWARDS.map(a=>{const {v,l,next}=awardLevel(a,s);return `<div class="awrow">${awardMedal(a[5],l,56)}<div class="grow" style="min-width:0"><div class="row between"><b>${a[1]}</b><span class="tiny" style="font-weight:700;color:${l?TIER_COL[l-1]:'var(--ink3)'}">${l?TIER_NAMES[l-1]:'Not yet'}</span></div>
    <div class="tiny muted">${kn(v)} ${a[2]}${next?` · ${TIER_NAMES[l]} at ${kn(next)}`:' · all levels earned'}</div><div class="tiers3">${a[4].map((th,i)=>`<i class="${l>i?'on':''}" style="--c:${TIER_COL[i]}"><b style="width:${Math.min(100,(l>i?1:(i===l?v/th:0))*100)}%"></b></i>`).join('')}</div></div></div>`;}).join('')}</div></div>`;};
 
@@ -3882,7 +3896,7 @@ function walletUI(P,B){const W=(S.wallet||[]).filter(w=>!w.used);if(!W.length)re
   return `<div class="card" style="padding:14px 16px"><div class="row between"><b>Your wallet</b><span class="tiny faint">${W.length} reward${W.length>1?'s':''}</span></div>
    <div class="list" style="gap:6px;margin-top:8px">${W.map(w=>{const on=(B.vouchers||[]).includes(w.id);return `<button class="checkrow ${on?'on':''}" style="border:0;padding:8px 0" data-a="useVoucher:${w.id}"><span class="checkbox">${on?ic('check',14):''}</span><span class="grow small" style="font-weight:600">${RW[w.rid].name}</span>${ic(RW[w.rid].icon,16,'faint')}</button>`;}).join('')}</div>
    ${ap.off?`<div class="small" style="color:var(--good);font-weight:600;margin-top:6px">−${eur(ap.off)} applied</div>`:''}</div>`;}
-function earnPreview(P){const K=knotsSummary();const paid=P.totals.all;const base=Math.round(paid*5*K.tier.mult);return base;}
+function earnPreview(P){const K=knotsSummary();return Math.round(P.totals.all*K.tier.mult);}
 
 Object.assign(A,{
   knots:()=>go('knots',{}),rewards:()=>go('rewards',{}),missions:()=>go('missions',{}),awards:()=>go('awards',{}),credits:()=>go('knots',{}),
@@ -3900,12 +3914,12 @@ ICONS.tag='<path d="M3.5 12.2V4.5a1 1 0 011-1h7.7l8.3 8.3a1.5 1.5 0 010 2.1l-6.2
    because spending them is what Leeway wants to reward most. */
 [['navy','Navy','#1E3E57'],['silver','Silver','#A7B2BB'],['gold','Gold','#D9A441'],['platinum','Platinum','#C9CFD6'],['obsidian','Obsidian','#2A2E35']]
   .forEach(([id,name,col],i)=>Object.assign(TIERS[i],{id,name,col}));
-TIERS[0].perks=['Earn 5 knots per €1','Members-only fares on experiences'];
+TIERS[0].perks=['1 knot per €1 on trips','Members-only fares on experiences'];
 
 function knotsSummary(){const L=ledgerAll();const today=D.today();const posted=L.filter(x=>!x.pending);const balance=posted.reduce((a,x)=>a+x.v,0);const pending=L.filter(x=>x.pending).reduce((a,x)=>a+x.v,0);
-  const yearAgo=D.add(today,-365);const earned=posted.filter(x=>x.status&&x.v>0&&x.date>yearAgo).reduce((a,x)=>a+x.v,0);
+  const yearAgo=D.add(today,-365);const earned=posted.filter(x=>x.status&&x.v>0&&x.date>yearAgo).reduce((a,x)=>a+x.v,0);const bonus=posted.filter(x=>!x.status&&x.v>0).reduce((a,x)=>a+x.v,0);
   const spent=Math.abs(L.filter(x=>x.kind==="redeem"&&x.date>yearAgo).reduce((a,x)=>a+x.v,0));const status=earned+spent*2;
-  let ti=0;TIERS.forEach((T,i)=>{if(status>=T.min)ti=i;});return {L,balance,pending,earned,spent,status,ti,tier:TIERS[ti],next:TIERS[ti+1]||null};}
+  let ti=0;TIERS.forEach((T,i)=>{if(status>=T.min)ti=i;});return {L,balance,pending,earned,bonus,spent,status,ti,tier:TIERS[ti],next:TIERS[ti+1]||null};}
 
 function memberNo(){const h=hash((S.profile?.name||'')+'·leeway·'+(S.profile?.since||''));const d=String(h).padStart(10,'0')+String(hash(String(h))).padStart(10,'0');return `LW ${d.slice(0,4)} ${d.slice(4,8)} ${d.slice(8,12)} ${d.slice(12,16)}`;}
 function memberSince(){if(S.profile&&!S.profile.since){S.profile.since=D.today().slice(0,4);save();}return S.profile?.since||'2026';}
@@ -3919,7 +3933,7 @@ function memberCard(K,o={}){memberSince();const i=o.i!=null?o.i:K.ti;const T=TIE
   if(o.mini)return `<div class="mcard mini t-${T.id}"><div class="mc-in">${front}</div></div>`;
   const pct=K.next?Math.min(100,(K.status-K.tier.min)/(K.next.min-K.tier.min)*100):100;
   const back=`<div class="mc-face mc-back"><div class="mc-strip"></div>
-    <div class="mc-backbody"><div class="mc-pts"><small>Card points · last 12 months</small><div class="mc-eq"><span><b class="num">${kn(K.earned)}</b><i>earned</i></span><em>+</em><span><b class="num">${kn(K.spent)}×2</b><i>spent</i></span><em>=</em><span><b class="num">${kn(K.status)}</b><i>points</i></span></div>
+    <div class="mc-backbody"><div class="mc-pts"><small>Card points · trips + spent ×2 · 12 months</small><div class="mc-eq"><span><b class="num">${kn(K.earned)}</b><i>earned</i></span><em>+</em><span><b class="num">${kn(K.spent)}×2</b><i>spent</i></span><em>=</em><span><b class="num">${kn(K.status)}</b><i>points</i></span></div>
       <div class="mc-bar"><i style="width:${pct}%"></i></div><small>${K.next?`${kn(K.next.min-K.status)} points to ${K.next.name}`:'Highest card'}</small></div>${qr(memberNo())}</div>
     <div class="mc-backfoot">${T.perks.slice(0,2).map(esc).join(' · ')}</div></div>`;
   return `<div class="mcard t-${T.id} ${flip?'flipped':''}" data-a="flipCard" role="button" aria-label="${T.name} card, tap to flip"><div class="mc-in">${front}${back}</div></div>`;}
@@ -3935,7 +3949,7 @@ function knotsCard(){const K=knotsSummary();const pct=K.next?Math.min(100,(K.sta
 
 V.cards=()=>{const K=knotsSummary();return `${subHead('Leeway Knots','Your card')}
  <div class="pad" style="padding-top:16px">${memberCard(K,{flip:UI.cardFlip})}
-  <div class="card" style="padding:14px 16px;margin-top:14px"><b>How your card upgrades</b><p class="small muted" style="margin:4px 0 10px">Card points are the knots you earned in the last 12 months plus the knots you spent, counted twice. Spending on rewards moves you up faster than saving.</p>
+  <div class="card" style="padding:14px 16px;margin-top:14px"><b>How your card upgrades</b><p class="small muted" style="margin:4px 0 10px">Card points are the trip knots you earned in the last 12 months plus the knots you spent, counted twice. Bonus knots from reviews, stories, missions and awards can be spent but don\u2019t count on their own. The top cards take years of travel.</p>
    <div class="mc-eq big"><span><b class="num">${kn(K.earned)}</b><i>earned</i></span><em>+</em><span><b class="num">${kn(K.spent)} ×2</b><i>spent</i></span><em>=</em><span><b class="num">${kn(K.status)}</b><i>card points</i></span></div></div>
   <div class="sec"><h3>The five cards</h3><div class="stack gap16" style="margin-top:12px">${TIERS.map((T,i)=>`<div class="cardrow ${i===K.ti?'cur':''} ${i<K.ti?'past':''}">${memberCard(K,{mini:true,i})}
     <div class="grow" style="min-width:0"><div class="row between"><b>${T.name}</b>${i===K.ti?'<span class="pill buoy">Your card</span>':i<K.ti?'<span class="pill good">Passed</span>':`<span class="mono tiny">${kn(T.min-K.status)} to go</span>`}</div>
@@ -3946,6 +3960,90 @@ Object.assign(A,{cards:()=>go('cards',{}),flipCard:()=>{UI.cardFlip=!UI.cardFlip
 function initCards(){document.querySelectorAll('.mcard:not(.mini)').forEach(c=>{if(c._t)return;c._t=1;
   const mv=e=>{const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;c.style.setProperty('--mx',(x*100).toFixed(1)+'%');c.style.setProperty('--my',(y*100).toFixed(1)+'%');c.style.setProperty('--rx',((0.5-y)*10).toFixed(2)+'deg');c.style.setProperty('--ry',((x-0.5)*14).toFixed(2)+'deg');};
   c.addEventListener('pointermove',mv);c.addEventListener('pointerleave',()=>{c.style.setProperty('--rx','0deg');c.style.setProperty('--ry','0deg');});});}
+
+/* Leeway — features that pull everything together: trip recap, year in travel, smart next steps. */
+
+/* ---------- trip recap / at a glance ---------- */
+function tripFacts(t){const s=t.snap;const J=s.journey||[];const fl=J.filter(x=>x.k==='flight');const tr=J.filter(x=>x.k==='transfer');
+  const modes={};tr.forEach(x=>{const m=x.sub.split(' · ')[0];modes[m]=(modes[m]||0)+1;});
+  const codes=[];fl.forEach(f=>{if(!codes.length)codes.push(f.from);codes.push(f.to);});
+  const exps=[...(s.exps||[]),...(s.addedExps||[])];
+  return {days:s.tripDays,nights:s.nights,km:fl.reduce((a,x)=>a+(x.km||0),0),flights:fl.length,stops:t.stops.length,islands:t.stops.filter(x=>(ISLANDS[t.destId]||{})[x.stopId]).length,
+    transfers:tr.length,modes,exps:exps.length,originals:exps.filter(e=>e.original).length,co2:s.co2||0,codes};}
+function bestParts(t){if(!t.rating)return [];const parts=tripParts(t);const v=t.rating.parts;const out=[];
+  [['stays','Best stay'],['exps','Best experience'],['transfers','Best transfer']].forEach(([g,l])=>{const ps=parts.filter(p=>p.g===g&&v[p.key]);if(!ps.length)return;const b=ps.sort((a,b)=>v[b.key]-v[a.key])[0];out.push([l,b.name,v[b.key]]);});return out;}
+V.recap=({id})=>{const t=getTrip(id);if(!t||!t.snap)return V.trips();const d=DEST[t.destId];const s=t.snap;const F=tripFacts(t);const fin=done(t);
+  const earn=tripEarn(t);const eSum=earn.reduce((a,x)=>a+x.v,0);const K=knotsSummary();const Lg=L$();
+  const win=[t.depart,D.add(s.retArr,3)];const unlocked=[...Object.entries(Lg.claims).filter(([,dt])=>dt>=win[0]&&dt<=win[1]).map(([mid])=>{const M=MISSIONS.find(x=>x[0]===mid);return M?['Mission',M[1],M[6]]:null;}),
+    ...Object.entries(Lg.awards).flatMap(([aid,lv])=>lv.map((dt,i)=>dt>=win[0]&&dt<=win[1]?[TIER_NAMES[i]+' award',AWARDS.find(a=>a[0]===aid)[1],AWARDS.find(a=>a[0]===aid)[5]]:null))].filter(Boolean);
+  const starsN=destBuoys(t.destId);const BP=bestParts(t);
+  const stat=(v,l,k)=>`<div><b class="num" ${k?`data-count="${k}" data-val="${v}"`:''}>${typeof v==='number'?kn(v):v}</b><span>${l}</span></div>`;
+  return `<div class="hero" style="height:300px"><div class="media">${scene(t.destId,13)}<div class="shade"></div></div>
+   <div class="brandbar pad safe-top"><button class="iconbtn glass-chip" data-a="back" aria-label="Back">${ic('back',22)}</button><span class="glass-chip mono" style="height:32px;padding:0 12px;border-radius:16px;display:flex;align-items:center">${fin?'Trip recap':'At a glance'}</span></div>
+   <div class="hero-inner pad"><div class="eyebrow" style="color:#DCEBEE">${D.fmt(t.depart,{day:'numeric',month:'short'})} – ${D.fmt(s.retArr,{day:'numeric',month:'short',year:'numeric'})}</div><h1 style="margin-top:6px">${fin?'Your':'Your coming'} ${esc(d.name)} voyage</h1>${starsN?`<div style="margin-top:8px">${buoyPill(starsN,{glass:true})}</div>`:''}</div></div>
+  <div class="pad" style="padding-top:16px">
+   <div class="recapgrid">${stat(F.days,'days')}${stat(F.nights,'nights')}${stat(F.km,'km flown')}${stat(F.stops,'stops')}${stat(F.transfers,'transfers')}${stat(F.exps,'experiences')}</div>
+   <div class="sec"><div class="worldbox">${worldMap(F.codes.length>1?F.codes:[s.origin,s.arrGw])}</div><div class="tiny faint" style="margin-top:6px">${F.flights} flights · ${F.codes.join(' → ')} · about ${kn(F.co2)} kg CO₂ per person</div></div>
+   <div class="sec">${routeMap(d,t.stops,s.arrGw,s.depGw,{h:200})}<div class="chips" style="margin-top:8px">${Object.entries(F.modes).map(([m,n])=>`<span class="chip" style="height:30px">${n}× ${esc(m)}</span>`).join('')}${F.islands?`<span class="chip" style="height:30px">${F.islands} island${F.islands>1?'s':''}</span>`:''}</div></div>
+   <div class="sec card recapscore">${t.rating?`<div class="row between"><div><span class="eyebrow">Your trip score</span><div class="display num" style="font-size:44px;font-weight:750;line-height:1">${t.rating.overall.toFixed(1)}</div>${stars(t.rating.overall,15)}</div>
+     <div class="stack gap8" style="max-width:58%">${BP.map(([l,n,v])=>`<div><span class="eyebrow">${l}</span><div class="small" style="font-weight:600">${esc(n)}</div></div>`).join('')}</div></div>`
+     :`<div class="row between"><div><b>${fin?'Rate this trip':'Rate it after you travel'}</b><div class="tiny muted">Score every part · +300 knots · counts toward ${esc(d.name)}’s Leeway Stars</div></div><button class="btn btn-primary" style="min-height:40px" data-a="rateTrip:${t.id}">Rate</button></div>`}</div>
+   <div class="sec card" style="padding:16px"><div class="row between"><span class="row gap8">${knotIcon(22)}<b>${fin?'Knots earned':'Knots you’ll earn'}</b></span><b class="num" style="font:750 22px var(--f-display)">${kn(eSum)}</b></div>
+    <div class="stack" style="margin-top:8px">${earn.map(x=>`<div class="row between small" style="padding:5px 0;border-top:1px solid var(--line)"><span>${esc(x.t)}<span class="tiny faint" style="display:block">${esc(x.sub||'')}</span></span><b class="num">+${kn(x.v)}</b></div>`).join('')}</div>
+    <div class="tiny muted" style="margin-top:8px">${fin?`Counted toward your ${K.tier.name} card${K.next?` · ${kn(K.next.min-K.status)} points to ${K.next.name}`:''}.`:`Posts on ${D.fmt(s.retArr,{day:'numeric',month:'short'})} and counts toward your card.`}</div></div>
+   ${unlocked.length?`<div class="sec"><h3>Unlocked on this trip</h3><div class="list" style="gap:8px;margin-top:8px">${unlocked.map(([k,n,i])=>`<div class="opt"><span class="vic">${ic(i,17)}</span><span class="grow"><span class="eyebrow">${k}</span><b class="small" style="display:block">${esc(n)}</b></span></div>`).join('')}</div></div>`:''}
+   <div class="sec stack gap8">${fin&&!Comm.mine().posts.some(p=>p.fromTrip===t.id)?`<button class="btn btn-buoy btn-block" data-a="compose:${t.id}">${ic('edit',18)}Turn it into a story</button>`:''}
+    <button class="btn btn-ghost btn-block" data-a="planAgain:${t.id}">${ic('route',18)}Plan this route again</button></div></div>`;};
+
+/* ---------- year in travel ---------- */
+V.year=()=>{const yr=D.today().slice(0,4);const tr=S.trips.filter(t=>done(t)&&t.depart.slice(0,4)===yr);const all=S.trips.filter(t=>t.status==='booked'&&t.snap&&t.depart.slice(0,4)===yr);
+  const F=tr.map(tripFacts);const sum=k=>F.reduce((a,f)=>a+f[k],0);const dests=[...new Set(tr.map(t=>t.destId))];const countries=[...new Set(dests.map(id=>DEST[id].country))];const conts=[...new Set(dests.map(id=>DEST[id].cont))];
+  const L=ledgerAll().filter(x=>!x.pending&&x.date.slice(0,4)===yr);const earned=L.filter(x=>x.v>0).reduce((a,x)=>a+x.v,0),spent=Math.abs(L.filter(x=>x.v<0).reduce((a,x)=>a+x.v,0));
+  const K=knotsSummary();const Lg=L$();const awY=Object.entries(Lg.awards).flatMap(([aid,lv])=>lv.map((dt,i)=>dt.slice(0,4)===yr?[aid,i]:null)).filter(Boolean);
+  const months=Array.from({length:12},(_,i)=>all.some(t=>{const a=D.month(t.depart),b=D.month(t.snap.retArr);return (i+1>=a&&i+1<=b)||(a>b&&(i+1>=a||i+1<=b));}));
+  const rated=tr.filter(t=>t.rating).sort((a,b)=>b.rating.overall-a.rating.overall)[0];
+  const codes=[];tr.forEach(t=>{const f=tripFacts(t);f.codes.forEach(c=>codes.push(c));});
+  return `${subHead('Logbook','Your '+yr+' in travel')}
+  <div class="pad" style="padding-top:16px">
+   ${tr.length?`<div class="yearhero"><span class="eyebrow" style="color:#9FC0CB">${yr} · ${K.tier.name} card</span><div class="display" style="font-size:48px;font-weight:800;line-height:1;margin-top:6px">${kn(sum('km'))} km</div><div style="color:#C9D9DE">${plural(tr.length,'trip')} · ${plural(countries.length,'country').replace('countrys','countries')} · ${plural(conts.length,'continent')}</div>
+     <div class="worldbox" style="margin-top:12px;border:0">${worldMap([...new Set(codes)].length>1?codes:[HOMES[S.profile.home].main,codes[0]||HOMES[S.profile.home].main])}</div></div>
+    <div class="recapgrid sec">${[[sum('nights'),'nights away'],[sum('stops'),'stops'],[sum('islands'),'islands'],[sum('transfers'),'transfers'],[sum('exps'),'experiences'],[sum('originals'),'Originals']].map(([v,l])=>`<div><b class="num">${kn(v)}</b><span>${l}</span></div>`).join('')}</div>
+    <div class="sec card" style="padding:14px 16px"><span class="eyebrow">When you travelled</span><div class="months" style="margin-top:8px">${MONTHS.map((m,i)=>`<i class="${months[i]?'best':''}">${m[0]}</i>`).join('')}</div></div>
+    ${rated?`<div class="sec card" style="padding:16px"><span class="eyebrow">Top-rated trip</span><div class="row between" style="margin-top:4px"><b>${esc(DEST[rated.destId].name)}</b><span class="row gap4">${stars(rated.rating.overall,13)}<b class="num">${rated.rating.overall.toFixed(1)}</b></span></div></div>`:''}
+    <div class="sec card" style="padding:16px"><div class="row gap8">${knotIcon(22)}<b>Knots this year</b></div><div class="mc-eq big" style="margin-top:8px"><span><b class="num">${kn(earned)}</b><i>earned</i></span><em>·</em><span><b class="num">${kn(spent)}</b><i>spent</i></span><em>·</em><span><b class="num">${kn(K.balance)}</b><i>balance</i></span></div></div>
+    ${awY.length?`<div class="sec"><h3>Awards this year</h3><div class="awgrid" style="margin-top:10px">${awY.map(([aid,i])=>{const a=AWARDS.find(x=>x[0]===aid);return `<div class="awcell">${awardMedal(a[5],i+1,48)}<b class="tiny">${a[1]}</b><span class="tiny faint">${TIER_NAMES[i]}</span></div>`;}).join('')}</div></div>`:''}`
+   :`<div class="card" style="padding:24px;text-align:center"><div style="width:72px;margin:0 auto 10px">${logoMark(72)}</div><h3>Your ${yr} logbook is empty</h3><p class="small muted">Trips appear here once you’re home${all.length?` · ${plural(all.length,'trip')} booked for ${yr}`:''}. Use the demo clock to travel through one.</p><button class="btn btn-ghost" data-a="openClock">${ic('compass',16)}Demo clock</button></div>`}</div>`;};
+
+/* ---------- smart next steps: one place where everything connects ---------- */
+function nextSteps(){const out=[];const K=knotsSummary();const s=travelStats();const Lg=L$();
+  const lt=typeof liveTrip==='function'?liveTrip():null;
+  S.trips.filter(t=>done(t)&&!t.rating).slice(0,1).forEach(t=>out.push({p:9,icon:'star',t:`Rate your ${DEST[t.destId].name} trip`,s:'Score every part · +300 knots · shapes its Leeway Stars',a:`rateTrip:${t.id}`}));
+  S.trips.filter(t=>done(t)&&!Comm.mine().posts.some(p=>p.fromTrip===t.id)).slice(0,1).forEach(t=>out.push({p:6,icon:'edit',t:`Turn ${DEST[t.destId].name} into a story`,s:'Others can rate it and copy your route · +400 knots',a:`compose:${t.id}`}));
+  S.trips.filter(t=>done(t)).slice(-1).forEach(t=>out.push({p:4,icon:'trips',t:`Your ${DEST[t.destId].name} recap`,s:'Km, knots, awards and highlights in one place',a:`recap:${t.id}`}));
+  if(K.next){const gap=K.next.min-K.status;if(gap<=K.next.min*0.3)out.push({p:8,icon:'tag',t:`${kn(gap)} points to your ${K.next.name} card`,s:K.balance>=gap/2?`Spending ${kn(Math.ceil(gap/2))} knots on rewards gets you there — spent knots count twice`:`Trips and spent knots both count`,a:'cards'});}
+  const unused=(S.wallet||[]).filter(w=>!w.used);const draft=S.trips.find(t=>t.status==='draft'&&t.destId&&t.stops.length);
+  if(unused.length&&draft)out.push({p:7,icon:'tag',t:`Use your ${RW[unused[0].rid].name.toLowerCase()} on ${DEST[draft.destId].name}`,s:`It applies at checkout · ${plural(unused.length,'reward')} in your wallet`,a:`opentrip:${draft.id}`});
+  else if(draft&&!lt)out.push({p:5,icon:'route',t:`Finish planning ${DEST[draft.destId].name}`,s:`Step ${draft.step+1} of 8 · prices refresh as dates move`,a:`opentrip:${draft.id}`});
+  const near=MISSIONS.filter(M=>!Lg.claims[M[0]]).map(M=>({M,v:M[3](s)})).filter(x=>x.v>0&&x.v<x.M[4]).sort((a,b)=>b.v/b.M[4]-a.v/a.M[4])[0];
+  if(near)out.push({p:5,icon:near.M[6],t:`${near.M[1]}: ${kn(near.M[4]-near.v)} to go`,s:`${near.M[2]} · +${kn(near.M[5])} knots`,a:'missions'});
+  const nm=D.month(D.add(D.today(),30));(S.savedDests||[]).map(id=>DEST[id]).filter(d=>d&&d.best.includes(nm)).slice(0,1).forEach(d=>out.push({p:4,icon:'heart',t:`${d.name} is at its best in ${MONTHS[nm-1]}`,s:'A destination you saved · plan it now for the best fares',a:`planDest:${d.id}`}));
+  if(!S.trips.some(t=>t.status==='booked'))out.push({p:3,icon:'compass',t:'Try the demo clock',s:'Book a trip, then travel through it day by day',a:'openClock'});
+  return out.sort((a,b)=>b.p-a.p).slice(0,3);}
+function nextStepsHTML(){const N=nextSteps();if(!N.length)return '';
+  return `<div class="sec"><div class="sec-h"><h2>For you</h2><span class="tiny faint">based on your trips, card and wallet</span></div><div class="list" style="gap:8px">${N.map(n=>`<button class="opt nstep" data-a="${n.a}"><span class="vic">${ic(n.icon,18)}</span><span class="grow" style="min-width:0"><b class="small" style="display:block">${esc(n.t)}</b><span class="tiny muted">${esc(n.s)}</span></span>${ic('back',16,'faint" style="transform:rotate(180deg)')}</button>`).join('')}</div></div>`;}
+
+Object.assign(A,{
+  recap:id=>go('recap',{id}),year:()=>go('year',{}),
+  planAgain:id=>{const o=getTrip(id);const t=newDraft(o.destId);t.stops=o.stops.map(s=>({...s}));t.priority=o.priority;t.adults=o.adults;t.children=o.children;t.step=1;save();UI.stayTab=0;go('wiz',{id:t.id});toast('Route copied into a new plan','route');},
+});
+
+/* Leeway — per-render memoisation. Cleared on every render and every save, so it never serves stale state. */
+const _memo=new Map();function clearMemo(){_memo.clear();}
+function memoize(name,fn){return function(...a){const k=name+'|'+a.map(x=>typeof x==='object'?JSON.stringify(x):String(x)).join('|');if(_memo.has(k))return _memo.get(k);const v=fn.apply(this,a);_memo.set(k,v);return v;};}
+destReviewStats=memoize('drs',destReviewStats);destBuoys=memoize('db',destBuoys);knotsSummary=memoize('ks',knotsSummary);travelStats=memoize('ts',travelStats);ledgerAll=memoize('la',ledgerAll);
+Comm.posts=memoize('cp',Comm.posts.bind(Comm));
+/* scenes are pure drawings: keep them for the session */
+const _scn=scene,_scc=new Map();scene=function(id,seed=0,cls=''){const k=id+'|'+seed+'|'+cls;let v=_scc.get(k);if(!v){v=_scn(id,seed,cls);_scc.set(k,v);}return v;};
 
 boot();
 </script></body></html>
