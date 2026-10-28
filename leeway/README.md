@@ -9,7 +9,7 @@ Open it once on GitHub Pages and add it to the home screen. It saves an offline 
 - **Competing routes** for each destination, plus routes built from what you want to experience.
 - **Journey board:** every flight leg, layover, transfer, stay and experience, priced in order.
 - **Live travel day:** a demo clock lets you jump through a booked trip — check-in, boarding, transfers, nights — and see the Today view.
-- **Leeway Knots:** earn on trips (posted when you're home), five status tiers, missions, traveller awards and rewards.
+- **Leeway Knots card:** Navy, Silver, Gold, Platinum and Obsidian. Card points are knots earned in the last 12 months plus knots spent counted twice. Higher cards multiply knots and bring gifts. Missions, traveller awards and rewards too.
 - **Leeway Stars:** one to three stars for exceptionally well-organised destinations.
 - **Stories:** write up a trip, rate stops, and copy someone's route into a new plan.
 
