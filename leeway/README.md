@@ -1,17 +1,25 @@
 # Leeway
 
-A trip planner for phones: pick a destination, build a multi-stop route, and Leeway prices flights from every nearby airport (with the bus or drive there), stays, transfers, charters and experiences together, then books it into one trip with printable tickets.
+Plan the whole trip in one place: pick a destination, build a multi-stop route, and Leeway prices flights from every nearby airport (ground transport included), stays, transfers between stops, insurance, eSIM and activities — then "books" it into a trip with tickets and a checklist.
 
-Open it once on GitHub Pages and add it to the home screen. It saves an offline copy of itself, so after that it runs with no internet.
+This version runs fully offline on built-in demo data (90 destinations including city breaks, New Year's Eve and surf trips, real interactive maps, a demo time machine with live travel days, Leeway Knots loyalty, Leeway Stars awards and printable tickets). Booking.com / Airbnb / flight APIs come later.
 
-## What's in it
-- **75 destinations, 408 stops** with real coastline maps (Natural Earth) you can pan and zoom.
-- **Competing routes** for each destination, plus routes built from what you want to experience.
-- **Journey board:** every flight leg, layover, transfer, stay and experience, priced in order.
-- **Live travel day:** a demo clock lets you jump through a booked trip — check-in, boarding, transfers, nights — and see the Today view.
-- **Leeway Knots card:** Navy, Silver, Gold, Platinum and Obsidian. About 1 knot per €1 on trips; card points are trip knots from the last 12 months plus knots spent counted twice. Bonus knots (reviews, stories, missions, awards) are for spending only.
-- **Recaps:** a recap for every trip, a year-in-travel logbook, and "For you" next steps that connect trips, card, wallet and missions.
-- **Leeway Stars:** one to three stars for exceptionally well-organised destinations.
-- **Stories:** write up a trip, rate stops, and copy someone's route into a new plan.
+New in v8: Explore or Stay put trip styles; room upgrades (suites, apartments, beach and overwater villas); meal plans up to premium all-inclusive and resort add-ons; pay with knots (card, split or all knots); buy rewards and knot packs; five membership cards with qualifying trips and real checkout perks (stay discounts, richer knots).
 
-All prices, flights and properties are demo data.
+## Publish on GitHub Pages
+1. Create a new repository on GitHub (e.g. `leeway`) and upload everything in this folder.
+2. Settings → Pages → Source: **Deploy from a branch**, Branch: **main**, Folder: **/docs** → Save.
+3. Open `https://<your-username>.github.io/leeway/` on your phone and use **Add to Home Screen**. After the first visit it works offline.
+
+## Develop
+Source lives in `src/` (data, pricing engine, planner, illustrations, UI, styles). Rebuild the single-file app with `python3 build.py` → `docs/index.html`.
+End-to-end test: `python3 test/e2e.py` (Playwright).
+
+## Stories
+Travellers write trip stories (route, nights, per-stop ratings, tips, highlights), and others rate, like, save, comment and copy the route into their own plan. On GitHub Pages stories, ratings and comments are stored on each device; the claude.ai-hosted version syncs them between signed-in viewers.
+
+## Brand
+The identity guide and logo files are in `docs/brand/` (open `docs/brand/index.html`). Regenerate them with `node brandgen.js`.
+
+## Maps
+Coastlines and borders come from Natural Earth (public domain), clipped per destination into `src/geo.js` so maps work offline. Rebuild with `npm i world-atlas@2.0.2 topojson-client@3.1.0` then `GEO_NM=./node_modules node geo/build-geo.js`.
