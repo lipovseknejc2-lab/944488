@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Selvedge",
+  "short_name": "Selvedge",
+  "description": "Found a fashion house: design clothes, shoes, eyewear, jewellery and bags, build your brand, walk runways around the world. Works offline.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#0e0c0b",
+  "theme_color": "#0e0c0b",
+  "categories": ["games", "simulation"],
+  "icons": [
+    {"src": "icon-180.png", "sizes": "180x180", "type": "image/png"},
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
