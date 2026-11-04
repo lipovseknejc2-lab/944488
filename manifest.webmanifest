@@ -1,13 +1,13 @@
 {
   "name": "Grady",
   "short_name": "Grady",
-  "description": "Ocene, testi in napredek na enem mestu.",
+  "description": "Ocene, testi, gradiva in napredek na enem mestu.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#eef0f5",
-  "theme_color": "#0a4fd6",
+  "background_color": "#121211",
+  "theme_color": "#121211",
   "lang": "sl",
   "icons": [
     {
