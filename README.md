@@ -13,6 +13,7 @@ Ocene, testi, gradiva in matura na enem mestu, v temnem slogu Parlourja. Deluje 
 
 ## Other apps on this site
 
+- **Atelier** (work together: notes, projects, groups, chat, focus): https://lipovseknejc2-lab.github.io/944488/atelier/
 - **SkyHub Tycoon** (airport game): https://lipovseknejc2-lab.github.io/944488/skyhub/
 - **Parlour**: https://lipovseknejc2-lab.github.io/944488/parlour/
 - **Wildkeep**: https://lipovseknejc2-lab.github.io/944488/wildkeep/
