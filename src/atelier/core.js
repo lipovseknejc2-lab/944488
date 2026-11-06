@@ -31,19 +31,77 @@ let _st=0;const saveSoon=()=>{clearTimeout(_st);_st=setTimeout(save,350)};
 addEventListener('pagehide',()=>{try{if(S.me)save()}catch(e){}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&S.me)try{save()}catch(e){}});
 /* another tab changed the data: reload it here so tabs never overwrite each other */
-addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const d=parseSave(e.newValue);if(d){S=Object.assign(DEF(),d);if(!isOpen())render()}}catch(x){}}});
+addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const d=parseSave(e.newValue);if(d){S=Object.assign(DEF(),d);if(!isOpen())render();if(S.me&&typeof unlockProfile==='function')unlockProfile()}}catch(x){}}});
 
 /* ---------- IndexedDB for files, images, drawings, voice ---------- */
 const IDB={db:null,open(){if(this.db)return Promise.resolve(this.db);return new Promise((res,rej)=>{if(!window.indexedDB)return rej(new Error('no idb'));const r=indexedDB.open('atelier',1);r.onupgradeneeded=()=>r.result.createObjectStore('b');r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>rej(r.error)})},
  async op(m,fn){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('b',m),q=fn(tx.objectStore('b'));let out;if(q)q.onsuccess=()=>{out=q.result};tx.oncomplete=()=>res(out);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})},
  put(k,v){return this.op('readwrite',s=>s.put(v,k))},get(k){return this.op('readonly',s=>s.get(k))},del(k){return this.op('readwrite',s=>s.delete(k))},keys(){return this.op('readonly',s=>s.getAllKeys())},clear(){return this.op('readwrite',s=>s.clear())}};
 
+/* ---------- profile vault: name, surname, work and email are encrypted on this device ----------
+   AES-GCM 256 with a fresh random IV for every save. The key is made on this device and never leaves it:
+   a non-extractable CryptoKey in IndexedDB (key 'key:profile'), or, only where IndexedDB is blocked, a key in
+   localStorage 'atelier-key'. The save keeps only the first name in plain text (the app greets you with it),
+   plus the sealed box S.me.vault = {v, alg, kid, iv, ct}. The decrypted profile lives in memory (PROFILE). */
+const VKEY='key:profile',LKEY='atelier-key',VALG={name:'AES-GCM',length:256};
+let PROFILE=null;
+const b64=buf=>{const a=new Uint8Array(buf);let s='';for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s)};
+const unb64=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
+const within=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+const VAULT={keys:{},
+ ok(){try{return!!(window.crypto&&crypto.subtle&&crypto.getRandomValues&&window.TextEncoder)}catch(e){return false}},
+ async idbKey(){let k=await within(IDB.get(VKEY),2500);if(!k){await within(IDB.put(VKEY,await crypto.subtle.generateKey(VALG,false,['encrypt','decrypt'])),2500);k=await within(IDB.get(VKEY),2500)}if(!k||k.type!=='secret')throw new Error('no key');return k},
+ async lsKey(){const j=LS.getItem(LKEY);if(j)return crypto.subtle.importKey('jwk',JSON.parse(j),VALG,false,['encrypt','decrypt']);const k=await crypto.subtle.generateKey(VALG,true,['encrypt','decrypt']);LS.setItem(LKEY,JSON.stringify(await crypto.subtle.exportKey('jwk',k)));return crypto.subtle.importKey('jwk',JSON.parse(LS.getItem(LKEY)),VALG,false,['encrypt','decrypt'])},
+ /* kid says where the key lives, so a box sealed with one key is never opened with another */
+ async key(kid){if(this.keys[kid])return this.keys[kid];return this.keys[kid]=await(kid==='ls'?this.lsKey():this.idbKey())},
+ async seal(o){let kid='idb',k;try{k=await this.key('idb')}catch(e){kid='ls';k=await this.key('ls')}
+  const iv=crypto.getRandomValues(new Uint8Array(12)),ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(o)));return{v:1,alg:'AES-GCM-256',kid,iv:b64(iv),ct:b64(ct)}},
+ async open(box){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(box.iv)},await this.key(box.kid||'idb'),unb64(box.ct));return JSON.parse(new TextDecoder().decode(pt))},
+ forget(){this.keys={};try{LS.removeItem(LKEY)}catch(e){}}};
+const STATUS={student:['Student','cap'],work:['Working','case']};
+const cleanProfile=p=>({first:String(p.first||'').trim(),last:String(p.last||'').trim(),email:String(p.email||'').trim().toLowerCase(),status:STATUS[p.status]?p.status:'',what:String(p.what||'').trim()});
+/* encrypt and save; PROFILE and the first name update at once, the sealed box follows a moment later */
+async function storeProfile(p){p=cleanProfile(p);PROFILE=p;window._vaultErr=false;if(!S.me)return false;if(p.first)S.me.name=p.first;
+ if(VAULT.ok()){try{const box=await VAULT.seal(p);if(S.me){S.me.vault=box;S.me.enc=true;delete S.me.profile;delete S.me.role;save()}return true}catch(e){}}
+ /* no Web Crypto here (very old browser): keep working, and say so in Settings */
+ if(S.me){S.me.profile=p;S.me.enc=false;delete S.me.vault;delete S.me.role;save()}return false}
+/* read the profile at start; older saves (name and role in plain text) are moved into the vault */
+async function unlockProfile(){const m=S.me;if(!m)return;
+ try{if(m.vault)PROFILE=cleanProfile(await VAULT.open(m.vault));
+  else if(m.profile){PROFILE=cleanProfile(m.profile);if(VAULT.ok())await storeProfile(m.profile)}
+  else{const [first,...rest]=String(m.name||'').trim().split(/\s+/),r=String(m.role||'').trim(),stu=/stud|school|pupil|univ|dijak|šol/i.test(r);
+   await storeProfile({first:first||m.name||'',last:rest.join(' '),email:'',status:stu?'student':r?'work':'',what:/^student$/i.test(r)?'':r})}
+  window._vaultErr=false}catch(e){PROFILE=null;window._vaultErr=true}
+ if(S.me&&['you','settings','people','group'].includes(route.k)&&!isOpen())render()}
+const fullName=()=>PROFILE?[PROFILE.first,PROFILE.last].filter(Boolean).join(' '):(S.me?S.me.name:'');
+function meRole(){const p=PROFILE;if(!p)return S.me&&S.me.role||'';if(p.status==='student')return p.what?'Student · '+p.what:'Student';return p.what||(p.status==='work'?'Working':'')}
+const roleOf=p=>p&&p.id==='me'?meRole():(p&&p.role)||'';
+const EMAIL_RE=/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)*\.[^\s@.]{2,}$/;
+/* checks the account fields; returns {field: message} */
+function checkProfile(fd){const e={};if(!String(fd.first||'').trim())e.first='Add your first name';if(!String(fd.last||'').trim())e.last='Add your surname';
+ if(!STATUS[fd.status])e.status='Choose student or working';if(!EMAIL_RE.test(String(fd.email||'').trim()))e.email=String(fd.email||'').trim()?'This email does not look right':'Add your email';return e}
+/* the shared account fields: names, student or working, school or work, email */
+function profileFields(x,p={}){const st=p.status||'',L=st==='student'?['Where do you study?','e.g. University of Ljubljana']:st==='work'?['What is your work?','e.g. Product designer at Studio']:['Where do you study or work?','Choose student or working first'];
+ return`<div class="frow"><div><label for="${x}Name">First name</label><input id="${x}Name" name="first" autocomplete="given-name" autocapitalize="words" value="${esc(p.first||'')}" placeholder="e.g. Nejc"></div><div><label for="${x}Sur">Surname</label><input id="${x}Sur" name="last" autocomplete="family-name" autocapitalize="words" value="${esc(p.last||'')}" placeholder="e.g. Lipovšek"></div></div>
+ <div class="flabel" id="${x}StL">What do you do?</div><div class="seg big" role="radiogroup" aria-labelledby="${x}StL" id="${x}St">${Object.entries(STATUS).map(([k,[n,i]])=>`<label><input type="radio" name="status" value="${k}" ${st===k?'checked':''}>${ic(i)} ${n}</label>`).join('')}</div>
+ <label for="${x}Role" id="${x}RoleL">${L[0]}</label><input id="${x}Role" name="what" autocomplete="organization" value="${esc(p.what||'')}" placeholder="${L[1]}">
+ <label for="${x}Mail">Email</label><input id="${x}Mail" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="${esc(p.email||'')}" placeholder="you@example.com">
+ <div class="vnote">${ic('lock')}<span>Your name, work and email are <b>encrypted on this device</b> (AES-256). Nothing is sent anywhere.</span></div>`}
+/* live behaviour for those fields: the school or work label follows the choice, errors clear as you type */
+function wireProfile(f,x){f.querySelectorAll('[name=status]').forEach(r=>r.onchange=()=>{const s=r.value,l=$('#'+x+'RoleL'),i=$('#'+x+'Role');l.textContent=s==='student'?'Where do you study?':'What is your work?';i.placeholder=s==='student'?'e.g. University of Ljubljana':'e.g. Product designer at Studio';clearErr(f,'status')});
+ f.addEventListener('input',e=>{if(e.target.name)clearErr(f,e.target.name)})}
+function clearErr(f,n){const w=n==='status'?f.querySelector('.seg'):f.querySelector(`[name=${n}]`);if(!w)return;w.classList.remove('bad');const m=w.nextElementSibling;if(m&&m.classList.contains('ferr'))m.remove()}
+/* shows the errors under each field and moves to the first one; returns true when everything is fine */
+function showErrs(f,errs){f.querySelectorAll('.ferr').forEach(m=>m.remove());f.querySelectorAll('.bad').forEach(m=>m.classList.remove('bad'));let first=null;
+ for(const [n,msg] of Object.entries(errs)){const w=n==='status'?f.querySelector('.seg'):f.querySelector(`[name=${n}]`);if(!w)continue;w.classList.add('bad');w.insertAdjacentHTML('afterend',`<div class="ferr" role="alert">${esc(msg)}</div>`);first=first||w}
+ if(first){try{first.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}if(first.tagName==='INPUT'&&!('ontouchstart' in window))first.focus()}return!first}
+
 /* ---------- knots: every action is metered (tracking only, shown on the You page) ---------- */
 const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_edit:['Note edit','Notes',1],note_share:['Share','Notes',2],
  msg:['Message','Chat',1],chat_new:['New conversation','Chat',2],group_new:['New group','Groups',5],group_edit:['Group change','Groups',1],bot_new:['New teammate','Groups',3],
  project_new:['New project','Projects',6],task_new:['New task','Projects',2],task_move:['Task update','Projects',1],idea:['Idea','Projects',2],vote:['Vote','Projects',1],
  file:['File upload','Projects',4],board_save:['Drawing saved','Projects',3],inspo:['Inspiration','Projects',2],table_edit:['Table edit','Projects',1],
- focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2]};
+ focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1]};
 function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times,d=today();const day=S.usage.days[d]||(S.usage.days[d]={});day[a]=(day[a]||0)+times;day._n=(day._n||0)+n;S.usage.total+=n;saveSoon()}
 const usedToday=()=>(S.usage.days[today()]||{})._n||0;
 

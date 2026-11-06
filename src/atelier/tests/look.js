@@ -1,6 +1,6 @@
 const {chromium,devices}=require('playwright');const D=__dirname;
 (async()=>{const b=await chromium.launch();const W=t=>p.waitForTimeout(t);let ctx=await b.newContext({...devices['iPhone 13']});let p=await ctx.newPage();
-await p.goto('http://127.0.0.1:8812/atelier.html');await W(1700);await p.click('#obS');await W(300);await p.fill('#obName','Nejc Lipovšek');await p.fill('#obRole','Student');await p.click('#obF button[type=submit]');await W(900);
+await p.goto('http://127.0.0.1:8812/atelier.html');await W(1700);await p.click('#obS');await W(300);await p.fill('#obName','Nejc');await p.fill('#obSur','Lipovšek');await p.click('#obSt label:has-text("Student")');await p.fill('#obRole','University of Ljubljana');await p.fill('#obMail','nejc@example.com');await p.click('#obF button[type=submit]');await W(900);
 // seed realistic content
 await p.evaluate(()=>{const P=S.people;const g=S.groups[0];
  const pr={id:uid(),name:'Spring launch',desc:'Ship the beta to 50 testers',size:'big',tools:TOOLS.map(t=>t[0]),due:isoD(new Date(Date.now()+9*864e5)),col:GCOL[1],groups:[g.id],members:['me'],at:Date.now()-5*864e5,tasks:[],ideas:[],files:[],boards:[],inspo:[],table:{cols:['Week','Signups','Active'],rows:[['W1','12','8'],['W2','19','14'],['W3','31','22'],['W4','44','35']],chart:'bar'},activity:[]};S.projects.push(pr);

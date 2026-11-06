@@ -9,9 +9,15 @@ async function run(name,url,frameSel,block){const b=await chromium.launch();cons
  // onboarding with taps
  await F.locator('#obN').tap();await W(350);ok(await F.locator('text=Ideas grow in company.').isVisible(),name+': onboarding slide 2');
  await F.locator('#obN').tap();await W(350);await F.locator('#obN').tap();await W(450);ok(await F.locator('#obName').isVisible(),name+': account form');
- await F.locator('#obH [data-h="2"]').tap();await W(200);await F.locator('#obName').fill('Nejc');await F.locator('#obRole').fill('Student');await F.locator('#obC [data-c="1"]').tap();await W(200);
- ok(await F.locator('#obName').inputValue()==='Nejc','name kept after changing look and colour');
+ await F.locator('#obF button[type=submit]').tap();await W(400);ok(await F.locator('#obF .ferr').count()===4&&!(await F.locator('.ttl').isVisible()),name+': empty account form shows errors and waits');
+ await F.locator('#obH [data-h="2"]').tap();await W(200);await F.locator('#obName').fill('Nejc');await F.locator('#obSur').fill('Lipovšek');await F.locator('#obC [data-c="1"]').tap();await W(200);
+ ok(await F.locator('#obName').inputValue()==='Nejc'&&await F.locator('#obSur').inputValue()==='Lipovšek','name kept after changing look and colour');
+ await F.locator('#obSt label:has-text("Student")').tap();await W(150);ok((await F.locator('#obRoleL').textContent())==='Where do you study?',name+': student choice taps');
+ {const h=await F.locator('#obSt label').first().boundingBox();ok(h&&h.height>=44,name+': student and working are full-size tap targets ('+Math.round(h?.height||0)+'px)')}
+ await F.locator('#obRole').fill('University of Ljubljana');await F.locator('#obMail').fill('nejc@example.com');
  await F.locator('#obF button[type=submit]').tap();await W(1100);ok(await F.locator('.ttl').isVisible(),name+': account created, Today opens');
+ await F.locator('#tabs a:has-text("You")').tap();await W(700);ok((await F.locator('.prof h2').textContent())==='Nejc Lipovšek'&&await F.locator('.prof .pmail').isVisible(),name+': You shows the full name and email');
+ ok(await F.locator('.prof .vpill').isVisible(),name+': profile is encrypted here too');
  for(const [tab,check] of [['Focus','.clockwrap'],['Notes','.ngrid'],['Projects','text=Small steps, far places'],['Chat','.convo'],['You','.knotsum'],['Today','.ttl']]){
   await F.locator(`#tabs a:has-text("${tab}")`).tap();await W(600);ok(await F.locator(check).first().isVisible(),`${name}: tab ${tab} opens`)}
  await F.locator('.thav').tap();await W(500);ok(await F.locator('.knotsum').isVisible(),name+': avatar opens account');

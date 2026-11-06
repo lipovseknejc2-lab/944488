@@ -13,6 +13,7 @@ The repository also contains other apps (the site root and the other folders). *
 1. **Never simplify, remove or downgrade.** Keep every feature, screen, animation, drawing and detail. Changes add or improve. A rewrite must do everything the old version did.
 2. **Never make the design worse.** Follow `DESIGN.md` exactly. New screens must look like they were always part of Atelier: same tokens, glass, line icons, gesture characters, handwriting accents and motion. When unsure, copy an existing Atelier component.
 3. **Never lose data.** Saved data: localStorage `atelier-v1` and `atelier-backup`, plus IndexedDB `atelier` (files, drawings, voice). Never rename them. If the data shape changes, write a migration so old saves keep working.
+   The profile (first name, surname, student or working, school or work, email) is encrypted with AES-GCM 256 in `S.me.vault`; only the first name stays in plain text. The key is a non-extractable CryptoKey in IndexedDB under `key:profile` (or localStorage `atelier-key` where IndexedDB is blocked). Never delete or rename the key, never write the profile in plain text, and use `storeProfile()` to change it.
 4. **Test everything, publish, then give the link.** Every update ends with the live link.
 
 ## How Atelier is built
@@ -31,7 +32,7 @@ The repository also contains other apps (the site root and the other folders). *
 - **Offline:** `atelier/sw.js` may only delete caches starting with `atelier-`.
 
 ## Testing before every publish
-`bash src/atelier/tests/run.sh` builds Atelier and runs everything: features (72 checks), phone taps in three setups (96 checks), stress and crash (heavy data plus 400 random taps), and offline (7 checks). It needs node with playwright (`npm i playwright`) and python3.
+`bash src/atelier/tests/run.sh` builds Atelier and runs everything: features (103 checks), phone taps in three setups (117 checks), stress and crash (heavy data plus 400 random taps), and offline (7 checks). It needs node with playwright (`npm i playwright`) and python3.
 - All tests must pass with zero errors. Add checks for every new feature to `tests/feat.js` and `tests/phone.js`.
 - Look at screenshots of every changed screen on an iPhone-sized viewport, in light and dark, and compare them with `DESIGN.md`. If it looks plainer or less finished than before, it is not done.
 - No screen slower than about 100 ms with normal data. Memory flat. Animations smooth.

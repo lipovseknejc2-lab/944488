@@ -5,6 +5,7 @@ Light, professional team-work app: Today (week, message of the day, ledger, feel
 - **Live:** https://lipovseknejc2-lab.github.io/944488/atelier/
 - **Published in the repository at:** `atelier/`
 - **Saved data:** `atelier-v1 (also atelier-backup); files, drawings and voice memos in IndexedDB "atelier"`. Never rename these keys; people keep their progress in them.
+- **Account and encryption:** the account screen asks for first name, surname, student or working, school or work, and email. The profile is sealed with AES-GCM 256 (fresh IV each save) into `S.me.vault`; the key is a non-extractable CryptoKey in IndexedDB `key:profile`, or localStorage `atelier-key` if IndexedDB is blocked. The decrypted profile lives only in memory (`PROFILE`). Older saves move their name and role into the vault on first start. Backups carry the profile as `_profile` so they can be restored on another device, where it is sealed again with that device's key.
 - **Offline cache prefix:** `atelier-`. This app's worker may only delete caches that start with it.
 
 ## Build and publish

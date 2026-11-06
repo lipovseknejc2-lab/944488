@@ -31,21 +31,25 @@ const projMembers=p=>[...new Set([...(p.members||[]),...(p.groups||[]).flatMap(g
 
 /* ============ ONBOARDING: posters, then the account ============ */
 let OB={i:0,h:0,c:0};
+const obHair=()=>HAIR.map((_,i)=>`<button type="button" data-h="${i}" class="${OB.h===i?'on':''}" aria-label="Look ${i+1}">${avatar({fig:{h:i,c:OB.c}},38)}</button>`).join('');
 function onboarding(){const slides=[['wave','Work better, together.','Notes, projects, chat and focus in one calm place.'],['duo','Ideas grow in company.','Make groups, share anything, build projects together.'],['write','One thing at a time.','Focus timers for working and studying, with real breaks.']];
  if(OB.i<3){const [f,t,s]=slides[OB.i];$('#view').innerHTML=`<div class="ob"><div class="obart" key="${OB.i}">${figure(f,{draw:true,sw:2.2})}</div><div class="dots">${[0,1,2].map(i=>`<i class="${i===OB.i?'on':''}"></i>`).join('')}</div><h1 class="hand">${t}</h1><p class="lead">${s}</p><button class="btn primary full" id="obN">${OB.i<2?'Next':'Create your account'}</button>${OB.i<2?'<button class="btn ghost full" id="obS">Skip</button>':''}</div>`;
   $('#obN').onclick=()=>{OB.i++;onboarding()};const sk=$('#obS');if(sk)sk.onclick=()=>{OB.i=3;onboarding()};return}
- $('#view').innerHTML=`<form class="ob" id="obF"><div class="obmark">${markSVG()}</div><h1>Create your account</h1><p class="lead">It lives on this device and works offline.</p>
+ $('#view').innerHTML=`<form class="ob" id="obF" novalidate><div class="obmark">${markSVG()}</div><h1>Create your account</h1><p class="lead">It lives on this device and works offline.</p>
  <div class="avpick" id="obAv">${avatar({fig:{h:OB.h,c:OB.c}},84)}</div>
- <div class="flabel">Look</div><div class="opts" id="obH">${HAIR.map((_,i)=>`<button type="button" data-h="${i}" class="${OB.h===i?'on':''}">${avatar({fig:{h:i,c:OB.c}},38)}</button>`).join('')}</div>
+ <div class="flabel">Look</div><div class="opts" id="obH">${obHair()}</div>
  <div class="flabel">Colour</div><div class="opts" id="obC">${AV_COL.map((c,i)=>`<button type="button" data-c="${i}" class="sw ${OB.c===i?'on':''}" style="background:${c}" aria-label="Colour ${i+1}"></button>`).join('')}</div>
- <label for="obName">Your name</label><input id="obName" name="name" required autocomplete="name" placeholder="e.g. Nejc Lipovšek">
- <label for="obRole">What do you do?</label><input id="obRole" name="role" placeholder="e.g. Student, designer, team lead">
+ ${profileFields('ob')}
  <label class="chk"><input type="checkbox" name="team" checked> Add five teammate bots to try groups and chat</label>
  <button class="btn primary full" type="submit">Start</button></form>`;
- $('#obH').onclick=e=>{const b=e.target.closest('[data-h]');if(b){OB.h=+b.dataset.h;const n=$('#obName').value,r=$('#obRole').value;onboarding();$('#obName').value=n;$('#obRole').value=r}};
- $('#obC').onclick=e=>{const b=e.target.closest('[data-c]');if(b){OB.c=+b.dataset.c;const n=$('#obName').value,r=$('#obRole').value;onboarding();$('#obName').value=n;$('#obRole').value=r}};
- $('#obF').onsubmit=e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(e.target));const name=fd.name.trim();if(!name){toast('Add your name');return}
-  S.me={id:'me',name,handle:name.split(' ')[0].toLowerCase(),role:fd.role.trim(),fig:{h:OB.h,c:OB.c},created:Date.now()};use('signin');
+ const F=$('#obF');wireProfile(F,'ob');
+ /* look and colour update in place, so nothing you typed is lost */
+ const pick=()=>{$('#obAv').innerHTML=avatar({fig:{h:OB.h,c:OB.c}},84);$('#obH').innerHTML=obHair();$$('#obC [data-c]').forEach(b=>b.classList.toggle('on',+b.dataset.c===OB.c))};
+ $('#obH').onclick=e=>{const b=e.target.closest('[data-h]');if(b){OB.h=+b.dataset.h;pick()}};
+ $('#obC').onclick=e=>{const b=e.target.closest('[data-c]');if(b){OB.c=+b.dataset.c;pick()}};
+ F.onsubmit=e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(F));if(!showErrs(F,checkProfile(fd)))return;
+  const p=cleanProfile(fd),name=p.first;
+  S.me={id:'me',name,handle:name.split(/\s+/)[0].toLowerCase(),fig:{h:OB.h,c:OB.c},created:Date.now()};storeProfile(p);use('signin');
   if(fd.team){seedBots();const ids=S.people.map(p=>p.id);const g={id:uid(),name:'Studio',col:GCOL[0],desc:'Your first working group.',members:['me',...ids],at:Date.now()};S.groups.push(g);
    const c={id:uid(),kind:'group',with:g.id,msgs:[],read:Date.now(),at:Date.now()};S.chats.push(c);c.msgs.push({id:uid(),from:ids[3],text:`Welcome to Studio, ${name.split(' ')[0]}! This is where we plan things.`,at:Date.now()});
    S.notes.push({id:uid(),title:'Welcome to Atelier',body:'# Start here\nNotes are yours until you share them.\n\n[ ] Make your first note\n[ ] Start a focus session\n[ ] Create a project with Studio\n\n- Share notes with a group from the note menu\n- Your activity shows up on Today',col:0,pin:true,share:{groups:[],projects:[]},at:Date.now(),up:Date.now()})}

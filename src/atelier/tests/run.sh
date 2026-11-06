@@ -8,7 +8,8 @@ T=tests/.serve; rm -rf "$T"; mkdir -p "$T/944488/atelier" "$T/shots" tests/shots
 cp dist/atelier.html tests/sandbox.html tests/t.pdf tests/t.gif "$T/"
 cp ../../atelier/sw.js ../../atelier/manifest.webmanifest ../../atelier/*.png ../../atelier/icon.svg "$T/944488/atelier/" 2>/dev/null || true
 cp dist/atelier.html "$T/944488/atelier/index.html"
-( cd "$T" && python3 -m http.server 8812 >/dev/null 2>&1 ) & SRV=$!
+# the server runs directly (not in a subshell) so the trap below really stops it after the run
+python3 -m http.server 8812 --bind 127.0.0.1 -d "$T" >/dev/null 2>&1 & SRV=$!
 trap 'kill $SRV 2>/dev/null' EXIT
 sleep 1
 echo "== features";  (cd "$T" && node ../feat.js)   | grep -E "FAIL|passed"

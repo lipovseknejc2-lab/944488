@@ -91,6 +91,18 @@ input[type=color]{height:48px;padding:4px}input[type=date]{min-height:46px}
 .pickrow{display:flex;align-items:center;gap:10px;margin:0;padding:8px 2px;font-size:15px;color:var(--text);cursor:pointer}.pickrow b{font-weight:600}.pickrow .sub{margin-left:auto}
 .gdot{width:12px;height:12px;border-radius:50%;flex:none}.gdot.lg{width:22px;height:22px;border-radius:7px}
 .toolpick{display:flex;flex-wrap:wrap;gap:8px}.toolpick label{margin:0;cursor:pointer}.toolpick input{display:none}.toolpick span{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:99px;background:var(--fill);font-size:14px;font-weight:600;color:var(--ink2);border:1.5px solid transparent}.toolpick .ic{width:17px;height:17px}.toolpick input:checked+span{border-color:var(--text);color:var(--text);background:var(--card2)}
+/* account fields: two names side by side, student or working, inline help and errors */
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}.frow>div{min-width:0}@media(max-width:340px){.frow{grid-template-columns:1fr}}
+.seg label{margin:0;cursor:pointer;transition:background .2s,color .2s,box-shadow .2s}.seg.big{padding:4px;border-radius:15px}.seg.big>*{padding:11px 8px;font-size:15px;border-radius:11px;min-height:44px}.seg.big .ic{width:19px;height:19px}
+.seg.big label:has(input:checked) .ic{color:var(--accent)}
+.vnote{display:flex;gap:10px;align-items:flex-start;margin:16px 0 0;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--green) 9%,transparent);border:1px solid color-mix(in srgb,var(--green) 18%,transparent);color:var(--ink2);font-size:13.5px;line-height:1.4}.vnote .ic{color:var(--green);width:19px;height:19px;margin-top:1px}.vnote b{color:var(--text);font-weight:650}
+.card .vnote{margin:12px 0 4px}
+.ferr{color:var(--red);font-size:12.5px;font-weight:650;margin:6px 4px 0;animation:rise .3s var(--ease)}
+input.bad,.seg.bad{border-color:var(--red)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 14%,transparent)!important;animation:nudge .32s var(--ease)}@keyframes nudge{30%{transform:translateX(-4px)}65%{transform:translateX(3px)}}
+.seg.bad{border:1px solid var(--red)}
+.prof{flex-wrap:wrap}.pfoot{flex-basis:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line)}.pfoot:empty{display:none}
+.vpill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px 4px 9px;border-radius:99px;font-size:12.5px;font-weight:650;color:var(--green);background:color-mix(in srgb,var(--green) 12%,transparent)}.vpill .ic{width:15px;height:15px}
+.pmail{display:flex;align-items:center;gap:6px;margin-top:2px;min-width:0}.pmail .ic{width:15px;height:15px;flex:none}.pmail span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* avatars */
 .av{position:relative;display:inline-grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--ac) 26%,var(--card2));color:var(--text);flex:none;overflow:visible}.av svg{width:100%;height:100%;border-radius:50%}
 .botdot{position:absolute;right:-3px;bottom:-3px;width:46%;height:46%;max-width:18px;max-height:18px;border-radius:50%;background:var(--card2);border:1px solid var(--line2);display:grid;place-items:center}.botdot .ic{width:72%;height:72%}
@@ -298,7 +310,10 @@ addp:'M6.6 7.6a3.4 3.4 0 1 0 6.8 0a3.4 3.4 0 1 0 -6.8 0M3.6 19.6C4.4 16.4 6.9 14
 eraser:'M8.2 19.4H19M5.4 15.6L13.8 7.2L18.2 11.6L11.4 18.4H8.2Z',undo:'M8.4 8.6H14.6A4.6 4.6 0 0 1 14.6 17.8H8M8.4 8.6L11.6 5.4M8.4 8.6L11.6 11.8',
 bot:'M7 9.5H17V18H7ZM12 9.5V6.5M12 5.5H12.01M9.8 13.4H9.81M14.2 13.4H14.21M10 16H14M5 12.5V15M19 12.5V15',
 vote:'M12 5.5L17.5 12.5H14V18.5H10V12.5H6.5Z',coffee:'M5.5 9.5H16V14A4.5 4.5 0 0 1 11.5 18.5H10A4.5 4.5 0 0 1 5.5 14ZM16 10.6H17.6A2.2 2.2 0 0 1 17.6 15H16M8.4 4.5C7.8 5.6 9.2 6.2 8.6 7.4M11.4 4.5C10.8 5.6 12.2 6.2 11.6 7.4',
-lock:'M6.5 10.5H17.5V19.5H6.5ZM8.8 10.5V8A3.2 3.2 0 0 1 15.2 8V10.5',stop:'M7 7H17V17H7Z',quote:'M5 16.5C5 12 6.6 9 10 7.5L10.6 8.6C8.8 9.6 8 11 8 12.5H10.4V17H5ZM13.6 16.5C13.6 12 15.2 9 18.6 7.5L19.2 8.6C17.4 9.6 16.6 11 16.6 12.5H19V17H13.6Z',chevr:'M9.5 5L16 12L9.5 19',chevl:'M14.5 5L8 12L14.5 19',mic:'M9.4 11.6V7.4A2.6 2.6 0 0 1 14.6 7.4V11.6A2.6 2.6 0 0 1 9.4 11.6ZM6.4 11C6.4 14.4 8.8 16.8 12 16.8S17.6 14.4 17.6 11M12 16.8V20.4M9 20.4H15',logout:'M10 19.5H5.5V4.5H10M14.5 8L18.5 12L14.5 16M18.5 12H9.5'};
+lock:'M6.5 10.5H17.5V19.5H6.5ZM8.8 10.5V8A3.2 3.2 0 0 1 15.2 8V10.5',stop:'M7 7H17V17H7Z',quote:'M5 16.5C5 12 6.6 9 10 7.5L10.6 8.6C8.8 9.6 8 11 8 12.5H10.4V17H5ZM13.6 16.5C13.6 12 15.2 9 18.6 7.5L19.2 8.6C17.4 9.6 16.6 11 16.6 12.5H19V17H13.6Z',chevr:'M9.5 5L16 12L9.5 19',chevl:'M14.5 5L8 12L14.5 19',mic:'M9.4 11.6V7.4A2.6 2.6 0 0 1 14.6 7.4V11.6A2.6 2.6 0 0 1 9.4 11.6ZM6.4 11C6.4 14.4 8.8 16.8 12 16.8S17.6 14.4 17.6 11M12 16.8V20.4M9 20.4H15',logout:'M10 19.5H5.5V4.5H10M14.5 8L18.5 12L14.5 16M18.5 12H9.5',
+cap:'M3.2 9.6L12 5.2L20.8 9.6L12 14ZM7 11.6V15.8C8.6 17.4 10.2 18 12 18S15.4 17.4 17 15.8V11.6M20.8 9.6V14.6',
+case:'M4 8.6H20V19H4ZM9.2 8.6V6.4C9.2 5.7 9.7 5.2 10.4 5.2H13.6C14.3 5.2 14.8 5.7 14.8 6.4V8.6M4.2 13.2C9.2 14.6 14.8 14.6 19.8 13.2M11 13.9V15.4H13V13.9',
+mail:'M4 6.4H20V17.6H4ZM4.6 7C8 9.8 9.8 11.4 12 12.9C14.2 11.4 16 9.8 19.4 7'};
 const ic=(k,sw=1.7)=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[k]||''}"/></svg>`;
 /* the note icon: a folded page whose line turns into a little loop and pen stroke */
 const noteGlyph=(col='var(--accent)')=>`<svg class="ng" viewBox="0 0 48 48" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5H29.5L37.5 14.5V41.5H12Z" stroke="currentColor" stroke-width="2.2"/><path d="M29 7V15H37" stroke="currentColor" stroke-width="2.2"/><path d="M17 23.5C20 21 22 26 25 23.5C27 21.8 26 19.6 24.4 20.4C22.6 21.4 25.8 26.4 32 22.4" stroke="${col}" stroke-width="2.4"/><path d="M17 30.5H29M17 35.5H24" stroke="currentColor" stroke-width="2.2" opacity=".55"/></svg>`;
@@ -387,19 +402,77 @@ let _st=0;const saveSoon=()=>{clearTimeout(_st);_st=setTimeout(save,350)};
 addEventListener('pagehide',()=>{try{if(S.me)save()}catch(e){}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&S.me)try{save()}catch(e){}});
 /* another tab changed the data: reload it here so tabs never overwrite each other */
-addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const d=parseSave(e.newValue);if(d){S=Object.assign(DEF(),d);if(!isOpen())render()}}catch(x){}}});
+addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const d=parseSave(e.newValue);if(d){S=Object.assign(DEF(),d);if(!isOpen())render();if(S.me&&typeof unlockProfile==='function')unlockProfile()}}catch(x){}}});
 
 /* ---------- IndexedDB for files, images, drawings, voice ---------- */
 const IDB={db:null,open(){if(this.db)return Promise.resolve(this.db);return new Promise((res,rej)=>{if(!window.indexedDB)return rej(new Error('no idb'));const r=indexedDB.open('atelier',1);r.onupgradeneeded=()=>r.result.createObjectStore('b');r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>rej(r.error)})},
  async op(m,fn){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('b',m),q=fn(tx.objectStore('b'));let out;if(q)q.onsuccess=()=>{out=q.result};tx.oncomplete=()=>res(out);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})},
  put(k,v){return this.op('readwrite',s=>s.put(v,k))},get(k){return this.op('readonly',s=>s.get(k))},del(k){return this.op('readwrite',s=>s.delete(k))},keys(){return this.op('readonly',s=>s.getAllKeys())},clear(){return this.op('readwrite',s=>s.clear())}};
 
+/* ---------- profile vault: name, surname, work and email are encrypted on this device ----------
+   AES-GCM 256 with a fresh random IV for every save. The key is made on this device and never leaves it:
+   a non-extractable CryptoKey in IndexedDB (key 'key:profile'), or, only where IndexedDB is blocked, a key in
+   localStorage 'atelier-key'. The save keeps only the first name in plain text (the app greets you with it),
+   plus the sealed box S.me.vault = {v, alg, kid, iv, ct}. The decrypted profile lives in memory (PROFILE). */
+const VKEY='key:profile',LKEY='atelier-key',VALG={name:'AES-GCM',length:256};
+let PROFILE=null;
+const b64=buf=>{const a=new Uint8Array(buf);let s='';for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s)};
+const unb64=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
+const within=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+const VAULT={keys:{},
+ ok(){try{return!!(window.crypto&&crypto.subtle&&crypto.getRandomValues&&window.TextEncoder)}catch(e){return false}},
+ async idbKey(){let k=await within(IDB.get(VKEY),2500);if(!k){await within(IDB.put(VKEY,await crypto.subtle.generateKey(VALG,false,['encrypt','decrypt'])),2500);k=await within(IDB.get(VKEY),2500)}if(!k||k.type!=='secret')throw new Error('no key');return k},
+ async lsKey(){const j=LS.getItem(LKEY);if(j)return crypto.subtle.importKey('jwk',JSON.parse(j),VALG,false,['encrypt','decrypt']);const k=await crypto.subtle.generateKey(VALG,true,['encrypt','decrypt']);LS.setItem(LKEY,JSON.stringify(await crypto.subtle.exportKey('jwk',k)));return crypto.subtle.importKey('jwk',JSON.parse(LS.getItem(LKEY)),VALG,false,['encrypt','decrypt'])},
+ /* kid says where the key lives, so a box sealed with one key is never opened with another */
+ async key(kid){if(this.keys[kid])return this.keys[kid];return this.keys[kid]=await(kid==='ls'?this.lsKey():this.idbKey())},
+ async seal(o){let kid='idb',k;try{k=await this.key('idb')}catch(e){kid='ls';k=await this.key('ls')}
+  const iv=crypto.getRandomValues(new Uint8Array(12)),ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(o)));return{v:1,alg:'AES-GCM-256',kid,iv:b64(iv),ct:b64(ct)}},
+ async open(box){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(box.iv)},await this.key(box.kid||'idb'),unb64(box.ct));return JSON.parse(new TextDecoder().decode(pt))},
+ forget(){this.keys={};try{LS.removeItem(LKEY)}catch(e){}}};
+const STATUS={student:['Student','cap'],work:['Working','case']};
+const cleanProfile=p=>({first:String(p.first||'').trim(),last:String(p.last||'').trim(),email:String(p.email||'').trim().toLowerCase(),status:STATUS[p.status]?p.status:'',what:String(p.what||'').trim()});
+/* encrypt and save; PROFILE and the first name update at once, the sealed box follows a moment later */
+async function storeProfile(p){p=cleanProfile(p);PROFILE=p;window._vaultErr=false;if(!S.me)return false;if(p.first)S.me.name=p.first;
+ if(VAULT.ok()){try{const box=await VAULT.seal(p);if(S.me){S.me.vault=box;S.me.enc=true;delete S.me.profile;delete S.me.role;save()}return true}catch(e){}}
+ /* no Web Crypto here (very old browser): keep working, and say so in Settings */
+ if(S.me){S.me.profile=p;S.me.enc=false;delete S.me.vault;delete S.me.role;save()}return false}
+/* read the profile at start; older saves (name and role in plain text) are moved into the vault */
+async function unlockProfile(){const m=S.me;if(!m)return;
+ try{if(m.vault)PROFILE=cleanProfile(await VAULT.open(m.vault));
+  else if(m.profile){PROFILE=cleanProfile(m.profile);if(VAULT.ok())await storeProfile(m.profile)}
+  else{const [first,...rest]=String(m.name||'').trim().split(/\s+/),r=String(m.role||'').trim(),stu=/stud|school|pupil|univ|dijak|šol/i.test(r);
+   await storeProfile({first:first||m.name||'',last:rest.join(' '),email:'',status:stu?'student':r?'work':'',what:/^student$/i.test(r)?'':r})}
+  window._vaultErr=false}catch(e){PROFILE=null;window._vaultErr=true}
+ if(S.me&&['you','settings','people','group'].includes(route.k)&&!isOpen())render()}
+const fullName=()=>PROFILE?[PROFILE.first,PROFILE.last].filter(Boolean).join(' '):(S.me?S.me.name:'');
+function meRole(){const p=PROFILE;if(!p)return S.me&&S.me.role||'';if(p.status==='student')return p.what?'Student · '+p.what:'Student';return p.what||(p.status==='work'?'Working':'')}
+const roleOf=p=>p&&p.id==='me'?meRole():(p&&p.role)||'';
+const EMAIL_RE=/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)*\.[^\s@.]{2,}$/;
+/* checks the account fields; returns {field: message} */
+function checkProfile(fd){const e={};if(!String(fd.first||'').trim())e.first='Add your first name';if(!String(fd.last||'').trim())e.last='Add your surname';
+ if(!STATUS[fd.status])e.status='Choose student or working';if(!EMAIL_RE.test(String(fd.email||'').trim()))e.email=String(fd.email||'').trim()?'This email does not look right':'Add your email';return e}
+/* the shared account fields: names, student or working, school or work, email */
+function profileFields(x,p={}){const st=p.status||'',L=st==='student'?['Where do you study?','e.g. University of Ljubljana']:st==='work'?['What is your work?','e.g. Product designer at Studio']:['Where do you study or work?','Choose student or working first'];
+ return`<div class="frow"><div><label for="${x}Name">First name</label><input id="${x}Name" name="first" autocomplete="given-name" autocapitalize="words" value="${esc(p.first||'')}" placeholder="e.g. Nejc"></div><div><label for="${x}Sur">Surname</label><input id="${x}Sur" name="last" autocomplete="family-name" autocapitalize="words" value="${esc(p.last||'')}" placeholder="e.g. Lipovšek"></div></div>
+ <div class="flabel" id="${x}StL">What do you do?</div><div class="seg big" role="radiogroup" aria-labelledby="${x}StL" id="${x}St">${Object.entries(STATUS).map(([k,[n,i]])=>`<label><input type="radio" name="status" value="${k}" ${st===k?'checked':''}>${ic(i)} ${n}</label>`).join('')}</div>
+ <label for="${x}Role" id="${x}RoleL">${L[0]}</label><input id="${x}Role" name="what" autocomplete="organization" value="${esc(p.what||'')}" placeholder="${L[1]}">
+ <label for="${x}Mail">Email</label><input id="${x}Mail" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="${esc(p.email||'')}" placeholder="you@example.com">
+ <div class="vnote">${ic('lock')}<span>Your name, work and email are <b>encrypted on this device</b> (AES-256). Nothing is sent anywhere.</span></div>`}
+/* live behaviour for those fields: the school or work label follows the choice, errors clear as you type */
+function wireProfile(f,x){f.querySelectorAll('[name=status]').forEach(r=>r.onchange=()=>{const s=r.value,l=$('#'+x+'RoleL'),i=$('#'+x+'Role');l.textContent=s==='student'?'Where do you study?':'What is your work?';i.placeholder=s==='student'?'e.g. University of Ljubljana':'e.g. Product designer at Studio';clearErr(f,'status')});
+ f.addEventListener('input',e=>{if(e.target.name)clearErr(f,e.target.name)})}
+function clearErr(f,n){const w=n==='status'?f.querySelector('.seg'):f.querySelector(`[name=${n}]`);if(!w)return;w.classList.remove('bad');const m=w.nextElementSibling;if(m&&m.classList.contains('ferr'))m.remove()}
+/* shows the errors under each field and moves to the first one; returns true when everything is fine */
+function showErrs(f,errs){f.querySelectorAll('.ferr').forEach(m=>m.remove());f.querySelectorAll('.bad').forEach(m=>m.classList.remove('bad'));let first=null;
+ for(const [n,msg] of Object.entries(errs)){const w=n==='status'?f.querySelector('.seg'):f.querySelector(`[name=${n}]`);if(!w)continue;w.classList.add('bad');w.insertAdjacentHTML('afterend',`<div class="ferr" role="alert">${esc(msg)}</div>`);first=first||w}
+ if(first){try{first.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}if(first.tagName==='INPUT'&&!('ontouchstart' in window))first.focus()}return!first}
+
 /* ---------- knots: every action is metered (tracking only, shown on the You page) ---------- */
 const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_edit:['Note edit','Notes',1],note_share:['Share','Notes',2],
  msg:['Message','Chat',1],chat_new:['New conversation','Chat',2],group_new:['New group','Groups',5],group_edit:['Group change','Groups',1],bot_new:['New teammate','Groups',3],
  project_new:['New project','Projects',6],task_new:['New task','Projects',2],task_move:['Task update','Projects',1],idea:['Idea','Projects',2],vote:['Vote','Projects',1],
  file:['File upload','Projects',4],board_save:['Drawing saved','Projects',3],inspo:['Inspiration','Projects',2],table_edit:['Table edit','Projects',1],
- focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2]};
+ focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1]};
 function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times,d=today();const day=S.usage.days[d]||(S.usage.days[d]={});day[a]=(day[a]||0)+times;day._n=(day._n||0)+n;S.usage.total+=n;saveSoon()}
 const usedToday=()=>(S.usage.days[today()]||{})._n||0;
 
@@ -501,21 +574,25 @@ const projMembers=p=>[...new Set([...(p.members||[]),...(p.groups||[]).flatMap(g
 
 /* ============ ONBOARDING: posters, then the account ============ */
 let OB={i:0,h:0,c:0};
+const obHair=()=>HAIR.map((_,i)=>`<button type="button" data-h="${i}" class="${OB.h===i?'on':''}" aria-label="Look ${i+1}">${avatar({fig:{h:i,c:OB.c}},38)}</button>`).join('');
 function onboarding(){const slides=[['wave','Work better, together.','Notes, projects, chat and focus in one calm place.'],['duo','Ideas grow in company.','Make groups, share anything, build projects together.'],['write','One thing at a time.','Focus timers for working and studying, with real breaks.']];
  if(OB.i<3){const [f,t,s]=slides[OB.i];$('#view').innerHTML=`<div class="ob"><div class="obart" key="${OB.i}">${figure(f,{draw:true,sw:2.2})}</div><div class="dots">${[0,1,2].map(i=>`<i class="${i===OB.i?'on':''}"></i>`).join('')}</div><h1 class="hand">${t}</h1><p class="lead">${s}</p><button class="btn primary full" id="obN">${OB.i<2?'Next':'Create your account'}</button>${OB.i<2?'<button class="btn ghost full" id="obS">Skip</button>':''}</div>`;
   $('#obN').onclick=()=>{OB.i++;onboarding()};const sk=$('#obS');if(sk)sk.onclick=()=>{OB.i=3;onboarding()};return}
- $('#view').innerHTML=`<form class="ob" id="obF"><div class="obmark">${markSVG()}</div><h1>Create your account</h1><p class="lead">It lives on this device and works offline.</p>
+ $('#view').innerHTML=`<form class="ob" id="obF" novalidate><div class="obmark">${markSVG()}</div><h1>Create your account</h1><p class="lead">It lives on this device and works offline.</p>
  <div class="avpick" id="obAv">${avatar({fig:{h:OB.h,c:OB.c}},84)}</div>
- <div class="flabel">Look</div><div class="opts" id="obH">${HAIR.map((_,i)=>`<button type="button" data-h="${i}" class="${OB.h===i?'on':''}">${avatar({fig:{h:i,c:OB.c}},38)}</button>`).join('')}</div>
+ <div class="flabel">Look</div><div class="opts" id="obH">${obHair()}</div>
  <div class="flabel">Colour</div><div class="opts" id="obC">${AV_COL.map((c,i)=>`<button type="button" data-c="${i}" class="sw ${OB.c===i?'on':''}" style="background:${c}" aria-label="Colour ${i+1}"></button>`).join('')}</div>
- <label for="obName">Your name</label><input id="obName" name="name" required autocomplete="name" placeholder="e.g. Nejc Lipovšek">
- <label for="obRole">What do you do?</label><input id="obRole" name="role" placeholder="e.g. Student, designer, team lead">
+ ${profileFields('ob')}
  <label class="chk"><input type="checkbox" name="team" checked> Add five teammate bots to try groups and chat</label>
  <button class="btn primary full" type="submit">Start</button></form>`;
- $('#obH').onclick=e=>{const b=e.target.closest('[data-h]');if(b){OB.h=+b.dataset.h;const n=$('#obName').value,r=$('#obRole').value;onboarding();$('#obName').value=n;$('#obRole').value=r}};
- $('#obC').onclick=e=>{const b=e.target.closest('[data-c]');if(b){OB.c=+b.dataset.c;const n=$('#obName').value,r=$('#obRole').value;onboarding();$('#obName').value=n;$('#obRole').value=r}};
- $('#obF').onsubmit=e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(e.target));const name=fd.name.trim();if(!name){toast('Add your name');return}
-  S.me={id:'me',name,handle:name.split(' ')[0].toLowerCase(),role:fd.role.trim(),fig:{h:OB.h,c:OB.c},created:Date.now()};use('signin');
+ const F=$('#obF');wireProfile(F,'ob');
+ /* look and colour update in place, so nothing you typed is lost */
+ const pick=()=>{$('#obAv').innerHTML=avatar({fig:{h:OB.h,c:OB.c}},84);$('#obH').innerHTML=obHair();$$('#obC [data-c]').forEach(b=>b.classList.toggle('on',+b.dataset.c===OB.c))};
+ $('#obH').onclick=e=>{const b=e.target.closest('[data-h]');if(b){OB.h=+b.dataset.h;pick()}};
+ $('#obC').onclick=e=>{const b=e.target.closest('[data-c]');if(b){OB.c=+b.dataset.c;pick()}};
+ F.onsubmit=e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(F));if(!showErrs(F,checkProfile(fd)))return;
+  const p=cleanProfile(fd),name=p.first;
+  S.me={id:'me',name,handle:name.split(/\s+/)[0].toLowerCase(),fig:{h:OB.h,c:OB.c},created:Date.now()};storeProfile(p);use('signin');
   if(fd.team){seedBots();const ids=S.people.map(p=>p.id);const g={id:uid(),name:'Studio',col:GCOL[0],desc:'Your first working group.',members:['me',...ids],at:Date.now()};S.groups.push(g);
    const c={id:uid(),kind:'group',with:g.id,msgs:[],read:Date.now(),at:Date.now()};S.chats.push(c);c.msgs.push({id:uid(),from:ids[3],text:`Welcome to Studio, ${name.split(' ')[0]}! This is where we plan things.`,at:Date.now()});
    S.notes.push({id:uid(),title:'Welcome to Atelier',body:'# Start here\nNotes are yours until you share them.\n\n[ ] Make your first note\n[ ] Start a focus session\n[ ] Create a project with Studio\n\n- Share notes with a group from the note menu\n- Your activity shows up on Today',col:0,pin:true,share:{groups:[],projects:[]},at:Date.now(),up:Date.now()})}
@@ -724,12 +801,12 @@ function groupForm(id){const g=id?grp(id):null;sheet(g?'Edit group':'New group',
 function pGroup(id){const g=grp(id);if(!g){return redirect('groups')}const ps=S.projects.filter(p=>(p.groups||[]).includes(id)),ns=S.notes.filter(n=>n.share.groups.includes(id)),c=ensureGroupChat(id);
  return`<div class="page">${header(esc(g.name),{sub:'Group',back:'groups',right:`<button class="btn sm" onclick="groupForm('${id}')">${ic('edit')} Edit</button>`})}
  <div class="card ghero" style="--gc:${g.col}"><div class="gfig">${figure('team',{acc:g.col,draw:true})}</div><p>${esc(g.desc||'A working group.')}</p><div class="row wrap"><a class="btn primary sm" href="#c:${c.id}">${ic('chat')} Open chat${unreadOf(c)?` · ${unreadOf(c)}`:''}</a><button class="btn sm" onclick="projectForm({groups:['${id}']})">${ic('projects')} New project</button></div></div>
- <section><div class="sh"><h2>Members</h2><span class="sub">${g.members.length}</span></div><div class="card list">${g.members.map(m=>{const p=person(m);return p?`<div class="li" ${m!=='me'?`onclick="const c=ensureDM('${m}');save();go('c:'+c.id)"`:''}>${avatar(p,38)}<div class="grow"><div class="t">${esc(p.name)}${m==='me'?' (you)':''}</div><div class="sub">${esc(p.role||'')}</div></div>${m!=='me'?ic('chat'):''}</div>`:''}).join('')}</div></section>
+ <section><div class="sh"><h2>Members</h2><span class="sub">${g.members.length}</span></div><div class="card list">${g.members.map(m=>{const p=person(m);return p?`<div class="li" ${m!=='me'?`onclick="const c=ensureDM('${m}');save();go('c:'+c.id)"`:''}>${avatar(p,38)}<div class="grow"><div class="t">${esc(m==='me'?fullName():p.name)}${m==='me'?' (you)':''}</div><div class="sub">${esc(roleOf(p))}</div></div>${m!=='me'?ic('chat'):''}</div>`:''}).join('')}</div></section>
  <section><div class="sh"><h2>Projects</h2><button class="lnk" onclick="projectForm({groups:['${id}']})">New</button></div>${ps.length?`<div class="card list">${ps.map(projRow).join('')}</div>`:`<div class="card emptyrow sub">No projects yet.</div>`}</section>
  <section><div class="sh"><h2>Shared notes</h2></div>${ns.length?`<div class="ngrid">${ns.slice(0,12).map(noteCard).join('')}</div>${ns.length>12?`<button class="btn full" onclick="NF.f='shared';go('notes')">All ${ns.length} shared notes</button>`:''}`:`<div class="card emptyrow sub">Share a note from its menu to see it here.</div>`}</section></div>`}
 /* people (bots) */
 function pPeople(){return`<div class="page">${header('People',{sub:'Your teammates',right:`<button class="btn primary sm" onclick="botForm()">${ic('addp',2)} Add</button>`})}${chatTabs('people')}
- <div class="card list mt">${[S.me,...S.people].map(p=>`<div class="li" ${p.id!=='me'?`onclick="botForm('${p.id}')"`:''}>${avatar(p,44)}<div class="grow"><div class="t">${esc(p.name)}${p.id==='me'?' (you)':''}</div><div class="sub">${esc(p.role||'')}${p.bot?' · bot':''}</div></div>${p.id!=='me'?`<button class="icon-btn" onclick="event.stopPropagation();const c=ensureDM('${p.id}');save();go('c:'+c.id)" aria-label="Message">${ic('chat')}</button>`:''}</div>`).join('')}</div>
+ <div class="card list mt">${[S.me,...S.people].map(p=>`<div class="li" ${p.id!=='me'?`onclick="botForm('${p.id}')"`:''}>${avatar(p,44)}<div class="grow"><div class="t">${esc(p.id==='me'?fullName():p.name)}${p.id==='me'?' (you)':''}</div><div class="sub">${esc(roleOf(p))}${p.bot?' · bot':''}</div></div>${p.id!=='me'?`<button class="icon-btn" onclick="event.stopPropagation();const c=ensureDM('${p.id}');save();go('c:'+c.id)" aria-label="Message">${ic('chat')}</button>`:''}</div>`).join('')}</div>
  <p class="sub center mt">Bot teammates reply in chat, vote on ideas and pick up tasks, so you can try group work before inviting people.</p></div>`}
 let BF={h:0,c:1};
 function botForm(id){const p=id?person(id):null;if(p)BF={h:p.fig.h,c:p.fig.c};sheet(p?'Edit teammate':'Add teammate bot',`<div class="center">${avatar({fig:BF,bot:true},72)}</div><label for="bN">Name</label><input id="bN" name="name" required value="${esc(p?.name||'')}" placeholder="e.g. Nika Petek"><label for="bR">Role</label><input id="bR" name="role" value="${esc(p?.role||'')}" placeholder="e.g. Marketing">
@@ -869,7 +946,8 @@ function pYou(){const u=S.usage,t=today(),td=u.days[t]||{},days=[],dates=Object.
  const area={};rows.forEach(r=>{const a=ACT[r.k][1];area[a]=(area[a]||0)+r.n});const AC={Notes:'var(--yellow)',Chat:'var(--blue)',Projects:'var(--accent)',Focus:'var(--focus)',Groups:'var(--green)',Today:'var(--violet)',Account:'var(--muted)',You:'var(--muted)'};
  const todayRows=Object.entries(td).filter(([k])=>k!=='_n'&&ACT[k]).map(([k,c])=>({k,c,n:c*ACT[k][2]})).sort((a,b)=>b.n-a.n);
  return`<div class="page">${header('You',{sub:'Account and usage',right:`<a class="icon-btn" href="#settings" aria-label="Settings">${ic('gear')}</a>`})}
- <div class="card prof">${avatar(S.me,64)}<div class="grow"><h2>${esc(S.me.name)}</h2><div class="sub">${esc(S.me.role||'Member')} · @${esc(S.me.handle)}</div><div class="sub sm">Member since ${new Date(S.me.created).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</div></div><button class="btn sm" onclick="profileForm()">${ic('edit')} Edit</button></div>
+ <div class="card prof">${avatar(S.me,64)}<div class="grow"><h2>${esc(fullName())}</h2><div class="sub">${esc(meRole()||'Member')} · @${esc(S.me.handle)}</div>${PROFILE&&PROFILE.email?`<div class="sub sm pmail">${ic('mail')}<span>${esc(PROFILE.email)}</span></div>`:''}<div class="sub sm">Member since ${new Date(S.me.created).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</div></div><button class="btn sm" onclick="profileForm()">${ic('edit')} Edit</button>
+ <div class="pfoot">${S.me.enc?`<span class="vpill">${ic('lock')} Encrypted on this device</span>`:''}${window._vaultErr?`<span class="sub sm">Your details are locked to another device. <button class="lnk" onclick="profileForm()">Add them again</button></span>`:PROFILE&&(!PROFILE.email||!PROFILE.last||!PROFILE.status)?`<button class="lnk" onclick="profileForm()">Finish your profile</button>`:''}</div></div>
  <section><div class="sh"><h2>Knots</h2><span class="sub">every action uses knots, like tokens</span></div>
  <div class="card knotsum"><div class="kbig">${knot('kn lg',3.6)}<div><div class="l">Used today</div><div class="v" data-n="${td._n||0}">${td._n||0}</div></div></div><div class="kside"><div><span class="l">All time</span><b data-n="${u.total}">${u.total}</b></div><div><span class="l">Daily average</span><b>${avg}</b></div><div><span class="l">Active days</span><b>${active}</b></div></div></div></section>
  <section><div class="sh"><h2>Last 14 days</h2><span class="sub">knots per day</span></div><div class="card">${barChart(days)}</div></section>
@@ -879,27 +957,28 @@ function pYou(){const u=S.usage,t=today(),td=u.days[t]||{},days=[],dates=Object.
  <p class="sub center">Knots are only tracked for now and only visible to you here.</p>
  <section><div class="card list"><a class="li" href="#posters">${ic('image')}<div class="grow"><div class="t">Posters</div><div class="sub">Brand posters for sharing and marketing</div></div>${ic('arrow')}</a><a class="li" href="#people">${ic('people')}<div class="grow"><div class="t">Teammates</div><div class="sub">${plural(S.people.length,'teammate')}</div></div>${ic('arrow')}</a><a class="li" href="#settings">${ic('gear')}<div class="grow"><div class="t">Settings and data</div><div class="sub">Theme, sounds, backup</div></div>${ic('arrow')}</a></div></section></div>`}
 const usageTable=(rows,tot)=>`<table class="ut"><thead><tr><th>Action</th><th>Area</th><th>Count</th><th>Knots</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(ACT[r.k][0])}</td><td class="sub">${ACT[r.k][1]}</td><td>${r.c}</td><td><b>${r.n}</b></td><td class="ubar"><i style="width:${Math.max(3,r.n/tot*100)}%"></i></td></tr>`).join('')}</tbody></table>`;
-function profileForm(){let F={...S.me.fig};sheet('Edit profile',`<div class="center" id="pfA">${avatar(S.me,72)}</div><label for="pfN">Name</label><input id="pfN" name="name" required value="${esc(S.me.name)}"><label for="pfR">Role</label><input id="pfR" name="role" value="${esc(S.me.role||'')}">
+function profileForm(){let F={...S.me.fig};const P0=PROFILE||{first:S.me.name};sheet('Edit profile',`<div class="center" id="pfA">${avatar(S.me,72)}</div>${profileFields('pf',P0)}
  <div class="flabel">Look</div><div class="opts">${HAIR.map((_,i)=>`<label class="swl"><input type="radio" name="h" value="${i}" ${F.h===i?'checked':''}>${avatar({fig:{h:i,c:F.c}},34)}</label>`).join('')}</div><div class="flabel">Colour</div><div class="opts">${AV_COL.map((c,i)=>`<label class="swl"><input type="radio" name="c" value="${i}" ${F.c===i?'checked':''}><span class="sw" style="background:${c}"></span></label>`).join('')}</div>`,
- fd=>{if(!fd.name.trim())return false;Object.assign(S.me,{name:fd.name.trim(),role:fd.role.trim(),fig:{h:+fd.h,c:+fd.c}});toast('Profile saved')});
- const f=$('#sf');f.addEventListener('change',()=>{$('#pfA').innerHTML=avatar({fig:{h:+f.h.value,c:+f.c.value}},72)})}
+ (fd,form)=>{if(!showErrs(form,checkProfile(fd)))return false;S.me.fig={h:+fd.h,c:+fd.c};storeProfile(fd).then(ok=>{if(route.k==='you'&&!isOpen())render()});use('profile');toast('Profile saved')});
+ const f=$('#sf');f.noValidate=true;wireProfile(f,'pf');f.addEventListener('change',e=>{if(e.target.name==='h'||e.target.name==='c')$('#pfA').innerHTML=avatar({fig:{h:+f.h.value,c:+f.c.value}},72)})}
 function pPosters(){return`<div class="page">${header('Posters',{sub:'Atelier brand',back:'you'})}<p class="sub" style="margin:-6px 4px 14px">One figure, one line, one accent. Download them for sharing and marketing.</p><div class="pgrid">${POSTERS.map(p=>`<div class="pcard">${posterSVG(p)}<button class="btn sm full" onclick="exportPoster('${p.id}')">${ic('download')} Download PNG</button></div>`).join('')}</div></div>`}
 async function exportPoster(id){const po=POSTERS.find(p=>p.id===id);let svg=posterSVG(po).replace('<svg class="poster"','<svg');
  const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('').match(/@font-face\{[^}]+\}/g)||[];svg=svg.replace('>',`><style>${css.join('')}</style>`);
  const img=new Image(),url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));img.onload=()=>{const c=document.createElement('canvas');c.width=1200;c.height=1600;const x=c.getContext('2d');x.drawImage(img,0,0,1200,1600);URL.revokeObjectURL(url);c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`atelier-${id}.png`;a.click();use('poster');toast('Poster downloaded')},'image/png')};img.onerror=()=>toast('Could not export');img.src=url}
 function pSettings(){const s=S.settings;after(()=>{$$('[data-th]').forEach(b=>b.onclick=()=>{s.theme=b.dataset.th;applyTheme();save();render()});$('#sSnd').onchange=e=>{s.sound=e.target.checked;save()};$('#sAuto').onchange=e=>{s.auto=e.target.checked;save()};
-  $('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let d;try{d=JSON.parse(r.result)}catch(x){toast('Not a valid backup');return}if(!d||!d.me||!Array.isArray(d.notes)){toast('Not an Atelier backup');return}ask('Replace everything with this backup?',async()=>{const blobs=d._blobs;delete d._blobs;S=Object.assign(DEF(),d);if(blobs)for(const [k,v] of Object.entries(blobs)){try{if(v.json)await IDB.put(k,v.json);else{const bin=atob(v.data),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);await IDB.put(k,new Blob([u],{type:v.type}))}}catch(e){}}save();applyTheme();go('today');render();toast('Backup restored')},'Restore')};r.readAsText(f)}});
+  $('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let d;try{d=JSON.parse(r.result)}catch(x){toast('Not a valid backup');return}if(!d||!d.me||!Array.isArray(d.notes)){toast('Not an Atelier backup');return}ask('Replace everything with this backup?',async()=>{const blobs=d._blobs,pf=d._profile;delete d._blobs;delete d._profile;S=Object.assign(DEF(),d);if(pf)storeProfile(pf);else unlockProfile();if(blobs)for(const [k,v] of Object.entries(blobs)){if(String(k).startsWith('key:'))continue;try{if(v.json)await IDB.put(k,v.json);else{const bin=atob(v.data),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);await IDB.put(k,new Blob([u],{type:v.type}))}}catch(e){}}save();applyTheme();go('today');render();toast('Backup restored')},'Restore')};r.readAsText(f)}});
  return`<div class="page">${header('Settings',{sub:'Atelier',back:'you'})}
  <div class="card"><h3>Appearance</h3><div class="seg mt">${[['light','Light'],['dark','Dark'],['auto','Auto']].map(([k,n])=>`<button data-th="${k}" class="${s.theme===k?'on':''}">${ic(k==='dark'?'moon':'sun')} ${n}</button>`).join('')}</div></div>
  <div class="card"><h3>Focus</h3><label class="chk"><input type="checkbox" id="sSnd" ${s.sound?'checked':''}> Soft chime between phases</label><label class="chk"><input type="checkbox" id="sAuto" ${s.auto?'checked':''}> Start the next phase automatically</label></div>
- <div class="card"><h3>Data</h3><p class="sub">Everything is saved on this device with a backup copy. Export to move it to another device.</p><button class="btn full" onclick="exportAll()">${ic('download')} Export backup</button><label class="btn full">${ic('upload')} Import backup<input id="imp" type="file" accept="application/json,.json" hidden></label>
- <button class="btn danger full" onclick="ask('Sign out and erase everything on this device?',async()=>{try{await IDB.clear()}catch(e){};LS.removeItem(KEY);LS.removeItem(BKEY);S=DEF();OB={i:0,h:0,c:0};go('today')},'Erase')">${ic('logout')} Sign out and erase</button></div>
+ <div class="card"><h3>Data</h3><p class="sub">Everything is saved on this device with a backup copy. Export to move it to another device.</p>
+ <div class="vnote">${ic('lock')}<span>${S.me.enc?'Your name, work and email are <b>encrypted on this device</b> with AES-256. The key never leaves it.':window._vaultErr?'Your details were encrypted on another device. Add them again in your profile.':'This browser cannot encrypt, so your details are saved as they are.'} Backup files are not encrypted, so keep them somewhere safe.</span></div><button class="btn full" onclick="exportAll()">${ic('download')} Export backup</button><label class="btn full">${ic('upload')} Import backup<input id="imp" type="file" accept="application/json,.json" hidden></label>
+ <button class="btn danger full" onclick="ask('Sign out and erase everything on this device?',async()=>{try{await IDB.clear()}catch(e){};VAULT.forget();PROFILE=null;LS.removeItem(KEY);LS.removeItem(BKEY);S=DEF();OB={i:0,h:0,c:0};go('today')},'Erase')">${ic('logout')} Sign out and erase</button></div>
  <div class="brand">${markSVG(false,3.4)}Atelier</div></div>`}
-async function exportAll(){toast('Preparing backup…');const blobs={};try{for(const k of await IDB.keys()){const v=await IDB.get(k);if(v instanceof Blob){blobs[k]={type:v.type,data:await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(',')[1]);fr.readAsDataURL(v)})}}else blobs[k]={json:v}}}catch(e){}
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({...S,_blobs:blobs})],{type:'application/json'}));a.download=`atelier-${today()}.json`;a.click();toast('Backup exported')}
+async function exportAll(){toast('Preparing backup…');const blobs={};try{for(const k of await IDB.keys()){if(String(k).startsWith('key:'))continue;const v=await IDB.get(k);if(v instanceof Blob){blobs[k]={type:v.type,data:await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(',')[1]);fr.readAsDataURL(v)})}}else blobs[k]={json:v}}}catch(e){}
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({...S,_blobs:blobs,...(PROFILE?{_profile:PROFILE}:{})})],{type:'application/json'}));a.download=`atelier-${today()}.json`;a.click();toast('Backup exported')}
 /* ============ BOOT ============ */
 function boot(){applyTheme();if(S.focus.run){const r=S.focus.run;if(!r.paused&&leftMs(r)<=0){r.left=0;r.endAt=Date.now()}tickOn()}
- render();const sp=$('#splash');setTimeout(()=>{sp.classList.add('out');setTimeout(()=>sp.remove(),700)},matchMedia('(prefers-reduced-motion: reduce)').matches?0:1500);
+ render();unlockProfile();const sp=$('#splash');setTimeout(()=>{sp.classList.add('out');setTimeout(()=>sp.remove(),700)},matchMedia('(prefers-reduced-motion: reduce)').matches?0:1500);
  if(window._from==='restored')setTimeout(()=>toast('Restored from the backup copy'),1800);if(window._noStore)setTimeout(()=>toast('This preview cannot save. Open the file in Safari to keep your work.'),2000);try{const pr=navigator.storage&&navigator.storage.persist&&navigator.storage.persist();if(pr&&pr.catch)pr.catch(()=>{})}catch(e){}}
 /* offline support when served from a website (GitHub Pages); harmless when opened as a file */
 if(/^https?:$/.test(location.protocol))addEventListener('load',()=>{try{const sw=navigator.serviceWorker;if(sw)sw.register('sw.js').catch(()=>{})}catch(e){}});
