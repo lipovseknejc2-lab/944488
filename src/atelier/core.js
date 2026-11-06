@@ -1,0 +1,113 @@
+/* ============ ATELIER · CORE: state, storage, usage meter, router, UI kit ============ */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
+const pad=n=>String(n).padStart(2,'0');
+const isoD=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=()=>isoD(new Date());
+const esc=escH;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const tHM=t=>{const d=new Date(t);return`${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const fmtDay=t=>{const d=new Date(t),n=new Date();const diff=Math.round((new Date(isoD(n))-new Date(isoD(d)))/864e5);return diff===0?'Today':diff===1?'Yesterday':d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})};
+const ago=t=>{const s=(Date.now()-t)/1000;return s<60?'now':s<3600?Math.floor(s/60)+'m':s<86400?Math.floor(s/3600)+'h':fmtDay(t)};
+const fmtSize=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
+const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
+
+/* ---------- state ---------- */
+const KEY='atelier-v1',BKEY='atelier-backup';
+/* If the browser blocks storage (some previews do), keep working in memory and say so once. */
+const LS=(()=>{try{const k='__a';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage}catch(e){const m={};window._noStore=true;return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
+const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],
+ focus:{mode:'pomo',custom:{w:30,b:5,r:3},label:'',run:null,sessions:[]},usage:{days:{},total:0},
+ settings:{theme:'light',sound:true,auto:true},created:Date.now()});
+function parseSave(r){if(!r)return null;const d=JSON.parse(r);if(!d||typeof d!=='object'||!Array.isArray(d.notes))throw 0;return d}
+function load(){let d=null;window._from='main';try{d=parseSave(LS.getItem(KEY))}catch(e){d=null;window._from='bad'}
+ if(!d){try{d=parseSave(LS.getItem(BKEY));if(d&&window._from==='bad')window._from='restored'}catch(e){}}
+ const s=Object.assign(DEF(),d||{});s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});return s}
+let S=load(),_bk=0;
+function save(){if(!S.me&&!S.notes.length)return false;let raw;try{raw=JSON.stringify(S)}catch(e){return false}
+ try{LS.setItem(KEY,raw)}catch(e){toast('Storage is full. Export a backup in You, Settings.');return false}
+ if(Date.now()-_bk>60000){try{LS.setItem(BKEY,raw);_bk=Date.now()}catch(e){}}return true}
+let _st=0;const saveSoon=()=>{clearTimeout(_st);_st=setTimeout(save,350)};
+addEventListener('pagehide',()=>{try{if(S.me)save()}catch(e){}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&S.me)try{save()}catch(e){}});
+/* another tab changed the data: reload it here so tabs never overwrite each other */
+addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const d=parseSave(e.newValue);if(d){S=Object.assign(DEF(),d);if(!isOpen())render()}}catch(x){}}});
+
+/* ---------- IndexedDB for files, images, drawings, voice ---------- */
+const IDB={db:null,open(){if(this.db)return Promise.resolve(this.db);return new Promise((res,rej)=>{if(!window.indexedDB)return rej(new Error('no idb'));const r=indexedDB.open('atelier',1);r.onupgradeneeded=()=>r.result.createObjectStore('b');r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>rej(r.error)})},
+ async op(m,fn){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('b',m),q=fn(tx.objectStore('b'));let out;if(q)q.onsuccess=()=>{out=q.result};tx.oncomplete=()=>res(out);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})},
+ put(k,v){return this.op('readwrite',s=>s.put(v,k))},get(k){return this.op('readonly',s=>s.get(k))},del(k){return this.op('readwrite',s=>s.delete(k))},keys(){return this.op('readonly',s=>s.getAllKeys())},clear(){return this.op('readwrite',s=>s.clear())}};
+
+/* ---------- knots: every action is metered (tracking only, shown on the You page) ---------- */
+const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_edit:['Note edit','Notes',1],note_share:['Share','Notes',2],
+ msg:['Message','Chat',1],chat_new:['New conversation','Chat',2],group_new:['New group','Groups',5],group_edit:['Group change','Groups',1],bot_new:['New teammate','Groups',3],
+ project_new:['New project','Projects',6],task_new:['New task','Projects',2],task_move:['Task update','Projects',1],idea:['Idea','Projects',2],vote:['Vote','Projects',1],
+ file:['File upload','Projects',4],board_save:['Drawing saved','Projects',3],inspo:['Inspiration','Projects',2],table_edit:['Table edit','Projects',1],
+ focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2]};
+function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times,d=today();const day=S.usage.days[d]||(S.usage.days[d]={});day[a]=(day[a]||0)+times;day._n=(day._n||0)+n;S.usage.total+=n;saveSoon()}
+const usedToday=()=>(S.usage.days[today()]||{})._n||0;
+
+/* ---------- ledger: the day's timeline ---------- */
+const LK={focus:['focus','var(--focus)'],break:['coffee','var(--break)'],note:['notes','var(--yellow)'],msg:['chat','var(--blue)'],task:['check','var(--green)'],feel:['sparkle','var(--violet)'],voice:['bell','var(--red)'],project:['projects','var(--accent)'],group:['group','var(--blue)'],idea:['idea','var(--yellow)'],file:['file','var(--ink2)'],board:['draw','var(--accent)'],inspo:['image','var(--violet)']};
+function led(k,t,extra={}){S.ledger.push({id:uid(),at:Date.now(),k,t,...extra});if(S.ledger.length>2500)S.ledger=S.ledger.slice(-2000);saveSoon()}
+
+/* ---------- people ---------- */
+const me=()=>S.me;
+const person=id=>id==='me'?S.me:S.people.find(p=>p.id===id);
+const grp=id=>S.groups.find(g=>g.id===id);
+const proj=id=>S.projects.find(p=>p.id===id);
+const note=id=>S.notes.find(n=>n.id===id);
+const GCOL=['#d9764f','#3f6fd8','#3fa86e','#e0a92f','#d9566b','#8a6fd9','#2fa3a0','#b9824f'];
+
+/* ---------- UI kit ---------- */
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('show');void t.offsetWidth;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
+function openModal(html,cls=''){const m=$('#modal');m.innerHTML=html;m.className='open '+cls;m.onclick=e=>{if(e.target===m||e.target.closest('[data-close]'))closeSheet()};const f=m.querySelector('input:not([type=hidden]):not([type=file]),textarea');if(f&&!('ontouchstart' in window))setTimeout(()=>f.focus(),220)}
+function closeSheet(){const m=$('#modal');if(!m.classList.contains('open'))return;m.classList.add('closing');setTimeout(()=>{m.className='';m.innerHTML=''},200)}
+const isOpen=()=>$('#modal').classList.contains('open');
+addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+function sheet(title,body,onSubmit,foot=''){openModal(`<form class="sheet" id="sf" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-h"><h2>${title}</h2><button class="icon-btn" type="button" data-close aria-label="Close">${ic('close')}</button></div>${body}<button class="btn primary full" type="submit">Save</button>${foot}</form>`);
+ $('#sf').onsubmit=e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(e.target));if(onSubmit(fd,e.target)!==false){closeSheet();save();render()}}}
+function ask(q,yes,label='Delete'){openModal(`<div class="sheet" role="alertdialog" aria-modal="true"><h2>${q}</h2><p class="sub">This can't be undone.</p><div class="row mt"><button class="btn grow" data-close>Cancel</button><button class="btn danger grow" id="askY">${label}</button></div></div>`);$('#askY').onclick=()=>{closeSheet();yes();save();render()}}
+function countUp(root){root.querySelectorAll('[data-n]').forEach(el=>{const to=+el.dataset.n;if(!isFinite(to)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;const t0=performance.now(),D=650;const step=t=>{const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);el.textContent=Math.round(to*e).toLocaleString('en-GB');if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)})}
+function burst(col){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const b=document.createElement('div');b.className='burst';for(let i=0;i<16;i++){const s=document.createElement('i');const a=Math.random()*Math.PI*2,d=50+Math.random()*80;s.style.cssText=`--x:${Math.cos(a)*d}px;--y:${Math.sin(a)*d-30}px;background:${[col||'var(--accent)','var(--blue)','var(--yellow)','var(--green)'][i%4]}`;b.appendChild(s)}document.body.appendChild(b);setTimeout(()=>b.remove(),1000)}
+const avStack=(ids,max=4,size=26)=>`<span class="avs">${ids.slice(0,max).map(id=>avatar(person(id),size)).join('')}${ids.length>max?`<span class="more" style="width:${size}px;height:${size}px">+${ids.length-max}</span>`:''}</span>`;
+const empty=(fig,title,text,btn)=>`<div class="emptyart card">${figure(fig,{draw:true})}<h3>${title}</h3><p class="sub">${text}</p>${btn||''}</div>`;
+
+/* ---------- small charts (SVG) ---------- */
+function barChart(data,{h=150,col='var(--accent)',labels=true,fmt=v=>v}={}){const w=320,mx=Math.max(1,...data.map(d=>d.v)),bw=w/data.length;
+ return`<svg class="chart" viewBox="0 0 ${w} ${h+(labels?22:0)}" preserveAspectRatio="none" role="img">${[.25,.5,.75,1].map(f=>`<line x1="0" x2="${w}" y1="${(h-h*f*.9).toFixed(1)}" y2="${(h-h*f*.9).toFixed(1)}" stroke="var(--line)"/>`).join('')}
+ ${data.map((d,i)=>{const bh=d.v/mx*h*.9,x=i*bw+bw*.18;return`<g><rect class="bar" x="${x.toFixed(1)}" y="${(h-bh).toFixed(1)}" width="${(bw*.64).toFixed(1)}" height="${Math.max(bh,d.v?2:0).toFixed(1)}" rx="4" fill="${d.c||col}" style="--i:${i}"><title>${esc(d.l)}: ${fmt(d.v)}</title></rect>${labels?`<text x="${(x+bw*.32).toFixed(1)}" y="${h+15}" text-anchor="middle" font-size="9.5" fill="var(--muted)">${esc(d.l)}</text>`:''}</g>`}).join('')}</svg>`}
+function lineChart(series,{h=150,labels=[]}={}){const w=320,all=series.flatMap(s=>s.v),mx=Math.max(1,...all),n=Math.max(2,...series.map(s=>s.v.length));
+ const X=i=>(i/(n-1))*(w-16)+8,Y=v=>h-8-v/mx*(h-20);
+ return`<svg class="chart" viewBox="0 0 ${w} ${h+22}" preserveAspectRatio="none" role="img">${[.25,.5,.75,1].map(f=>`<line x1="0" x2="${w}" y1="${Y(mx*f).toFixed(1)}" y2="${Y(mx*f).toFixed(1)}" stroke="var(--line)"/>`).join('')}
+ ${series.map(s=>`<path d="M${s.v.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join('L')}L${X(s.v.length-1).toFixed(1)},${h}L${X(0)},${h}Z" fill="${s.c}" opacity=".1"/><path class="ln" pathLength="1" d="M${s.v.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join('L')}" fill="none" stroke="${s.c}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`).join('')}
+ ${labels.map((l,i)=>l?`<text x="${X(i).toFixed(1)}" y="${h+16}" text-anchor="middle" font-size="9.5" fill="var(--muted)">${esc(l)}</text>`:'').join('')}</svg>`}
+function ring(frac,col,size=56,sw=6,txt=''){const r=(size-sw)/2,c=2*Math.PI*r;return`<svg class="ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${sw}"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-clamp(frac,0,1))).toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})" style="--c:${c.toFixed(1)}" class="rarc"/>${txt?`<text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-size="${size*.24}" font-weight="650" fill="var(--text)">${txt}</text>`:''}</svg>`}
+
+/* ---------- router ---------- */
+const TABS=[['today','Today','home'],['focus','Focus','focus'],['notes','Notes','notes'],['projects','Projects','projects'],['chat','Chat','chat'],['you','You','you']];
+const TAB_OF={today:'today',ledger:'today',focus:'focus',notes:'notes',note:'notes',projects:'projects',project:'projects',board:'projects',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',you:'you',posters:'you',settings:'you'};
+let route={k:'today',a:[]},_prevRoute='';
+/* Pages change in memory, so navigation works everywhere, also in previews that block address changes. */
+let _hash=(()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return''}})()||'today';
+function parseHash(){const h=(_hash||'today').split(':');return{k:h[0],a:h.slice(1)}}
+function go(h){h=String(h||'').replace(/^#/,'')||'today';window._railOpen=false;const same=h===_hash;_hash=h;try{if(location.hash!=='#'+h)history.pushState(null,'','#'+h)}catch(e){}render()}
+function redirect(h){_hash=h;try{history.replaceState(null,'','#'+h)}catch(e){}queueMicrotask(render);return''}
+/* every in-app link navigates here, even if the browser or preview cancels the tap's default action */
+document.addEventListener('click',e=>{if(e.button>0||e.metaKey||e.ctrlKey)return;const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;const inner=e.target.closest('button,input,select,textarea,label');if(inner&&inner!==a&&a.contains(inner))return;e.preventDefault();go(a.getAttribute('href'))},true);
+addEventListener('popstate',()=>{let h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}_hash=h||'today';render()});
+function nav(){const cur=TAB_OF[route.k]||'today',unread=S.chats.reduce((a,c)=>a+unreadOf(c),0);
+ $('#tabs').innerHTML=TABS.map(([k,n,i])=>`<a href="#${k}" class="${cur===k?'on':''}" ${cur===k?'aria-current="page"':''}>${ic(i)}<span>${n}</span>${k==='chat'&&unread?`<b class="badge">${unread>9?'9+':unread}</b>`:''}</a>`).join('')+'<i class="tabglow"></i>';
+ const on=$('#tabs a.on'),g=$('#tabs .tabglow');if(on&&g){g.style.cssText=`--x:${on.offsetLeft}px;--y:${on.offsetTop}px;--w:${on.offsetWidth}px;--h:${on.offsetHeight}px`}}
+function render(){if(!S.me){$('#shell').classList.add('nologin');onboarding();return}$('#shell').classList.remove('nologin');
+ route=parseHash();const key=_hash;const fresh=key!==_prevRoute;_prevRoute=key;
+ const V=$('#view'),y=fresh?0:scrollY;
+ const P={today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
+ try{V.innerHTML=P(...route.a)||''}catch(e){console.error(e);V.innerHTML=`<div class="page">${empty('think','Something went wrong','This view could not be shown. Your work is safe.',`<a class="btn primary" href="#today">Back to Today</a>`)}</div>`}
+ if(fresh){V.classList.remove('enter');void V.offsetWidth;V.classList.add('enter');scrollTo(0,0)}else scrollTo(0,y);
+ nav();paintRail();countUp(V);if(V._after){const f=V._after;V._after=null;f()}miniTimer()}
+const after=f=>{$('#view')._after=f};
+addEventListener('hashchange',()=>{let h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}if(h&&h!==_hash){_hash=h;render()}});
+addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(nav,120)});
+function applyTheme(){const d=S.settings.theme==='dark'||(S.settings.theme==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';const m=$('meta[name=theme-color]');if(m)m.content=d?'#1b1a18':'#f6f3ee'}
+function header(title,{sub='',back='',right=''}={}){return`<header class="ph">${back?`<a class="icon-btn" href="#${back}" aria-label="Back">${ic('back')}</a>`:''}<div class="grow"><div class="eyebrow">${sub}</div><h1>${title}</h1></div>${right}</header>`}

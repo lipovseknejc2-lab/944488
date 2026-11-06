@@ -1,0 +1,39 @@
+# Atelier
+
+Light, professional team-work app: Today (week, message of the day, ledger, feelings, floating quick panel), Focus timers, Notes, Projects (tasks, ideas, files, drawing boards, inspiration, table and chart), Chat, Groups and People with bot teammates, You (knots usage, posters, settings). In-memory router so it works in sandboxed previews. No emojis anywhere.
+
+- **Live:** https://lipovseknejc2-lab.github.io/944488/atelier/
+- **Published in the repository at:** `atelier/`
+- **Saved data:** `atelier-v1 (also atelier-backup); files, drawings and voice memos in IndexedDB "atelier"`. Never rename these keys; people keep their progress in them.
+- **Offline cache prefix:** `atelier-`. This app's worker may only delete caches that start with it.
+
+## Build and publish
+```
+cd src/atelier
+python3 build.py      # writes dist/, one self-contained HTML file with fonts embedded
+```
+Publish: copy `dist/atelier.html` to `atelier/index.html`. `sw.js`, the manifest and icons are already in `atelier/`.
+
+After publishing, raise the version in this app's `sw.js` (for example `atelier-v3` to `atelier-v4`) so phones download the update.
+
+## Files
+JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `notes.js`, `chat.js`, `projects.js`, `you.js`
+
+| File | Role | Notes |
+|---|---|---|
+| `art.js` | build order 1 |  |
+| `build.py` | build script |  |
+| `chat.js` | build order 7 | CHAT, GROUPS, PEOPLE |
+| `core.js` | build order 2 | ATELIER · CORE: state, storage, usage meter, router, UI kit |
+| `focus.js` | build order 5 | FOCUS: timers for working and studying |
+| `notes.js` | build order 6 | NOTES |
+| `people.js` | build order 3 | TEAMMATES (bots) |
+| `projects.js` | build order 8 | PROJECTS: small to big, personal or shared |
+| `shell.html` | shell: CSS and HTML |  |
+| `today.js` | build order 4 | TODAY: week, live focus, message of the day, greeting, ledger, quick actions |
+| `you.js` | build order 9 | YOU: account, knots usage, posters, settings |
+
+## Tests
+`bash tests/run.sh` builds Atelier and runs every check: features, phone taps, stress and crash, offline. Screenshots from `tests/look.js` go to `tests/shots/`.
+
+`fonts/` (and `f/`) hold only the font files this build embeds. `dist/` is generated; do not edit it.
