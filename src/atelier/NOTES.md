@@ -5,6 +5,10 @@ Light, professional team-work app: Today (week, message of the day, ledger, feel
 - **Live:** https://lipovseknejc2-lab.github.io/944488/atelier/
 - **Published in the repository at:** `atelier/`
 - **Saved data:** `atelier-v1 (also atelier-backup); files, drawings and voice memos in IndexedDB "atelier"`. Never rename these keys; people keep their progress in them.
+- **Chat and groups:** tap a chat header for group info (members, active projects with progress, pinned, photos, files, shared notes) or person info. Press and hold a message to pin, copy, forward or delete. The share sheet sends photos, files, notes, projects, focus, your day and your agenda as cards. Groups have a kind, icon, colour, cover drawing and a quiet mode (`g.kind`, `g.icon`, `g.fig`, `g.mute`).
+- **Today agenda:** `S.agenda` items `{id, d, t, title, note, pid, done}`; any day of the week can be planned (dots in the week row); shareable.
+- **Project progress:** automatic from tasks and milestones (a milestone weighs two tasks) or set by hand (`p.pmode`, `p.pct`); milestones in `p.miles`; daily history in `p.hist` for the chart; updates can be posted to the project's groups.
+- **You:** "How you work" shows an efficiency score (making share, plans done, active days), streak, weekly change, focus hours, tasks, shares, peak hour and two rhythm charts, all from data already tracked.
 - **Account and encryption:** the account screen asks for first name, surname, student or working, school or work, and email. The profile is sealed with AES-GCM 256 (fresh IV each save) into `S.me.vault`; the key is a non-extractable CryptoKey in IndexedDB `key:profile`, or localStorage `atelier-key` if IndexedDB is blocked. The decrypted profile lives only in memory (`PROFILE`). Older saves move their name and role into the vault on first start. Backups carry the profile as `_profile` so they can be restored on another device, where it is sealed again with that device's key.
 - **Offline cache prefix:** `atelier-`. This app's worker may only delete caches that start with it.
 

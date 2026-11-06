@@ -7,7 +7,7 @@ const today=()=>isoD(new Date());
 const esc=escH;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const tHM=t=>{const d=new Date(t);return`${pad(d.getHours())}:${pad(d.getMinutes())}`};
-const fmtDay=t=>{const d=new Date(t),n=new Date();const diff=Math.round((new Date(isoD(n))-new Date(isoD(d)))/864e5);return diff===0?'Today':diff===1?'Yesterday':d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})};
+const fmtDay=t=>{const d=new Date(t),n=new Date();const diff=Math.round((new Date(isoD(n))-new Date(isoD(d)))/864e5);return diff===0?'Today':diff===1?'Yesterday':diff===-1?'Tomorrow':d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})};
 const ago=t=>{const s=(Date.now()-t)/1000;return s<60?'now':s<3600?Math.floor(s/60)+'m':s<86400?Math.floor(s/3600)+'h':fmtDay(t)};
 const fmtSize=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
 const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
@@ -16,7 +16,7 @@ const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
 const KEY='atelier-v1',BKEY='atelier-backup';
 /* If the browser blocks storage (some previews do), keep working in memory and say so once. */
 const LS=(()=>{try{const k='__a';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage}catch(e){const m={};window._noStore=true;return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
-const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],
+const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],
  focus:{mode:'pomo',custom:{w:30,b:5,r:3},label:'',run:null,sessions:[]},usage:{days:{},total:0},
  settings:{theme:'light',sound:true,auto:true},created:Date.now()});
 function parseSave(r){if(!r)return null;const d=JSON.parse(r);if(!d||typeof d!=='object'||!Array.isArray(d.notes))throw 0;return d}
@@ -85,8 +85,7 @@ function profileFields(x,p={}){const st=p.status||'',L=st==='student'?['Where do
  return`<div class="frow"><div><label for="${x}Name">First name</label><input id="${x}Name" name="first" autocomplete="given-name" autocapitalize="words" value="${esc(p.first||'')}" placeholder="e.g. Nejc"></div><div><label for="${x}Sur">Surname</label><input id="${x}Sur" name="last" autocomplete="family-name" autocapitalize="words" value="${esc(p.last||'')}" placeholder="e.g. Lipovšek"></div></div>
  <div class="flabel" id="${x}StL">What do you do?</div><div class="seg big" role="radiogroup" aria-labelledby="${x}StL" id="${x}St">${Object.entries(STATUS).map(([k,[n,i]])=>`<label><input type="radio" name="status" value="${k}" ${st===k?'checked':''}>${ic(i)} ${n}</label>`).join('')}</div>
  <label for="${x}Role" id="${x}RoleL">${L[0]}</label><input id="${x}Role" name="what" autocomplete="organization" value="${esc(p.what||'')}" placeholder="${L[1]}">
- <label for="${x}Mail">Email</label><input id="${x}Mail" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="${esc(p.email||'')}" placeholder="you@example.com">
- <div class="vnote">${ic('lock')}<span>Your name, work and email are <b>encrypted on this device</b> (AES-256). Nothing is sent anywhere.</span></div>`}
+ <label for="${x}Mail">Email</label><input id="${x}Mail" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="${esc(p.email||'')}" placeholder="you@example.com">`}
 /* live behaviour for those fields: the school or work label follows the choice, errors clear as you type */
 function wireProfile(f,x){f.querySelectorAll('[name=status]').forEach(r=>r.onchange=()=>{const s=r.value,l=$('#'+x+'RoleL'),i=$('#'+x+'Role');l.textContent=s==='student'?'Where do you study?':'What is your work?';i.placeholder=s==='student'?'e.g. University of Ljubljana':'e.g. Product designer at Studio';clearErr(f,'status')});
  f.addEventListener('input',e=>{if(e.target.name)clearErr(f,e.target.name)})}
@@ -96,17 +95,25 @@ function showErrs(f,errs){f.querySelectorAll('.ferr').forEach(m=>m.remove());f.q
  for(const [n,msg] of Object.entries(errs)){const w=n==='status'?f.querySelector('.seg'):f.querySelector(`[name=${n}]`);if(!w)continue;w.classList.add('bad');w.insertAdjacentHTML('afterend',`<div class="ferr" role="alert">${esc(msg)}</div>`);first=first||w}
  if(first){try{first.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}if(first.tagName==='INPUT'&&!('ontouchstart' in window))first.focus()}return!first}
 
+/* ---------- pictures and files kept in IndexedDB: one object URL per blob, reused, oldest released ---------- */
+const BURL=new Map();
+async function blobURL(fid){if(BURL.has(fid))return BURL.get(fid);let b=null;try{b=await IDB.get(fid)}catch(e){}if(!(b instanceof Blob))return null;if(BURL.has(fid))return BURL.get(fid);
+ const u=URL.createObjectURL(b);BURL.set(fid,u);if(BURL.size>240){const [k,v]=BURL.entries().next().value;BURL.delete(k);try{URL.revokeObjectURL(v)}catch(e){}}return u}
+async function loadImgs(root){for(const im of (root||document).querySelectorAll('img[data-fid]:not([src])')){const box=im.closest('.aph,.mthumb');const u=await blobURL(im.dataset.fid);
+ if(u){im.onload=()=>box&&box.classList.add('ld');im.src=u}else if(box)box.classList.add('miss')}}
 /* ---------- knots: every action is metered (tracking only, shown on the You page) ---------- */
 const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_edit:['Note edit','Notes',1],note_share:['Share','Notes',2],
  msg:['Message','Chat',1],chat_new:['New conversation','Chat',2],group_new:['New group','Groups',5],group_edit:['Group change','Groups',1],bot_new:['New teammate','Groups',3],
  project_new:['New project','Projects',6],task_new:['New task','Projects',2],task_move:['Task update','Projects',1],idea:['Idea','Projects',2],vote:['Vote','Projects',1],
  file:['File upload','Projects',4],board_save:['Drawing saved','Projects',3],inspo:['Inspiration','Projects',2],table_edit:['Table edit','Projects',1],
- focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1]};
+ focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1],
+ photo:['Photo shared','Chat',3],file_share:['File shared','Chat',3],share:['Shared update','Chat',2],pin:['Pin','Chat',1],
+ agenda_new:['Agenda item','Today',2],agenda_done:['Agenda done','Today',1],milestone:['Milestone','Projects',2],progress:['Progress update','Projects',1]};
 function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times,d=today();const day=S.usage.days[d]||(S.usage.days[d]={});day[a]=(day[a]||0)+times;day._n=(day._n||0)+n;S.usage.total+=n;saveSoon()}
 const usedToday=()=>(S.usage.days[today()]||{})._n||0;
 
 /* ---------- ledger: the day's timeline ---------- */
-const LK={focus:['focus','var(--focus)'],break:['coffee','var(--break)'],note:['notes','var(--yellow)'],msg:['chat','var(--blue)'],task:['check','var(--green)'],feel:['sparkle','var(--violet)'],voice:['bell','var(--red)'],project:['projects','var(--accent)'],group:['group','var(--blue)'],idea:['idea','var(--yellow)'],file:['file','var(--ink2)'],board:['draw','var(--accent)'],inspo:['image','var(--violet)']};
+const LK={focus:['focus','var(--focus)'],break:['coffee','var(--break)'],note:['notes','var(--yellow)'],msg:['chat','var(--blue)'],task:['check','var(--green)'],feel:['sparkle','var(--violet)'],voice:['bell','var(--red)'],project:['projects','var(--accent)'],group:['group','var(--blue)'],idea:['idea','var(--yellow)'],file:['file','var(--ink2)'],board:['draw','var(--accent)'],inspo:['image','var(--violet)'],agenda:['calendar','var(--blue)'],share:['share','var(--blue)'],milestone:['flag','var(--green)']};
 function led(k,t,extra={}){S.ledger.push({id:uid(),at:Date.now(),k,t,...extra});if(S.ledger.length>2500)S.ledger=S.ledger.slice(-2000);saveSoon()}
 
 /* ---------- people ---------- */
@@ -119,8 +126,11 @@ const GCOL=['#d9764f','#3f6fd8','#3fa86e','#e0a92f','#d9566b','#8a6fd9','#2fa3a0
 
 /* ---------- UI kit ---------- */
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('show');void t.offsetWidth;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
-function openModal(html,cls=''){const m=$('#modal');m.innerHTML=html;m.className='open '+cls;m.onclick=e=>{if(e.target===m||e.target.closest('[data-close]'))closeSheet()};const f=m.querySelector('input:not([type=hidden]):not([type=file]),textarea');if(f&&!('ontouchstart' in window))setTimeout(()=>f.focus(),220)}
-function closeSheet(){const m=$('#modal');if(!m.classList.contains('open'))return;m.classList.add('closing');setTimeout(()=>{m.className='';m.innerHTML=''},200)}
+/* a sheet can register onSheetClose(fn) to stop what it started (recording, timers) however it is closed */
+function onSheetClose(f){window._onSheetClose=f}
+function runSheetClose(){const f=window._onSheetClose;window._onSheetClose=null;if(f)try{f()}catch(e){}}
+function openModal(html,cls=''){runSheetClose();const m=$('#modal');m.innerHTML=html;m.className='open '+cls;m.onclick=e=>{if(e.target===m||e.target.closest('[data-close]'))closeSheet()};const f=m.querySelector('input:not([type=hidden]):not([type=file]),textarea');if(f&&!('ontouchstart' in window))setTimeout(()=>f.focus(),220)}
+function closeSheet(){runSheetClose();const m=$('#modal');if(!m.classList.contains('open'))return;m.classList.add('closing');setTimeout(()=>{m.className='';m.innerHTML=''},200)}
 const isOpen=()=>$('#modal').classList.contains('open');
 addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
 function sheet(title,body,onSubmit,foot=''){openModal(`<form class="sheet" id="sf" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-h"><h2>${title}</h2><button class="icon-btn" type="button" data-close aria-label="Close">${ic('close')}</button></div>${body}<button class="btn primary full" type="submit">Save</button>${foot}</form>`);
@@ -144,12 +154,12 @@ function ring(frac,col,size=56,sw=6,txt=''){const r=(size-sw)/2,c=2*Math.PI*r;re
 
 /* ---------- router ---------- */
 const TABS=[['today','Today','home'],['focus','Focus','focus'],['notes','Notes','notes'],['projects','Projects','projects'],['chat','Chat','chat'],['you','You','you']];
-const TAB_OF={today:'today',ledger:'today',focus:'focus',notes:'notes',note:'notes',projects:'projects',project:'projects',board:'projects',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',you:'you',posters:'you',settings:'you'};
+const TAB_OF={today:'today',ledger:'today',focus:'focus',notes:'notes',note:'notes',projects:'projects',project:'projects',board:'projects',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
 let route={k:'today',a:[]},_prevRoute='';
 /* Pages change in memory, so navigation works everywhere, also in previews that block address changes. */
 let _hash=(()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return''}})()||'today';
 function parseHash(){const h=(_hash||'today').split(':');return{k:h[0],a:h.slice(1)}}
-function go(h){h=String(h||'').replace(/^#/,'')||'today';window._railOpen=false;const same=h===_hash;_hash=h;try{if(location.hash!=='#'+h)history.pushState(null,'','#'+h)}catch(e){}render()}
+function go(h){h=String(h||'').replace(/^#/,'')||'today';window._railOpen=false;const same=h===_hash;if(!same)window._fromHash=_hash;_hash=h;try{if(location.hash!=='#'+h)history.pushState(null,'','#'+h)}catch(e){}render()}
 function redirect(h){_hash=h;try{history.replaceState(null,'','#'+h)}catch(e){}queueMicrotask(render);return''}
 /* every in-app link navigates here, even if the browser or preview cancels the tap's default action */
 document.addEventListener('click',e=>{if(e.button>0||e.metaKey||e.ctrlKey)return;const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;const inner=e.target.closest('button,input,select,textarea,label');if(inner&&inner!==a&&a.contains(inner))return;e.preventDefault();go(a.getAttribute('href'))},true);
@@ -160,10 +170,10 @@ function nav(){const cur=TAB_OF[route.k]||'today',unread=S.chats.reduce((a,c)=>a
 function render(){if(!S.me){$('#shell').classList.add('nologin');onboarding();return}$('#shell').classList.remove('nologin');
  route=parseHash();const key=_hash;const fresh=key!==_prevRoute;_prevRoute=key;
  const V=$('#view'),y=fresh?0:scrollY;
- const P={today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
+ const P={person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
  try{V.innerHTML=P(...route.a)||''}catch(e){console.error(e);V.innerHTML=`<div class="page">${empty('think','Something went wrong','This view could not be shown. Your work is safe.',`<a class="btn primary" href="#today">Back to Today</a>`)}</div>`}
  if(fresh){V.classList.remove('enter');void V.offsetWidth;V.classList.add('enter');scrollTo(0,0)}else scrollTo(0,y);
- nav();paintRail();countUp(V);if(V._after){const f=V._after;V._after=null;f()}miniTimer()}
+ nav();paintRail();countUp(V);if(V._after){const f=V._after;V._after=null;f()}miniTimer();loadImgs(V)}
 const after=f=>{$('#view')._after=f};
 addEventListener('hashchange',()=>{let h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}if(h&&h!==_hash){_hash=h;render()}});
 addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(nav,120)});

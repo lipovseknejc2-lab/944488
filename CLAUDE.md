@@ -13,7 +13,7 @@ The repository also contains other apps (the site root and the other folders). *
 1. **Never simplify, remove or downgrade.** Keep every feature, screen, animation, drawing and detail. Changes add or improve. A rewrite must do everything the old version did.
 2. **Never make the design worse.** Follow `DESIGN.md` exactly. New screens must look like they were always part of Atelier: same tokens, glass, line icons, gesture characters, handwriting accents and motion. When unsure, copy an existing Atelier component.
 3. **Never lose data.** Saved data: localStorage `atelier-v1` and `atelier-backup`, plus IndexedDB `atelier` (files, drawings, voice). Never rename them. If the data shape changes, write a migration so old saves keep working.
-   The profile (first name, surname, student or working, school or work, email) is encrypted with AES-GCM 256 in `S.me.vault`; only the first name stays in plain text. The key is a non-extractable CryptoKey in IndexedDB under `key:profile` (or localStorage `atelier-key` where IndexedDB is blocked). Never delete or rename the key, never write the profile in plain text, and use `storeProfile()` to change it.
+   The profile (first name, surname, student or working, school or work, email) is encrypted with AES-GCM 256 in `S.me.vault`; only the first name stays in plain text. The key is a non-extractable CryptoKey in IndexedDB under `key:profile` (or localStorage `atelier-key` where IndexedDB is blocked). Never delete or rename the key, never write the profile in plain text, and use `storeProfile()` to change it. Encryption is never mentioned in the interface.
 4. **Test everything, publish, then give the link.** Every update ends with the live link.
 
 ## How Atelier is built
@@ -26,13 +26,15 @@ The repository also contains other apps (the site root and the other folders). *
 - **Storage** goes through `LS` (falls back to memory when blocked) and IndexedDB (`IDB`). Wrap new storage in try/catch.
 - **Knots** are usage tracking: call `use('action')` for every new action and add it to `ACT` in `core.js`. They appear only on the You page.
 - **Ledger:** important actions call `led(kind, text, {ref})` so they show on Today.
-- **Bots:** teammates reply in chat, vote on ideas and pick up tasks (`people.js`). New collaborative features should let bots react too.
+- **Bots:** teammates reply in chat, vote on ideas and pick up tasks (`people.js`). New collaborative features should let bots react too (add lines to `LINES` for new shared kinds).
+- **Sharing:** anything can be shared into any conversation with `shareTo(att)` or `sendMsg(c, text, att)`. Shared kinds live in `ATT` (`chat.js`): note, project, file, photo, doc, focus, day, agenda, progress. Photos and files are blobs in IndexedDB under `c…` keys; `dropBlob()` frees them when the last message using them is deleted.
+- **Sheets** that start something (recording, timers) register `onSheetClose(fn)` so closing the sheet in any way stops it.
 - **Quick panel:** floats over pages and is never part of the layout. It is open by itself only on Today; elsewhere it is a handle.
 - **No emojis** anywhere in the text. Use line icons from `art.js`.
 - **Offline:** `atelier/sw.js` may only delete caches starting with `atelier-`.
 
 ## Testing before every publish
-`bash src/atelier/tests/run.sh` builds Atelier and runs everything: features (103 checks), phone taps in three setups (117 checks), stress and crash (heavy data plus 400 random taps), and offline (7 checks). It needs node with playwright (`npm i playwright`) and python3.
+`bash src/atelier/tests/run.sh` builds Atelier and runs everything: features (169 checks), phone taps in three setups (156 checks), stress and crash (heavy data plus 400 random taps), and offline (7 checks). It needs node with playwright (`npm i playwright`) and python3.
 - All tests must pass with zero errors. Add checks for every new feature to `tests/feat.js` and `tests/phone.js`.
 - Look at screenshots of every changed screen on an iPhone-sized viewport, in light and dark, and compare them with `DESIGN.md`. If it looks plainer or less finished than before, it is not done.
 - No screen slower than about 100 ms with normal data. Memory flat. Animations smooth.

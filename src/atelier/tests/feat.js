@@ -94,7 +94,7 @@ await go('chat');ok(await ev(()=>document.querySelectorAll('.convo').length>=1),
 await ev(id=>{const c=ensureDM(id);save();go('c:'+c.id)},bot);await W(500);await p.fill('#ci','Hi Luka, any idea for the cover?');await p.press('#ci','Enter');await W(300);
 ok(await p.isVisible('.msg.me >> text=any idea'),'message sent');await W(1800);ok(await p.isVisible('#typ:not([hidden])')||await ev(()=>S.chats.find(c=>c.with===S.people[1].id).msgs.length>1),'typing indicator');
 await W(3500);ok(await ev(id=>S.chats.find(c=>c.kind==='dm'&&c.with===id).msgs.length===2,bot),'bot replies');
-await p.click('[aria-label=Attach]');await W(400);await p.click('.sheet [data-n]');await W(500);ok(await p.isVisible('.att'),'note shared in chat');
+await p.click('.composer [aria-label=Share]');await W(400);await p.click('.shopt[data-k=note]');await W(400);await p.click('.sheet [data-pk]');await W(500);ok(await p.isVisible('.att'),'note shared in chat');
 const gc=await ev(()=>S.chats.find(c=>c.kind==='group').id);await go('c:'+gc);await p.fill('#ci','Deadline is Friday, ok?');await p.press('#ci','Enter');await go('today');await W(6000);
 ok(await ev(id=>S.chats.find(c=>c.id===id).msgs.filter(m=>m.from!=='me').length>=2,gc),'group members reply');
 ok(await p.isVisible('#tabs .badge'),'unread badge on Chat tab');
@@ -121,7 +121,7 @@ let used=await ev(()=>S.usage.days[today()]._n);await go('you');ok(await p.isVis
 ok(await ev(()=>{let s=0;Object.values(S.usage.days).forEach(d=>s+=d._n);return s===S.usage.total}),'daily totals add up to all-time');
 ok(await ev(()=>document.querySelectorAll('.ut tbody tr').length>5),'usage tables');
 // profile on You, and editing it
-ok(await ev(()=>{const c=document.querySelector('.prof');return c.querySelector('h2').textContent==='Nejc Lipovšek'&&/Student · University of Ljubljana/.test(c.textContent)&&/nejc\.lipovsek@example\.com/.test(c.textContent)&&!!c.querySelector('.vpill')}),'You shows full name, school, email and the encrypted badge');
+ok(await ev(()=>{const c=document.querySelector('.prof');return c.querySelector('h2').textContent==='Nejc Lipovšek'&&/Student · University of Ljubljana/.test(c.textContent)&&/nejc\.lipovsek@example\.com/.test(c.textContent)&&!c.querySelector('.vpill')}),'You shows full name, school and email');
 {const iv0=await ev(()=>S.me.vault.iv),k0=await K();await p.click('.prof .btn:has-text("Edit")');await W(500);
  ok(await p.inputValue('#pfSur')==='Lipovšek'&&await p.inputValue('#pfMail')==='nejc.lipovsek@example.com'&&await ev(()=>document.querySelector('#pfSt input[value=student]').checked),'edit sheet opens with the saved details');
  await p.fill('#pfMail','');await p.click('#sf button[type=submit]');await W(300);ok(await ev(()=>isOpen()&&!!document.querySelector('#sf .ferr')),'edit sheet will not save without an email');
@@ -150,7 +150,6 @@ ok(await ev(async()=>!(await IDB.get('key:profile'))&&!localStorage.getItem('ate
  const c2=await b.newContext({...devices['iPhone 13']}),q=await c2.newPage();q.on('pageerror',e=>errs.push(e.message));await q.goto(U);await q.waitForTimeout(1800);
  await q.click('#obS');await q.waitForTimeout(300);await q.fill('#obName','Temp');await q.fill('#obSur','User');await q.click('#obSt label:has-text("Working")');await q.fill('#obMail','temp@user.io');await q.click('#obF button[type=submit]');await q.waitForTimeout(1200);
  await q.evaluate(()=>go('settings'));await q.waitForTimeout(400);
- ok(await q.isVisible('.card .vnote:has-text("encrypted on this device")'),'Settings explains the encryption');
  await q.setInputFiles('#imp',BK);await q.waitForTimeout(400);await q.click('#askY');await q.waitForTimeout(1500);
  ok(await q.evaluate(()=>fullName()==='Nejko Lipovšek'&&PROFILE.email==='nejc@studio.si'&&S.me.enc&&!/studio\.si/.test(localStorage.getItem('atelier-v1'))),'restored on a new device: profile readable and encrypted again');
  await q.reload();await q.waitForTimeout(1900);ok(await q.evaluate(()=>PROFILE&&PROFILE.email==='nejc@studio.si'),'restored profile survives reload');
@@ -168,5 +167,105 @@ ok(await ev(async()=>!(await IDB.get('key:profile'))&&!localStorage.getItem('ate
  await c2.close();try{fs.unlinkSync(BK)}catch(e){}}
 await go('');await p.click('#obS');await W(300);await p.fill('#obName','X');await W(50);
 await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
+{// ===== chat sharing, group info, group styles, agenda, project progress, insights, voice =====
+ const c3=await b.newContext({...devices['iPhone 13'],acceptDownloads:true}),r=await c3.newPage();r.on('pageerror',e=>errs.push('new: '+e.message));r.on('console',m=>{if(m.type()==='error'&&!/manifest|icon|404/.test(m.text()))errs.push('new: '+m.text())});
+ const E=(f,a)=>r.evaluate(f,a),Z=t=>r.waitForTimeout(t),G=async h=>{await E(h=>go(h),h);await Z(450)};
+ await r.goto(U);await Z(1800);await r.click('#obS');await Z(300);await r.fill('#obName','Nika');await r.fill('#obSur','Petek');await r.click('#obSt label:has-text("Working")');await r.fill('#obRole','Designer');await r.fill('#obMail','nika@studio.si');await r.click('#obF button[type=submit]');await Z(1500);
+ // encryption stays, but nothing about it shows
+ ok(await E(()=>S.me.enc===true&&!!S.me.vault),'profile is still encrypted');
+ for(const h of ['you','settings']){await G(h);ok(await E(()=>!/encrypt/i.test(document.querySelector('#view').textContent)),'no encryption text on '+h)}
+ await E(()=>{S.me=null;render()});await Z(300);await E(()=>{OB.i=3;onboarding()});await Z(300);ok(await E(()=>!/encrypt/i.test(document.querySelector('#view').textContent)),'no encryption text on the account screen');
+ await r.reload();await Z(1900);
+ // voice: the animation always runs, stop and finish always work, closing always releases
+ await E(()=>voiceSheet());await Z(300);await r.click('#vb');await Z(1400);
+ ok(await E(()=>document.querySelector('#vr').classList.contains('on')&&/Stop/.test(document.querySelector('#vb').textContent)&&!document.querySelector('#vx').hidden),'voice: recording animation and timer run');
+ ok(await E(()=>document.querySelector('#vt').textContent!=='0:00'),'voice: timer counts');
+ await r.click('#vb');await Z(500);ok(await E(()=>isOpen()&&!document.querySelector('#vr').classList.contains('on')&&/Record a memo/.test(document.querySelector('#vb').textContent)),'voice: Stop always stops');
+ await r.click('#vd');await Z(500);ok(await E(()=>document.querySelector('#vr').classList.contains('on')&&/Finish/.test(document.querySelector('#vd').textContent)),'voice: dictation animation runs');
+ await r.click('#vd');await Z(500);ok(await E(()=>!document.querySelector('#vr').classList.contains('on')),'voice: Finish always ends dictation');
+ await r.click('#vb');await Z(400);await r.click('#vx');await Z(300);ok(await E(()=>!document.querySelector('#vr').classList.contains('on')&&isOpen()),'voice: Cancel stops without closing');
+ await r.click('#vb');await Z(400);await r.click('#modal [data-close]');await Z(400);ok(await E(()=>!isOpen()&&!_rec&&!window._onSheetClose),'voice: closing while recording stops everything');
+ await E(()=>voiceSheet());await Z(300);await r.click('#vd');await Z(300);await r.keyboard.press('Escape');await Z(400);ok(await E(()=>!isOpen()),'voice: Escape closes while dictating');
+ await E(()=>voiceSheet());await Z(300);await r.click('#vb');await Z(300);ok(await E(()=>document.querySelector('#vr').classList.contains('on')),'voice: opens fresh after closing');await E(()=>closeSheet());await Z(300);
+ // agenda
+ await G('today');ok(await r.isVisible('.agsec .agempty'),'Today has an agenda with an empty state');
+ let k0=await E(()=>S.usage.total);await r.click('.agsec [aria-label="Add to agenda"]');await Z(400);await r.fill('#agT','Team stand-up');await r.fill('#agH','09:30');await r.click('#sf button[type=submit]');await Z(500);
+ ok(await E(()=>S.agenda.length===1&&S.agenda[0].t==='09:30'&&S.agenda[0].d===today()&&document.querySelectorAll('.agi').length===1),'agenda item added for today');
+ ok(await E(k=>S.usage.total===k+2&&S.usage.days[today()].agenda_new===1&&S.ledger.some(x=>x.k==='agenda'&&/Planned: Team stand-up/.test(x.t)),k0),'agenda uses knots and shows in the ledger');
+ await r.click('.agi .agc');await Z(400);ok(await E(()=>S.agenda[0].done&&document.querySelector('.agi').classList.contains('done')&&/1 of 1 done/.test(document.querySelector('.agfoot').textContent)&&S.usage.days[today()].agenda_done===1),'tick an agenda item off');
+ await r.click('.agi .agb');await Z(400);await r.fill('#agT','Team stand-up, short');await r.click('#sf button[type=submit]');await Z(400);ok(await E(()=>S.agenda[0].title==='Team stand-up, short'&&S.agenda.length===1),'edit an agenda item');
+ const tmr=await E(()=>{const d=new Date();d.setDate(d.getDate()+1);return isoD(d)});
+ if(await r.isVisible(`[data-day="${tmr}"]`)){await r.click(`[data-day="${tmr}"]`);await Z(400);ok(await E(t=>selDay===t&&/still ahead/.test(document.querySelector('#view').textContent),tmr),'future days open to plan ahead')}else ok(true,'future days open to plan ahead (week ends today)');
+ await E(t=>agendaForm(t),tmr);await Z(300);await r.fill('#agT','Exam prep');await r.click('#sf button[type=submit]');await Z(400);
+ ok(await E(t=>S.agenda.some(a=>a.d===t&&a.title==='Exam prep')&&(!document.querySelector(`[data-day="${t}"]`)||document.querySelector(`[data-day="${t}"] .agdot.on`)),tmr),'planned days get a dot in the week');
+ await E(()=>{selDay=null;render()});await Z(300);
+ // project with progress and milestones, shared with Studio
+ const gid=await E(()=>S.groups[0].id);await E(g=>projectForm({groups:[g]}),gid);await Z(400);await r.fill('#pN','Brand book');await r.click('#sf button[type=submit]');await Z(900);
+ const pid=await E(()=>S.projects[0].id);await E(id=>{const p=proj(id);addTask(p,{t:'Logo'});addTask(p,{t:'Colours'})},pid);await G('project:'+pid);
+ ok(await E(()=>!!document.querySelector('.phero .pbar')&&document.querySelectorAll('.ptab .grid3 .kpi').length===3),'overview keeps the to do, doing and done counters');
+ await r.fill('#mlT','First draft');await r.click('#mlF button');await Z(500);ok(await E(id=>proj(id).miles.length===1&&document.querySelectorAll('.mile').length===1&&S.usage.days[today()].milestone===1,pid),'milestone added');
+ ok(await E(id=>pctOf(proj(id))===0,pid),'progress starts at 0%');
+ await r.click('.mile .mchk');await Z(500);ok(await E(id=>pctOf(proj(id))===50&&proj(id).miles[0].done&&S.ledger.some(x=>x.k==='milestone'),id=pid),'a milestone counts like two tasks (50%)');
+ await E(id=>{const p=proj(id);setTaskSt(p,p.tasks[0],'done')},pid);await Z(300);ok(await E(id=>pctOf(proj(id))===75&&proj(id).hist[today()]===75,pid),'progress follows tasks and is kept per day');
+ await G('project:'+pid);await r.click('.phero .btn:has-text("Update")');await Z(400);await r.click('#pgM label:nth-child(2)');await E(()=>{const x=document.querySelector('#pgR');x.value=90;x.dispatchEvent(new Event('input'))});
+ ok(await E(()=>document.querySelector('#pgV').textContent==='90%'),'progress sheet shows the value live');await r.fill('#pgN','Logo approved');await r.click('#sf button[type=submit]');await Z(600);
+ ok(await E(id=>{const p=proj(id);return p.pmode==='manual'&&p.pct===90&&pctOf(p)===90&&p.hist[today()]===90},pid),'progress can be set by hand');
+ const gc=await E(g=>ensureGroupChat(g).id,gid);ok(await E(c=>{const m=S.chats.find(x=>x.id===c).msgs.find(m=>m.att&&m.att.kind==='progress');return m&&m.att.pct===90&&m.att.from===75&&m.att.note==='Logo approved'},gc),'progress update posted to the group with the note');
+ await G('projects');ok(await E(()=>/90%/.test(document.querySelector('.card.list').textContent)),'project list shows the percentage');
+ // group chat: header opens info, share everything
+ await G('c:'+gc);await Z(2500);ok(await E(c=>S.chats.find(x=>x.id===c).msgs.some(m=>m.from!=='me'),gc),'bots react to the progress update');
+ await r.click('.composer [aria-label="Share"]');await Z(400);ok(await E(()=>document.querySelectorAll('.shopt').length===7),'share sheet: photo, file, note, project, focus, my day, agenda');
+ await r.setInputFiles('#sh_photo',D+'/t.gif');await Z(900);
+ const ph=await E(c=>{const m=S.chats.find(x=>x.id===c).msgs.filter(m=>m.att&&m.att.kind==='photo').pop();return m&&{fid:m.att.fid,id:m.id}},gc);
+ ok(ph&&await E(f=>IDB.get(f).then(b=>b instanceof Blob),ph.fid),'photo shared and kept on the device');
+ ok(await E(()=>{const i=document.querySelector('.msg .aph img');return!!(i&&i.src)}),'photo shows in the chat');
+ await r.click('.composer [aria-label="Share"]');await Z(300);await r.setInputFiles('#sh_doc',D+'/t.pdf');await Z(800);
+ ok(await E(c=>S.chats.find(x=>x.id===c).msgs.some(m=>m.att&&m.att.kind==='doc'&&m.att.title==='t.pdf'),gc),'file shared in the chat');
+ for(const k of ['focus','day','agenda']){await r.click('.composer [aria-label="Share"]');await Z(300);await r.click(`.shopt[data-k=${k}]`);await Z(400)}
+ ok(await E(c=>{const M=S.chats.find(x=>x.id===c).msgs.map(m=>m.att).filter(Boolean);const f=M.find(a=>a.kind==='focus'),d=M.find(a=>a.kind==='day'),a=M.find(a=>a.kind==='agenda');return f&&typeof f.mins==='number'&&d&&d.st&&d.st.agenda==='1/1'&&a&&a.items.length===1&&a.items[0].done},gc),'focus, day and agenda shared as snapshots');
+ await r.click('.composer [aria-label="Share"]');await Z(300);await r.click('.shopt[data-k=project]');await Z(300);await r.click('[data-pk]');await Z(500);
+ ok(await E(c=>S.chats.find(x=>x.id===c).msgs.some(m=>m.att&&m.att.kind==='project'&&m.att.pct===90),gc),'project shared with its progress');
+ ok(await E(()=>document.querySelectorAll('.msg .rc').length>=5),'shared things show as cards');
+ ok(await E(()=>['photo','file_share','share'].every(k=>S.usage.days[today()][k]>0)),'sharing uses knots');
+ // pin from the message menu
+ await r.click('.msg:has(.aph) .bub',{button:'right'});await Z(400);ok(await r.isVisible('#maPin'),'press and hold opens the message menu');
+ await r.click('#maPin');await Z(500);ok(await E(i=>!!S.chats.flatMap(c=>c.msgs).find(m=>m.id===i).pin,ph.id)&&await r.isVisible('.pinbar'),'pin a message, pinned bar shows');
+ // group info
+ await r.click('.chinfo');await Z(700);ok(await E(g=>route.k==='group'&&route.a[0]===g,gid),'tap the group name to open group info');
+ ok(await E(g=>document.querySelectorAll('.mstrip .mem:not(.add)').length===grp(g).members.length,gid),'group info: members at the top');
+ ok(await E(()=>{const t=[...document.querySelectorAll('.sh h2')].map(h=>h.textContent);return t.indexOf('Members')<t.indexOf('Active projects')&&t.indexOf('Active projects')<t.indexOf('Pinned')&&t.indexOf('Pinned')<t.indexOf('Photos')&&t.indexOf('Photos')<t.indexOf('Files')}),'group info order: members, active projects, pinned, photos, files');
+ ok(await E(()=>document.querySelectorAll('.apcard').length===1&&/90%/.test(document.querySelector('.apcard').textContent)),'active project with progress');
+ ok(await E(()=>document.querySelectorAll('.mgrid .mthumb').length===1&&[...document.querySelectorAll('.card.list .li')].some(l=>/t\.pdf/.test(l.textContent))),'photos and files collected');
+ await Z(400);ok(await E(()=>!!document.querySelector('.mgrid img').src),'photo thumbnails load');
+ ok(await E(c=>document.querySelector('.ph .icon-btn[aria-label=Back]').getAttribute('href')==='#c:'+c,gc),'back returns to the chat');
+ await r.click('.mgrid .mthumb');await Z(600);ok(await E(()=>isOpen()&&!!document.querySelector('.sheet .fprev[src]')&&!!document.querySelector('.sheet a[download]')),'open a shared photo');await E(()=>closeSheet());await Z(400);
+ // group look
+ await r.click('.ph .btn:has-text("Edit")');await Z(400);await r.click('.gicons label:has(input[value=cap])');await r.click('#gK label:has(input[value=study])');await r.click('.figpick label:has(input[value=read])');await r.check('#sf input[name=mute]');await r.click('#sf button[type=submit]');await Z(500);
+ ok(await E(g=>{const x=grp(g);return x.icon==='cap'&&x.kind==='study'&&x.fig==='read'&&x.mute===true},gid),'group icon, kind, cover drawing and quiet mode saved');
+ ok(await E(()=>/Study group/.test(document.querySelector('.ph .eyebrow').textContent)&&document.querySelector('.gbadge path').getAttribute('d')===ICON.cap),'group info shows the new look');
+ await G('chat');ok(await E(()=>!!document.querySelector('.convo .mutei')),'quiet groups are marked in the list');
+ // forward and delete
+ const fwd=await E(()=>S.people[0].id);await G('c:'+gc);await r.click('.msg:has(.att) .bub >> nth=0',{button:'right'});await Z(300);await r.click('#maFwd');await Z(500);
+ await r.click(`.sheet [data-i]:has-text("${await E(i=>person(i).name,fwd)}")`);await Z(600);ok(await E(i=>{const c=S.chats.find(c=>c.kind==='dm'&&c.with===i);return c&&c.msgs.some(m=>m.att&&m.att.kind==='doc')},fwd),'forward a message to a person');
+ const dc=await E(i=>S.chats.find(c=>c.kind==='dm'&&c.with===i).id,fwd);
+ await E(i=>{const c=S.chats.find(x=>x.id===i),m=c.msgs.find(m=>m.att&&m.att.kind==='photo');if(m){c.msgs=c.msgs.filter(x=>x!==m)}},dc);
+ const pf=await E(c=>S.chats.find(x=>x.id===c).msgs.find(m=>m.att&&m.att.kind==='photo').att.fid,gc);
+ await G('c:'+gc);await r.click('.msg:has(.aph) .bub',{button:'right'});await Z(300);await r.click('#maDel');await Z(400);await r.click('#askY');await Z(600);
+ ok(await E(f=>IDB.get(f).then(b=>!b),pf),'deleting the last copy of a photo frees the space');
+ // person info
+ await G('c:'+dc);await r.click('.chinfo');await Z(600);ok(await E(i=>route.k==='person'&&route.a[0]===i&&/Groups together/.test(document.querySelector('#view').textContent),fwd),'tap a name to open their info');
+ // insights
+ await G('you');ok(await E(()=>{const n=+document.querySelector('.effc .ring text').textContent;return n>=0&&n<=100}),'You shows an efficiency score');
+ ok(await E(()=>document.querySelectorAll('.kpis6 .kpi').length===6),'six work data points');
+ ok(await E(()=>{const t=[...document.querySelectorAll('.sh h2')].map(h=>h.textContent);return t.includes('When you work')&&t.includes('Week rhythm')}),'when you work and week rhythm charts');
+ ok(await E(()=>{let s=0;Object.values(S.usage.days).forEach(d=>s+=d._n);return s===S.usage.total}),'daily totals still add up with the new actions');
+ // everything survives a reload, and older saves get the new fields
+ await G('c:'+gc);await r.click('.msg:has(.att) .bub >> nth=0',{button:'right'});await Z(300);await r.click('#maPin');await Z(400);
+ await r.reload();await Z(1900);ok(await E((a)=>S.agenda.length===2&&proj(a.pid).miles.length===1&&grp(a.gid).icon==='cap'&&S.chats.flatMap(c=>c.msgs).some(m=>m.pin),{pid,gid}),'agenda, milestones, group look and pins survive reload');
+ await E(()=>{delete S.agenda;S.projects.forEach(p=>{delete p.miles;delete p.hist;delete p.pmode});S.groups.forEach(g=>{delete g.icon;delete g.kind;delete g.fig});save()});await r.reload();await Z(1900);
+ ok(await E(()=>Array.isArray(S.agenda)),'older saves get an empty agenda');
+ for(const h of ['today','projects','project:'+pid,'groups','group:'+gid,'c:'+gc,'you']){await G(h);ok(await E(()=>!/Something went wrong/.test(document.querySelector('#view').textContent)),'older save opens '+h.split(':')[0])}
+ await c3.close()}
+
 ok(errs.length===0,'no script errors'+(errs.length?': '+[...new Set(errs)].slice(0,5).join(' | '):''));
 console.log(`\n${pass} passed, ${fail} failed`);await b.close()})();

@@ -13,16 +13,22 @@ const LINES={
  q:{warm:['Good question, let me check and get back to you.','I think yes, but let\'s confirm together.'],brief:['Yes.','Probably. I\'ll check.'],curious:['Hmm, what do you think?','Depends. What are the options?']},
  file:{warm:['Thanks for sharing, looking at it now.','Got it, I\'ll leave comments.'],brief:['Got it.','Received.'],curious:['Thanks! Which part should I read first?','Nice, is this the latest version?']},
  meet:{warm:['Sure, let\'s do a short focus session together first.','Works for me!'],brief:['Fine by me.','OK, 15 min.'],curious:['What should we prepare?','Sounds good. What\'s the agenda?']},
+ photo:{warm:['Oh, lovely picture!','That looks great, thanks for sharing.'],brief:['Nice shot.','Got it.'],curious:['Where was this?','Ooh, what am I looking at?']},
+ project:{warm:['Great, I\'ll have a look at the board.','Thanks! I can take a task from it.'],brief:['Seen. I\'ll check the tasks.','OK, on the board.'],curious:['What should we finish first?','Nice. Which part needs help?']},
+ progress:{warm:['Look at that progress! Well done.','We are getting there, nice work everyone.'],brief:['Good pace.','Noted, thanks.'],curious:['What moved it forward this time?','What is blocking the rest?']},
+ focus:{warm:['That is a solid focus streak!','Proud of you, keep it going.'],brief:['Nice focus.','Good session.'],curious:['What did you work on?','How do you keep the streak?']},
+ day:{warm:['Sounds like a good day so far.','Thanks for sharing your day!'],brief:['Productive.','Nice day.'],curious:['What was the best part?','How are you feeling about it?']},
+ agenda:{warm:['Nice plan for the day!','Good plan. Shout if I can take something.'],brief:['Plan noted.','Clear plan.'],curious:['Which one matters most?','Is there time for a break in there?']},
  gen:{warm:['Sounds good!','Love it. Keep going.','I\'m with you on this.'],brief:['OK.','Noted.','Sure.'],curious:['Tell me more?','Why do you think so?','Interesting!']}};
 function topicOf(t){t=t.toLowerCase();if(/\b(hi|hey|hello|živjo|zdravo|good morning)\b/.test(t))return'greet';if(/thank|hvala|thx/.test(t))return'thanks';if(/idea|ideja|what if|maybe we/.test(t))return'idea';if(/deadline|due|tomorrow|today|friday|rok|jutri/.test(t))return'time';if(/meet|call|sestan|session/.test(t))return'meet';if(/\?$/.test(t.trim()))return'q';return'gen'}
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function seedBots(){if(S.people.length)return;BOT_SEED.forEach(b=>S.people.push({id:uid(),bot:true,handle:b.name.split(' ')[0].toLowerCase(),status:'Available',...b}))}
 function botReply(chat,text,att){const pool=chat.kind==='dm'?[chat.with]:(grp(chat.with)?.members||[]).filter(id=>id!=='me'&&person(id)?.bot);
  if(!pool.length)return;const who=chat.kind==='dm'?pool:[...pool].sort(()=>Math.random()-.5).slice(0,Math.min(pool.length,Math.random()<.45?2:1));
- let delay=700+Math.random()*900;who.forEach(pid=>{const p=person(pid);if(!p)return;const top=att?'file':topicOf(text);const line=pick(LINES[top][p.tone||'warm']);
+ let delay=700+Math.random()*900;who.forEach(pid=>{const p=person(pid);if(!p)return;const top=att?(LINES[att.kind]?att.kind:'file'):topicOf(text);const line=pick(LINES[top][p.tone||'warm']);
   const t0=delay;setTimeout(()=>{chat.typing=pid;if(route.k==='c'&&route.a[0]===chat.id)typingUI(chat)},t0);
   delay+=900+Math.min(1800,line.length*28)+Math.random()*500;
-  setTimeout(()=>{chat.typing=null;chat.msgs.push({id:uid(),from:pid,text:line,at:Date.now()});save();if(route.k==='c'&&route.a[0]===chat.id){chat.read=Date.now();appendMsgs(chat)}else{nav();toast(`${p.name.split(' ')[0]}: ${line}`)}},delay);delay+=400})}
+  setTimeout(()=>{chat.typing=null;chat.msgs.push({id:uid(),from:pid,text:line,at:Date.now()});save();if(route.k==='c'&&route.a[0]===chat.id){chat.read=Date.now();appendMsgs(chat)}else{nav();if(!(chat.kind==='group'&&grp(chat.with)?.mute))toast(`${p.name.split(' ')[0]}: ${line}`)}},delay);delay+=400})}
 /* bots react inside projects: vote on ideas, pick up tasks */
 function botsReactIdea(p,idea){const bots=projMembers(p).filter(id=>person(id)?.bot);bots.slice(0,2).forEach((id,i)=>setTimeout(()=>{if(!idea.votes.includes(id)&&Math.random()<.75){idea.votes.push(id);act(p,id,`voted for “${idea.text.slice(0,40)}”`);save();if(route.k==='project'&&route.a[0]===p.id)render()}},1600+i*1400))}
 function botsReactTask(p,t){const b=person(t.who);if(!b?.bot||t.st!=='todo')return;setTimeout(()=>{if(t.st==='todo'){t.st='doing';act(p,b.id,`started “${t.t.slice(0,40)}”`);save();if(route.k==='project'&&route.a[0]===p.id)render()}},2500)}

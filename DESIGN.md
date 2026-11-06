@@ -78,4 +78,8 @@ No emojis. Short, warm, plain sentences. Empty states get a drawing, one serif l
 - **Ideas:** sticky notes in Caveat, slightly rotated, with vote pills.
 - **Chat:** your bubbles are blue, the others' are cards. Typing dots. Attachments show as cards.
 - **Empty states:** a gesture figure that draws itself, a serif title, one sentence and one button.
+- **Progress bars:** one shape everywhere (`.pbar`), 8px, track colour behind, the project or meaning colour in front, growing in from the left.
+- **Shared cards in chat:** small uppercase label with a line icon, one bold line, then numbers in tabular sans; inside your blue bubbles they use white at low opacity.
+- **Group and person info:** members as a horizontal strip of avatar tiles at the top, then active projects with progress, pinned, a three-column photo grid and a file list.
+- **Agenda:** times in blue tabular sans on the left, a round check that fills green and draws its tick, the next item softly highlighted in blue. Buttons sit on the left so the quick panel never covers them.
 - **Posters:** 8 in `POSTERS` (`art.js`), each one figure, one accent and a short headline. Add new ones in the same way.
