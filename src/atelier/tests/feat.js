@@ -239,8 +239,9 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await Z(400);ok(await E(()=>!!document.querySelector('.mgrid img').src),'photo thumbnails load');
  ok(await E(c=>document.querySelector('.ph .icon-btn[aria-label=Back]').getAttribute('href')==='#c:'+c,gc),'back returns to the chat');
  await r.click('.mgrid .mthumb');await Z(600);ok(await E(()=>isOpen()&&!!document.querySelector('.sheet .fprev[src]')&&!!document.querySelector('.sheet a[download]')),'open a shared photo');await E(()=>closeSheet());await Z(400);
+ ok(await E(()=>document.documentElement.scrollWidth<=innerWidth+1&&!!document.querySelector('.ghero .gfig')&&getComputedStyle(document.querySelector('.ghero')).display!=='flex'),'the group page fits the phone width');
  // group look
- await r.click('.ph .btn:has-text("Edit")');await Z(400);await r.click('.gicons label:has(input[value=cap])');await r.click('#gK label:has(input[value=study])');await r.click('.figpick label:has(input[value=read])');await r.check('#sf input[name=mute]');await r.click('#sf button[type=submit]');await Z(500);
+ await r.click('.ph .btn:has-text("Edit")');await Z(400);await r.click('.gicons label:has(input[value=cap])');await r.click('#gK label:has(input[value=study])');await r.click('.figpick label:has(input[value=read])');await r.locator('#sf input[name=mute]').scrollIntoViewIfNeeded();await Z(300);await r.check('#sf input[name=mute]');await r.click('#sf button[type=submit]');await Z(500);
  ok(await E(g=>{const x=grp(g);return x.icon==='cap'&&x.kind==='study'&&x.fig==='read'&&x.mute===true},gid),'group icon, kind, cover drawing and quiet mode saved');
  ok(await E(()=>/Study group/.test(document.querySelector('.ph .eyebrow').textContent)&&document.querySelector('.gbadge path').getAttribute('d')===ICON.cap),'group info shows the new look');
  await G('chat');ok(await E(()=>!!document.querySelector('.convo .mutei')),'quiet groups are marked in the list');
@@ -407,8 +408,8 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await G('today');ok(await E(()=>!!document.querySelector('.thav .frm-dotted')),'the frame shows on your avatar');
  ok(await E(()=>SKINS.every((s,i)=>i===0||s.at>SKINS[i-1].at)&&SKINS[SKINS.length-1].at>=1000000&&FRAMES[0].at>=SKINS[5].at&&FRAMES[FRAMES.length-1].at>SKINS[SKINS.length-1].at),'prices rise to over a million; frames start at mid-theme prices and end above the top theme');
  // every screen in every theme, light and dark
- const scr=['today','focus','study','notes','projects','chat','groups','you','rewards','profile','settings','posters'];let bad=[];
- for(const sk of await E(()=>SKINS.map(s=>s.id)))for(const th of ['light','dark']){const x=await E(([sk,th,scr])=>{S.usage.total=2e6;S.settings.skin=sk;S.settings.theme=th;applyTheme();const out=[];for(const h of scr){go(h);if(/Something went wrong/.test(document.querySelector('#view').textContent))out.push(h)}return out},[sk,th,scr]);if(x.length)bad.push(sk+'/'+th+': '+x.join())}
+ const scr=['today','focus','study','notes','projects','chat','groups','you','rewards','profile','settings','posters','timetable','grades','pulse',...(await E(()=>S.groups.slice(0,1).map(g=>'group:'+g.id)))];let bad=[];
+ for(const sk of await E(()=>SKINS.map(s=>s.id)))for(const th of ['light','dark']){const x=await E(([sk,th,scr])=>{S.usage.total=2e6;S.settings.skin=sk;S.settings.theme=th;applyTheme();const out=[];for(const h of scr){go(h);if(/Something went wrong/.test(document.querySelector('#view').textContent))out.push(h);else if(document.documentElement.scrollWidth>innerWidth+1)out.push(h+' too wide')}try{openReset();if(!document.querySelector('#rst .rfig'))out.push('reset');closeReset()}catch(e){out.push('reset '+e.message)}return out},[sk,th,scr]);if(x.length)bad.push(sk+'/'+th+': '+x.join())}
  ok(!bad.length,'every screen opens in every theme, light and dark'+(bad.length?' '+bad.join(' | '):''));
  await E(()=>{S.settings.skin='clay';S.settings.theme='light';S.usage.total=400000;applyTheme()});
  // quotes and profiles
