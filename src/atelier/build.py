@@ -11,7 +11,7 @@ for sub in ('latin','latin-ext'):
     F.append(ff(glob.glob(f'{FD}/fontsource-newsreader-*/package/files/newsreader-{sub}-400-normal.woff2')[0],'Newsreader',400,sub))
     for w in (400,500,600,700): F.append(ff(glob.glob(f'{FD}/fontsource-instrument-sans-*/package/files/instrument-sans-{sub}-{w}-normal.woff2')[0],'Instrument Sans',w,sub))
     F.append(ff(f'f/package/files/caveat-{sub}-600-normal.woff2','Caveat',600,sub))
-JS=['art.js','core.js','people.js','today.js','focus.js','notes.js','chat.js','projects.js','study.js','pulse.js','school.js','widgets.js','rewards.js','you.js']
+JS=['art.js','core.js','people.js','today.js','focus.js','reset.js','notes.js','chat.js','projects.js','study.js','pulse.js','school.js','widgets.js','rewards.js','you.js']
 js='\n'.join(open(f).read() for f in JS)
 out=open('shell.html').read().replace('/*FONTS*/','\n'.join(F))+'<script>\n'+js+'\n</script>\n</body>\n</html>\n'
 open('dist/atelier.html','w').write(out);print(len(out)//1024,'KB')

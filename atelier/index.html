@@ -357,6 +357,48 @@ body.zenon{background:#000}body.zenon #shell,body.zenon .bgwash,body.zenon #toas
 .zb.zx{width:auto;padding:0 20px;border-radius:99px;display:flex;align-items:center;gap:8px;font-weight:650;font-size:15px}
 .zhint{position:absolute;left:0;right:0;text-align:center;bottom:calc(18px + env(safe-area-inset-bottom));font-size:12px;color:#4a4641;opacity:0;transition:opacity .45s}#zen.ctl .zhint{opacity:1}
 .zt.zdone{color:var(--green);opacity:.8}
+/* ---- guided reset: the Deep mode black, one breathing orb, one ink figure, words at the bottom ---- */
+body.rston{background:#000}body.rston #shell,body.rston .bgwash,body.rston #toast{visibility:hidden}
+#rst{position:fixed;inset:0;z-index:75;background:#000;color:#9a958d;display:flex;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top) + 14px) 24px calc(env(safe-area-inset-bottom) + 22px);animation:zin .6s var(--ease);-webkit-user-select:none;user-select:none;touch-action:manipulation;--rc:var(--break)}
+#rst.out{animation:zout .38s ease forwards}
+.rtop{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:440px;gap:12px}
+.rlab{display:flex;align-items:center;gap:7px;font-family:var(--hand);font-size:24px;font-weight:600;color:var(--rc);opacity:.85}.rlab .ic{width:19px;height:19px}
+.rdots{display:flex;gap:5px}.rdots i{width:16px;height:3px;border-radius:2px;background:#1d1c1a;transition:background .6s,opacity .6s}.rdots i.d{background:var(--rc);opacity:.55}.rdots i.n{background:#5a554e}
+.rx{width:40px;height:40px;border-radius:50%;border:1px solid #232120;background:#0b0b0a;color:#8a857d;display:grid;place-items:center;cursor:pointer;padding:0;transition:transform .3s var(--spring)}.rx:active{transform:scale(.9)}.rx .ic{width:18px;height:18px}
+.rstage{position:relative;flex:1;width:100%;max-width:340px;min-height:220px;display:grid;place-items:center}
+.rorb{position:absolute;width:min(78vw,300px);height:min(78vw,300px);overflow:visible}
+.rring{fill:none;stroke:#141312;stroke-width:1}
+.rfill{fill:url(#rog);transform-origin:100px 100px;transform:scale(.72);will-change:transform}
+.rfill.bloom{animation:rbloom 1.2s var(--ease)}@keyframes rbloom{50%{opacity:.4}}
+.rprog{fill:none;stroke:var(--rc);stroke-width:1.6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.5;transform:rotate(-90deg);transform-origin:100px 100px;transition:stroke-dashoffset .25s linear}
+#rst[data-k=done] .rprog{stroke-dashoffset:0!important;transition:stroke-dashoffset .8s var(--ease)}
+.rfig{position:relative;width:min(52vw,200px);height:min(52vw,200px);stroke:#d6d0c6;stroke-width:2.5;opacity:.85;transition:opacity .6s,transform .8s var(--ease)}
+.rfig #rfHd{fill:none}.rfig .rfloor{stroke:#2a2826;stroke-width:1.5}
+#rst[data-k=breath] .rfig{opacity:.6;transform:scale(.86)}
+#rst[data-k=eyes] .rfig,#rst[data-k=done] .rfig{opacity:0;transform:scale(.9)}
+.rhz{position:absolute;width:min(56vw,220px);stroke:var(--rc);stroke-width:2;opacity:0;transform:translateY(8px);transition:opacity .8s,transform .8s var(--ease)}.rhz circle{fill:none}
+#rst[data-k=eyes] .rhz{opacity:.75;transform:none}
+.rtxt{width:100%;max-width:400px;min-height:150px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.rname{order:-1;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5d5952}
+.rph{font-family:var(--serif);font-size:clamp(30px,9vw,40px);line-height:1.1;color:#e4ded4;opacity:.9;display:flex;align-items:baseline;gap:12px;transition:color .6s}
+.rph[data-n]::after{content:attr(data-n);font-family:var(--sans,inherit);font-size:17px;font-weight:600;color:var(--rc);opacity:.75;font-variant-numeric:tabular-nums;min-width:1.2em;text-align:left}
+#rst[data-ph=hold] .rph{color:#a9a39a}
+.rsub{font-size:15.5px;line-height:1.45;color:#8a857d;max-width:330px;min-height:44px;display:flex;flex-direction:column;gap:6px;align-items:center}
+#rst[data-k=done] .rsub span{display:block;padding:9px 14px;border-radius:14px;border:1px solid #1e1d1b;background:#0b0b0a;color:#b3ada3;animation:rise .5s var(--ease) both}#rst[data-k=done] .rsub span+span{animation-delay:.1s}
+#rst.swap .rtxt{animation:rsw .9s var(--ease)}@keyframes rsw{from{opacity:0;transform:translateY(6px)}}
+.rctl{display:flex;justify-content:center;gap:14px;margin-top:10px}
+#rst.paused .rfill,#rst.paused .rfig{opacity:.35}
+.rbtn{display:flex;align-items:center;gap:8px;height:52px;padding:0 24px;border-radius:99px;border:1px solid #2a2826;background:#0b0b0a;color:#d6d0c6;font:inherit;font-weight:650;font-size:15.5px;cursor:pointer;animation:rise .5s var(--ease) .15s both;transition:transform .3s var(--spring)}.rbtn:active{transform:scale(.96)}.rbtn .ic{width:19px;height:19px;color:var(--rc)}
+/* the quiet invitation in Deep mode */
+.zrs{position:absolute;left:50%;top:calc(env(safe-area-inset-top) + 22px);display:flex;align-items:center;gap:8px;height:40px;padding:0 10px 0 15px;border-radius:99px;border:1px solid #23221f;background:#0a0a09;color:#8f8a82;font:inherit;font-size:14px;font-weight:650;cursor:pointer;opacity:0;transform:translate(-50%,-10px);transition:opacity .9s var(--ease),transform .9s var(--ease),color .4s}
+.zrs.in{opacity:.9;transform:translate(-50%,0);animation:zrsdim 1s ease 8s forwards}.zrs:active{transform:translate(-50%,0) scale(.95)}@keyframes zrsdim{to{opacity:.5}}
+.zrs>.ic{width:17px;height:17px;color:var(--break)}.zrs i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#151413}.zrs i .ic{width:12px;height:12px}
+/* on the Focus page */
+.rcta{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:var(--text);margin:12px 0 4px;border-color:color-mix(in srgb,var(--break) 28%,var(--line));background:linear-gradient(120deg,color-mix(in srgb,var(--break) 11%,var(--glt)),var(--card) 64%);box-shadow:inset 0 1px 0 var(--gl-hi),var(--sh);cursor:pointer;animation:rise .5s var(--ease) both;transition:transform .35s var(--spring)}.rcta:active{transform:scale(.98)}
+.rcta b{display:block;font-size:16px;margin-top:2px}.rcta>.ic{color:var(--muted);flex:none}
+.rcfig{width:58px;height:58px;flex:none;border-radius:18px;display:grid;place-items:center;color:var(--text);background:color-mix(in srgb,var(--break) 12%,transparent)}.rcfig .fig{width:48px;height:48px}
+.rlink{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin:10px 0 2px;padding:8px;border:none;background:none;font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:color .3s}.rlink .ic{width:16px;height:16px;color:var(--break)}.rlink:active{color:var(--text)}
+@media (prefers-reduced-motion: reduce){.rfig,.rhz,.zrs,.rfill{transition:none!important;animation:none!important}}
 /* ---- study ---- */
 .sgoal{display:flex;align-items:center;gap:16px}.sgw{margin:2px 0 4px;font-family:var(--serif);font-size:22px;line-height:1.15}
 .exam{cursor:pointer}.edate{--ec:var(--blue);width:46px;height:50px;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;background:color-mix(in srgb,var(--ec) 13%,transparent);color:var(--ec);line-height:1}
@@ -747,7 +789,7 @@ const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
 const KEY='atelier-v1',BKEY='atelier-backup';
 /* If the browser blocks storage (some previews do), keep working in memory and say so once. */
 const LS=(()=>{try{const k='__a';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage}catch(e){const m={};window._noStore=true;return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
-const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],widgets:{},pulse:[],study:{goal:60,decks:[],exams:[],classes:[],grades:[],goals:{},scale:'5',plans:[]},nudges:[],
+const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],widgets:{},pulse:[],resets:[],study:{goal:60,decks:[],exams:[],classes:[],grades:[],goals:{},scale:'5',plans:[]},nudges:[],
  focus:{mode:'pomo',custom:{w:30,b:5,r:3},label:'',run:null,sessions:[]},usage:{days:{},total:0,ks:8},
  settings:{theme:'light',sound:true,auto:true,skin:'clay',space:''},created:Date.now()});
 function parseSave(r){if(!r)return null;const d=JSON.parse(r);if(!d||typeof d!=='object'||!Array.isArray(d.notes))throw 0;return d}
@@ -756,7 +798,7 @@ function load(){let d=null;window._from='main';try{d=parseSave(LS.getItem(KEY))}
  return fixData(Object.assign(DEF(),d||{}))}
 /* knots: a normal full day of use is about 1,600 (checked against typical days); older saves are scaled once so everyone keeps their place */
 const KSCALE=8;
-function fixData(s){s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};if(!Array.isArray(s.pulse))s.pulse=[];if(!Array.isArray(s.nudges))s.nudges=[];
+function fixData(s){s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};if(!Array.isArray(s.pulse))s.pulse=[];if(!Array.isArray(s.nudges))s.nudges=[];if(!Array.isArray(s.resets))s.resets=[];
  if(!s.usage.ks){Object.values(s.usage.days).forEach(d=>{if(d&&d._n)d._n*=KSCALE});s.usage.total=(s.usage.total||0)*KSCALE;s.usage.ks=KSCALE}return s}
 let S=load(),_bk=0;
 function save(){if(!S.me&&!S.notes.length)return false;let raw;try{raw=JSON.stringify(S)}catch(e){return false}
@@ -844,7 +886,7 @@ const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_e
  focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1],space:['Space switch','Account',1],pulse:['Motivation check','Today',3],nudge:['Nudge taken','Today',1],class_new:['Class','Study',2],grade:['Mark','Study',2],quiz:['Quiz','Study',3],plan_build:['Study plan','Study',3],skin:['Theme change','You',1],frame:['Frame change','You',1],quote:['Quote','You',1],widget:['Widget','Chat',2],
  photo:['Photo shared','Chat',3],file_share:['File shared','Chat',3],share:['Shared update','Chat',2],pin:['Pin','Chat',1],
  agenda_new:['Agenda item','Today',2],agenda_done:['Agenda done','Today',1],milestone:['Milestone','Projects',2],progress:['Progress update','Projects',1],
- zen:['Deep mode','Focus',1],cal_alerts:['Calendar alerts','Focus',1],deck_new:['New deck','Study',3],card_new:['New card','Study',1],card_review:['Card review','Study',1],exam_new:['Exam','Study',2],study_plan:['Study plan','Study',2],study_goal:['Study goal','Study',1]};
+ zen:['Deep mode','Focus',1],reset:['Guided reset','Focus',2],cal_alerts:['Calendar alerts','Focus',1],deck_new:['New deck','Study',3],card_new:['New card','Study',1],card_review:['Card review','Study',1],exam_new:['Exam','Study',2],study_plan:['Study plan','Study',2],study_goal:['Study goal','Study',1]};
 function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times*KSCALE,d=today(),before=S.usage.total;const day=S.usage.days[d]||(S.usage.days[d]={});day[a]=(day[a]||0)+times;day._n=(day._n||0)+n;S.usage.total+=n;saveSoon();if(typeof checkUnlocks==='function')checkUnlocks(before,S.usage.total)}
 const usedToday=()=>(S.usage.days[today()]||{})._n||0;
 
@@ -1200,9 +1242,9 @@ let _zLast='';
 function paintZen(force){const z=$('#zen');if(!z||z.classList.contains('done'))return;const r=S.focus.run;if(!r)return;const m=modeOf(r.mode),ph=PHASE[r.phase],left=leftMs(r),t=mmss(left);
  if(force||_zLast!==r.phase+r.round+r.paused){_zLast=r.phase+r.round+r.paused;z.style.setProperty('--phase',ph.col);$('#zPh').textContent=ph.n+(r.paused?' · paused':'');$('#zL').textContent=`${r.label||m.n} · round ${r.round} of ${m.r}`;
   $('#zR').innerHTML=Array.from({length:m.r},(_,i)=>`<i class="${i+1<r.round||(i+1===r.round&&r.phase!=='work')?'d':i+1===r.round?'n':''}"></i>`).join('');$('#zP').innerHTML=ic(r.paused?'play':'pause',2);$('#zP').setAttribute('aria-label',r.paused?'Resume':'Pause');
-  if(!force){z.classList.remove('sw');void z.offsetWidth;z.classList.add('sw')}}
+  if(!force){z.classList.remove('sw');void z.offsetWidth;z.classList.add('sw')}zenResetPill(r)}
  const T=$('#zT');if(T&&T.textContent!==t)T.textContent=t;const B=$('#zB');if(B)B.style.width=(100*(1-left/phaseLen(r))).toFixed(1)+'%'}
-function zenDone(mins){const z=$('#zen');if(!z)return;z.classList.add('done','ctl');clearTimeout(window._zctl);z.querySelector('#zW').innerHTML=`<div class="zph">Session complete</div><div class="zt zdone">${mins}</div><div class="zlb">focused minutes</div>`;$('#zC').innerHTML=`<button class="zb zx" onclick="leaveZen()">${ic('check',2)}<span>Done</span></button>`;$('#zH').textContent='Well done. Rest your eyes.';wakeOff()}
+function zenDone(mins){const z=$('#zen');if(!z)return;const rp=$('#zRs');if(rp)rp.remove();z.classList.add('done','ctl');clearTimeout(window._zctl);z.querySelector('#zW').innerHTML=`<div class="zph">Session complete</div><div class="zt zdone">${mins}</div><div class="zlb">focused minutes</div>`;$('#zC').innerHTML=`<button class="zb zx" onclick="leaveZen()">${ic('check',2)}<span>Done</span></button>`;$('#zH').textContent='Well done. Rest your eyes.';wakeOff()}
 function tickOff(){clearInterval(_tick);_tick=null;miniTimer()}
 const mmss=ms=>{const s=Math.ceil(ms/1000);return`${pad(Math.floor(s/60))}:${pad(s%60)}`};
 function paintClock(){const r=S.focus.run,el=$('#clk');if(!el||!r)return;const len=phaseLen(r),left=leftMs(r),fr=1-left/len;
@@ -1228,11 +1270,95 @@ function pFocus(){const r=S.focus.run,fm=S.focus.mode,m=modeOf(r?r.mode:fm),ph=r
  <input class="flabel-in" id="fLabel" placeholder="What are you working on?" value="${esc(r?r.label:S.focus.label)}" maxlength="60">
  <div class="fctl">${r?`<button class="cbtn" onclick="stopFocus()" aria-label="Stop">${ic('stop',2)}</button><button class="cbtn main" onclick="pauseFocus()" aria-label="${r.paused?'Resume':'Pause'}">${ic(r.paused?'play':'pause',2.2)}</button><button class="cbtn" onclick="nextPhase(false)" aria-label="Skip to next phase">${ic('skip',2)}</button>`:`<button class="cbtn main wide" onclick="startFocus()">${ic('play',2.2)}<span>Start ${m.w} min</span></button>`}</div>
  <div class="fbtns"><button class="btn zbtn" onclick="enterZen()">${ic('moon')} ${r?'Deep mode':'Start in deep mode'}</button><button class="btn" onclick="alertsSheet()">${ic('bell')} Alerts</button></div>
+ ${r&&r.phase!=='work'?resetCard():`<button class="rlink" onclick="openReset('focus')">${ic('coffee',2)}<span>Need a breather? Take a 2-minute reset</span></button>`}
  <div class="legend"><span><i style="background:var(--focus)"></i>Focus</span><span><i style="background:var(--break)"></i>Break</span><span><i style="background:var(--long)"></i>Long break</span></div>
  <section><div class="grid3"><div class="card kpi"><div class="l">Today</div><div class="v" data-n="${focusTodayMin()}">${focusTodayMin()}</div><div class="l">minutes</div></div><div class="card kpi"><div class="l">All time</div><div class="v" data-n="${Math.round(tot/60*10)/10}">${(tot/60).toFixed(1)}</div><div class="l">hours</div></div><div class="card kpi"><div class="l">Streak</div><div class="v">${streak}</div><div class="l">${streak===1?'day':'days'}</div></div></div>
  <button class="btn full" onclick="shareTo(focusAtt(),c=>go('c:'+c.id))">${ic('share')} Share your focus</button></section>
  <section><div class="sh"><h2>This week</h2><span class="sub">minutes</span></div><div class="card">${barChart(days,{col:'var(--focus)'})}</div></section>
  ${S.focus.sessions.length?`<section><div class="sh"><h2>Recent sessions</h2></div><div class="card list">${S.focus.sessions.slice(-6).reverse().map(s=>`<div class="li" style="cursor:default"><span class="tln" style="--lc:var(--focus)">${ic('focus',1.9)}</span><div class="grow"><div class="t">${esc(s.label||modeOf(s.mode).n)}</div><div class="sub">${fmtDay(s.at)} · ${tHM(s.at)}</div></div><b>${s.mins} min</b></div>`).join('')}</div></section>`:''}</div>`}
+
+/* ============ RESET: a guided two-minute break (breathing, stretches, distant gaze) ============
+   Built on research:
+   - Cyclic sighing (Balban et al., Cell Reports Medicine, 2023): a double inhale and a long exhale; five minutes a day
+     improved mood and lowered breathing rate more than mindfulness meditation.
+   - Slow breathing near six breaths a minute raises heart-rate variability and calm (Lehrer and Gevirtz, 2014;
+     Zaccaro et al., 2018). A longer exhale than inhale shifts the body toward rest.
+   - Micro-breaks of ten minutes or less raise vigour and lower fatigue, most of all with movement (Albulescu et al., 2022).
+   - The 20-20-20 rule against digital eye strain; a short view of green or sky restores attention (Lee et al., 2015).
+   - Breaks spent on the phone restore less than phone-free breaks (Kang and Kurtzberg, 2019).
+   Each reset mixes one breathing technique, two stretches and a far-away look, shuffled so it stays fresh. */
+const RBREATH={
+ sigh:{n:'Cyclic sighing',d:'Two breaths in through the nose, one long breath out through the mouth. The quickest way to calm down.',ph:[['in','Breathe in',2,.86],['in2','In a little more',1,1],['out','Long breath out',6,.6]],cycles:6},
+ slow:{n:'Slow breathing',d:'About six breaths a minute. Even and unhurried; it steadies your heart rhythm.',ph:[['in','Breathe in',5,1],['out','Breathe out',5,.6]],cycles:6},
+ box:{n:'Box breathing',d:'Four counts each side of the box. Calm and alert at the same time.',ph:[['in','Breathe in',4,1],['hold','Hold',4,1],['out','Breathe out',4,.6],['hold','Hold',4,.6]],cycles:4},
+ exhale:{n:'Long exhale',d:'Breathing out for longer than you breathe in tells your body it is safe to rest.',ph:[['in','Breathe in',4,1],['out','Breathe out slowly',7,.6]],cycles:5}};
+/* stretches as keyframes for the stick figure: t in seconds within a loop, a pose, and the cue shown below */
+const RB={la:-12,le:-4,ra:12,re:4,ll:-6,lk:2,rl:6,rk:-2,head:0,lean:0,shrug:0,rise:0};
+const RUP={la:-174,le:0,ra:174,re:0};
+const RSTRETCH={
+ neck:{n:'Neck release',secs:36,loop:12,k:[[0,{},'Sit or stand tall'],[2.6,{head:-26},'Tilt your head to the left. Let the right shoulder drop.'],[5.6,{head:-26}],[6.6,{}],[9,{head:26},'Now to the right. Breathe slowly.'],[11.4,{head:26}]]},
+ shoulders:{n:'Shoulder rolls',secs:30,loop:4,k:[[0,{},'Roll your shoulders up, back and down. Slowly.'],[1.1,{shrug:3.2,la:-9,ra:9}],[2.1,{shrug:3.2,la:-20,ra:20}],[3.1,{shrug:0,la:-17,ra:17}]]},
+ reach:{n:'Reach up',secs:32,loop:8,k:[[0,{},'Breathe in and reach up tall.'],[2.4,RUP],[3.4,{...RUP,rise:3.5},'Rise onto your toes. Stretch every finger.'],[5.6,{...RUP,rise:3.5}],[7.2,{},'Lower your arms as you breathe out.']]},
+ side:{n:'Side bend',secs:36,loop:10,k:[[0,RUP,'Arms up, hands together.'],[2.6,{...RUP,lean:-15},'Lean to the left. Long through the right side.'],[4.6,{...RUP,lean:-15}],[5.6,RUP],[8,{...RUP,lean:15},'Now lean to the right.'],[9.6,{...RUP,lean:15}]]},
+ chest:{n:'Chest opener',secs:32,loop:8,k:[[0,{},'Undo the desk hunch.'],[2.2,{la:-88,le:0,ra:88,re:0},'Open your arms wide.'],[4,{la:-92,le:-80,ra:92,re:80,head:0},'Bend the elbows back. Squeeze your shoulder blades together.'],[6,{la:-92,le:-80,ra:92,re:80}],[7.4,{}]]},
+ calves:{n:'Calf raises',secs:30,loop:3,k:[[0,{},'Rise onto your toes, then lower slowly. Wakes up the circulation.'],[1.1,{rise:4.5}],[1.7,{rise:4.5}],[3,{}]]}};
+const REYES={n:'Look far away',secs:20,d:'Find something at least six metres away, ideally sky or green. Let your eyes soften.'};
+const RTIPS=['Drink a glass of water.','Leave your phone face down until the timer ends.','If you have time, walk to a window or take the stairs.','Roll your wrists and open your hands a few times.','Notice three sounds around you, then let them go.','Get some daylight on your face if you can.'];
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const lerp=(a,b,t)=>a+(b-a)*t;
+/* the stick figure: one ink line like every Atelier figure, posed by joint angles (0 = down, 90 = to the right) */
+function rigPaths(p){const R=Math.PI/180,hip=[50,64-(p.rise||0)],tl=(p.lean||0)*R,neck=[hip[0]+Math.sin(tl)*23,hip[1]-Math.cos(tl)*23],sh=[neck[0],neck[1]+2.5-(p.shrug||0)],ht=((p.lean||0)+(p.head||0))*R,head=[neck[0]+Math.sin(ht)*8.6,neck[1]-Math.cos(ht)*8.6+(p.shrug||0)*.35];
+ const limb=(o,a1,l1,a2,l2,toe)=>{const r1=a1*R,e=[o[0]+Math.sin(r1)*l1,o[1]+Math.cos(r1)*l1],r2=(a1+a2)*R,h=[e[0]+Math.sin(r2)*l2,e[1]+Math.cos(r2)*l2];return`M${o[0].toFixed(2)} ${o[1].toFixed(2)}L${e[0].toFixed(2)} ${e[1].toFixed(2)}L${h[0].toFixed(2)} ${h[1].toFixed(2)}`+(toe?`L${(h[0]+toe).toFixed(2)} 98`:'')};
+ const lean=p.lean||0;return{torso:`M${hip[0].toFixed(2)} ${hip[1].toFixed(2)}L${neck[0].toFixed(2)} ${neck[1].toFixed(2)}`,head,arms:limb(sh,p.la+lean,13,p.le,12)+limb(sh,p.ra+lean,13,p.re,12),legs:limb(hip,p.ll,16,p.lk,16,-4.6)+limb(hip,p.rl,16,p.rk,16,4.6)}}
+/* build a routine: one breathing technique, two stretches (three on a long break), a far look, then a tip */
+function buildReset(long){const last=S.settings.lastReset||[],pick=(pool,n)=>{const all=Object.keys(pool),fresh=all.filter(k=>!last.includes(k)),src=(fresh.length>=n?fresh:all).sort(()=>Math.random()-.5);return src.slice(0,n)};
+ const b=pick(RBREATH,1)[0],st=pick(RSTRETCH,long?3:2);S.settings.lastReset=[b,...st];
+ return[{k:'breath',id:b},...st.map(id=>({k:'stretch',id})),{k:'eyes'},{k:'done'}]}
+const stepSecs=s=>s.k==='breath'?RBREATH[s.id].ph.reduce((a,p)=>a+p[2],0)*RBREATH[s.id].cycles:s.k==='stretch'?RSTRETCH[s.id].secs:s.k==='eyes'?REYES.secs:0;
+let RS=null;
+function openReset(from){const r=S.focus.run,long=!!(r&&r.phase==='long');const steps=buildReset(long);RS={steps,i:0,t:0,paused:false,last:performance.now(),pose:{...RB},from:from||'',t0:Date.now(),breath:0};
+ let el=$('#rst');if(!el){el=document.createElement('div');el.id='rst';document.body.appendChild(el)}el.className='rst';el.setAttribute('role','dialog');el.setAttribute('aria-label','Guided reset');
+ el.innerHTML=`<div class="rtop"><div class="rlab">${ic('coffee',2)}<span>Reset</span></div><div class="rdots">${steps.slice(0,-1).map(()=>'<i></i>').join('')}</div><button class="rx" id="rX" aria-label="Close the reset">${ic('close',2)}</button></div>
+ <div class="rstage"><svg class="rorb" viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="rog" cx="50%" cy="42%" r="60%"><stop offset="0" stop-color="var(--break)" stop-opacity=".55"/><stop offset="1" stop-color="var(--break)" stop-opacity=".08"/></radialGradient></defs><circle cx="100" cy="100" r="92" class="rring"/><circle cx="100" cy="100" r="92" class="rfill" id="rO"/><circle cx="100" cy="100" r="96" class="rprog" id="rP" pathLength="1"/></svg>
+  <svg class="rfig" viewBox="0 0 100 100" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle id="rfHd" r="6.4" cx="50" cy="25"/><path id="rfT" d="M50 64L50 41"/><path id="rfA" d=""/><path id="rfL" d=""/><path class="rfloor" d="M28 98.6H72"/></svg>
+  <svg class="rhz" viewBox="0 0 200 60" fill="none" stroke-linecap="round" aria-hidden="true"><path d="M8 50C40 34 64 40 92 30C118 21 146 26 192 14"/><circle cx="158" cy="14" r="6"/></svg></div>
+ <div class="rtxt"><div class="rph" id="rPh"></div><div class="rsub" id="rSub"></div><div class="rname" id="rN"></div></div>
+ <div class="rctl"><button class="zb" id="rPa" aria-label="Pause">${ic('pause',2)}</button><button class="zb" id="rSk" aria-label="Next step">${ic('skip',2)}</button></div>`;
+ document.body.classList.add('rston');$('#rX').onclick=closeReset;$('#rPa').onclick=()=>{RS.paused=!RS.paused;$('#rPa').innerHTML=ic(RS.paused?'play':'pause',2);$('#rPa').setAttribute('aria-label',RS.paused?'Resume':'Pause');el.classList.toggle('paused',RS.paused)};
+ $('#rSk').onclick=()=>resetNext();wakeOn();use('reset');resetEnter();cancelAnimationFrame(window._rraf);window._rraf=requestAnimationFrame(resetLoop)}
+function resetEnter(){const el=$('#rst');if(!el||!RS)return;const s=RS.steps[RS.i];RS.t=0;el.dataset.k=s.k;$$('#rst .rdots i').forEach((d,k)=>{d.className=k<RS.i?'d':k===RS.i?'n':''});
+ const N=$('#rN'),Sb=$('#rSub'),P=$('#rPh');el.classList.remove('swap');void el.offsetWidth;el.classList.add('swap');
+ const nS=RS.steps.filter(x=>x.k==='stretch'),si=nS.indexOf(s);
+ if(s.k==='breath'){const B=RBREATH[s.id];N.textContent=`Breathing · ${B.n}`;Sb.textContent=B.d}
+ else if(s.k==='stretch'){const T=RSTRETCH[s.id];N.textContent=`Stretch ${si+1} of ${nS.length}`;Sb.textContent=T.k[0][2];P.textContent=T.n}
+ else if(s.k==='eyes'){N.textContent='Eyes';Sb.textContent=REYES.d;P.textContent=REYES.n}
+ else if(s.k==='done')resetDone()}
+function resetNext(){if(!RS)return;if(RS.i<RS.steps.length-1){RS.i++;resetEnter()}}
+/* one animation loop: the orb breathes, the figure moves, the words follow; only transforms and attributes change */
+function resetLoop(now){if(!RS)return;const el=$('#rst');if(!el){RS=null;return}const dt=Math.min(.1,(now-RS.last)/1000);RS.last=now;const s=RS.steps[RS.i];if(!RS.paused&&s.k!=='done')RS.t+=dt;
+ const total=stepSecs(s),reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;let target={...RB},orb=.72;
+ if(s.k==='breath'){const B=RBREATH[s.id],cyc=B.ph.reduce((a,p)=>a+p[2],0),tc=RS.t%cyc;let acc=0,prev=B.ph[B.ph.length-1][3];for(const [id,label,len,to] of B.ph){if(tc<acc+len){const f=ease((tc-acc)/len);orb=lerp(prev,to,f);const left=Math.ceil(acc+len-tc);$('#rPh').textContent=label;$('#rPh').dataset.n=left;el.dataset.ph=id;break}acc+=len;prev=to}
+  RS.breath=orb;const b=(orb-.6)/.4;target={...RB,shrug:b*2.2,la:-12-b*8,ra:12+b*8,head:-b*2}}
+ else if(s.k==='stretch'){const T=RSTRETCH[s.id],tc=RS.t%T.loop,K=T.k;let a=K[K.length-1],bk=null;for(let j=0;j<K.length;j++){if(K[j][0]<=tc)a=K[j];else{bk=K[j];break}}const nx=bk||[T.loop,K[0][1]];const f=nx[0]>a[0]?ease((tc-a[0])/(nx[0]-a[0])):1;
+  const pa={...RB,...a[1]},pb={...RB,...nx[1]};for(const key in RB)target[key]=lerp(pa[key],pb[key],f);const cue=[...K].reverse().find(x=>x[0]<=tc&&x[2]);if(cue&&$('#rSub').textContent!==cue[2])$('#rSub').textContent=cue[2];$('#rPh').dataset.n=Math.max(0,Math.ceil(total-RS.t));orb=.78}
+ else if(s.k==='eyes'){target={...RB,head:0,la:-8,ra:8};$('#rPh').dataset.n=Math.max(0,Math.ceil(total-RS.t));orb=.74}
+ /* the figure eases toward its target every frame, so every change of pose is smooth */
+ const k=reduce?1:1-Math.exp(-dt*7);for(const key in RB)RS.pose[key]=lerp(RS.pose[key],target[key],k);const P=rigPaths(RS.pose);
+ $('#rfT').setAttribute('d',P.torso);$('#rfA').setAttribute('d',P.arms);$('#rfL').setAttribute('d',P.legs);$('#rfHd').setAttribute('cx',P.head[0].toFixed(2));$('#rfHd').setAttribute('cy',P.head[1].toFixed(2));
+ const O=$('#rO');O.style.transform=`scale(${(reduce?.8:orb).toFixed(4)})`;const pr=$('#rP');if(pr&&total)pr.style.strokeDashoffset=(1-Math.min(1,RS.t/total)).toFixed(4);
+ if(total&&RS.t>=total&&!RS.paused)resetNext();window._rraf=requestAnimationFrame(resetLoop)}
+function resetDone(){const el=$('#rst');if(!el||!RS)return;const secs=Math.round((Date.now()-RS.t0)/1000),r=S.focus.run,tips=[...RTIPS].sort(()=>Math.random()-.5).slice(0,2);
+ (S.resets=S.resets||[]).push({at:Date.now(),secs,steps:RS.steps.filter(x=>x.id).map(x=>x.id)});if(S.resets.length>500)S.resets=S.resets.slice(-400);led('break','Guided reset',{sub:`${Math.max(1,Math.round(secs/60))} min · ${RS.steps.filter(x=>x.id).map(x=>(RBREATH[x.id]||RSTRETCH[x.id]).n.toLowerCase()).join(', ')}`});save();
+ el.dataset.k='done';$('#rN').textContent=`${Math.max(1,Math.round(secs/60))} min well spent`;$('#rPh').textContent='You are reset.';delete $('#rPh').dataset.n;$('#rSub').innerHTML=`${tips.map(t=>`<span>${esc(t)}</span>`).join('')}`;
+ el.querySelector('.rctl').innerHTML=`<button class="rbtn" id="rBk">${r?`${ic('focus',2)} Back to the timer${r.phase!=='work'?` · ${mmss(leftMs(r))} left`:''}`:`${ic('check',2)} Done`}</button>`;$('#rBk').onclick=closeReset;
+ $$('#rst .rdots i').forEach(d=>d.className='d');RS.pose={...RS.pose};RS.steps[RS.i]={k:'done'};burstSoft()}
+function burstSoft(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const o=$('#rO');if(o){o.classList.add('bloom');setTimeout(()=>o&&o.classList.remove('bloom'),1200)}}
+function closeReset(){cancelAnimationFrame(window._rraf);const el=$('#rst');RS=null;document.body.classList.remove('rston');if(el){el.classList.add('out');setTimeout(()=>el.remove(),380)}if(!S.focus.zen)wakeOff();if(route.k==='focus')render()}
+/* a quiet invitation whenever a break is on: on the Focus page and as a small pill in Deep mode */
+function resetCard(){const r=S.focus.run;if(!r||r.phase==='work')return'';return`<button class="card rcta" onclick="openReset('focus')"><span class="rcfig">${figure('rest',{acc:'var(--break)',sw:2.6})}</span><div class="grow"><div class="lab" style="--lc:var(--break)">${ic('coffee',2)}<span>Guided reset · 2 min</span></div><b>Breathe, stretch, look far away</b><div class="sub sm">A fresh mix each break. Gets your focus back.</div></div>${ic('arrow')}</button>`}
+function zenResetPill(r){const z=$('#zen');if(!z)return;let p=$('#zRs');const show=r&&r.phase!=='work'&&!z.classList.contains('done')&&window._zrsOff!==r.round+r.phase;
+ if(show&&!p){p=document.createElement('button');p.id='zRs';p.className='zrs';p.innerHTML=`${ic('coffee',2)}<span>Guided reset</span><i aria-hidden="true">${ic('chevr',2)}</i>`;p.onclick=e=>{e.stopPropagation();openReset('zen')};z.appendChild(p);requestAnimationFrame(()=>p.classList.add('in'))}
+ else if(!show&&p){p.classList.remove('in');setTimeout(()=>p&&p.remove(),400)}}
 
 /* ============ NOTES ============ */
 const NCOL=['var(--yellow)','var(--blue)','var(--green)','var(--accent)','var(--violet)','var(--red)'];

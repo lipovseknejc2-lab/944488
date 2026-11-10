@@ -16,7 +16,7 @@ const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
 const KEY='atelier-v1',BKEY='atelier-backup';
 /* If the browser blocks storage (some previews do), keep working in memory and say so once. */
 const LS=(()=>{try{const k='__a';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage}catch(e){const m={};window._noStore=true;return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
-const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],widgets:{},pulse:[],study:{goal:60,decks:[],exams:[],classes:[],grades:[],goals:{},scale:'5',plans:[]},nudges:[],
+const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],widgets:{},pulse:[],resets:[],study:{goal:60,decks:[],exams:[],classes:[],grades:[],goals:{},scale:'5',plans:[]},nudges:[],
  focus:{mode:'pomo',custom:{w:30,b:5,r:3},label:'',run:null,sessions:[]},usage:{days:{},total:0,ks:8},
  settings:{theme:'light',sound:true,auto:true,skin:'clay',space:''},created:Date.now()});
 function parseSave(r){if(!r)return null;const d=JSON.parse(r);if(!d||typeof d!=='object'||!Array.isArray(d.notes))throw 0;return d}
@@ -25,7 +25,7 @@ function load(){let d=null;window._from='main';try{d=parseSave(LS.getItem(KEY))}
  return fixData(Object.assign(DEF(),d||{}))}
 /* knots: a normal full day of use is about 1,600 (checked against typical days); older saves are scaled once so everyone keeps their place */
 const KSCALE=8;
-function fixData(s){s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};if(!Array.isArray(s.pulse))s.pulse=[];if(!Array.isArray(s.nudges))s.nudges=[];
+function fixData(s){s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};if(!Array.isArray(s.pulse))s.pulse=[];if(!Array.isArray(s.nudges))s.nudges=[];if(!Array.isArray(s.resets))s.resets=[];
  if(!s.usage.ks){Object.values(s.usage.days).forEach(d=>{if(d&&d._n)d._n*=KSCALE});s.usage.total=(s.usage.total||0)*KSCALE;s.usage.ks=KSCALE}return s}
 let S=load(),_bk=0;
 function save(){if(!S.me&&!S.notes.length)return false;let raw;try{raw=JSON.stringify(S)}catch(e){return false}
@@ -113,7 +113,7 @@ const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_e
  focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1],space:['Space switch','Account',1],pulse:['Motivation check','Today',3],nudge:['Nudge taken','Today',1],class_new:['Class','Study',2],grade:['Mark','Study',2],quiz:['Quiz','Study',3],plan_build:['Study plan','Study',3],skin:['Theme change','You',1],frame:['Frame change','You',1],quote:['Quote','You',1],widget:['Widget','Chat',2],
  photo:['Photo shared','Chat',3],file_share:['File shared','Chat',3],share:['Shared update','Chat',2],pin:['Pin','Chat',1],
  agenda_new:['Agenda item','Today',2],agenda_done:['Agenda done','Today',1],milestone:['Milestone','Projects',2],progress:['Progress update','Projects',1],
- zen:['Deep mode','Focus',1],cal_alerts:['Calendar alerts','Focus',1],deck_new:['New deck','Study',3],card_new:['New card','Study',1],card_review:['Card review','Study',1],exam_new:['Exam','Study',2],study_plan:['Study plan','Study',2],study_goal:['Study goal','Study',1]};
+ zen:['Deep mode','Focus',1],reset:['Guided reset','Focus',2],cal_alerts:['Calendar alerts','Focus',1],deck_new:['New deck','Study',3],card_new:['New card','Study',1],card_review:['Card review','Study',1],exam_new:['Exam','Study',2],study_plan:['Study plan','Study',2],study_goal:['Study goal','Study',1]};
 function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times*KSCALE,d=today(),before=S.usage.total;const day=S.usage.days[d]||(S.usage.days[d]={});day[a]=(day[a]||0)+times;day._n=(day._n||0)+n;S.usage.total+=n;saveSoon();if(typeof checkUnlocks==='function')checkUnlocks(before,S.usage.total)}
 const usedToday=()=>(S.usage.days[today()]||{})._n||0;
 
