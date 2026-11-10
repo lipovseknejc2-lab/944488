@@ -36,7 +36,7 @@ ok(await ev(()=>S.usage.total===8),'sign-in uses 1 knot unit (8 knots)');
 ok(await p.isVisible('.ttl')&&await p.isVisible('.week')&&await p.isVisible('#motd'),'today: title, week, message of the day');
 ok(!(await p.isVisible('text=knots')),'knots hidden on Today');
 let k0=await K();await p.click('.playb');await W(300);ok(await K()===k0+8,'message of the day play is metered');
-await p.click('.rail .rbtns button:has-text("Feeling")');await W(400);await p.click('[data-f="thankful"]');await p.fill('#flN','after the walk');await p.click('#flS');await W(500);
+await p.click('.rail .rbtns button:has-text("Feeling")');await W(400);await p.click('#pJust');await W(400);await p.click('[data-f="thankful"]');await p.fill('#flN','after the walk');await p.click('#flS');await W(500);
 ok(await p.isVisible('.timeline .feelchip >> text=thankful'),'feeling check-in shows on the timeline');
 ok(await p.isVisible('.wday.today b.has'),'today circle gets a colour after activity');
 // notes

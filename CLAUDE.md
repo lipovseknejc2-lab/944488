@@ -17,7 +17,7 @@ The repository also contains other apps (the site root and the other folders). *
 4. **Test everything, publish, then give the link.** Every update ends with the live link.
 
 ## How Atelier is built
-- The modules in `src/atelier/` are joined in this order by `build.py`: `art.js` (icons, characters, avatars, posters, clock), `core.js` (state, storage, knots meter, router, UI kit), `people.js` (bot teammates, onboarding), `today.js` (Today, ledger, quick panel, voice), `focus.js`, `notes.js`, `chat.js` (chat, groups, people), `projects.js` (tasks, ideas, notes, files, drawing boards, inspiration, table and chart), `study.js` (flashcards, exams, study goal, subjects), `widgets.js` (chat widgets and their editor), `rewards.js` (themes, frames, quotes, profile, collection), `you.js` (You, posters, settings, boot). `shell.html` holds all CSS and the page shell.
+- The modules in `src/atelier/` are joined in this order by `build.py`: `art.js` (icons, characters, avatars, posters, clock), `core.js` (state, storage, knots meter, router, UI kit), `people.js` (bot teammates, onboarding), `today.js` (Today, ledger, quick panel, voice), `focus.js`, `notes.js`, `chat.js` (chat, groups, people), `projects.js` (tasks, ideas, notes, files, drawing boards, inspiration, table and chart), `study.js` (flashcards, exams, study goal, subjects), `pulse.js` (the Pulse motivation check), `widgets.js` (chat widgets and their editor), `rewards.js` (themes, frames, quotes, profile, collection), `you.js` (You, posters, settings, boot). `shell.html` holds all CSS and the page shell.
 - `python3 build.py` writes `dist/atelier.html` with the fonts (Newsreader, Instrument Sans, Caveat) embedded. Never edit `dist/` or `atelier/index.html` by hand.
 - Today, rebuilding from `src/atelier/` reproduces the live `atelier/index.html` byte for byte.
 
@@ -39,11 +39,14 @@ The repository also contains other apps (the site root and the other folders). *
 - **Logo (Thread):** `MARK_A` (the symmetrical A), `MARK_B` (the clay thread crossbar) and `MARK_DOT` (its end) in `art.js` are the only source; the splash, posters, widgets and `atelier/icon.svg` plus the PNG icons must always use the current mark.
 - **Widgets** (`widgets.js`): Atelier's branded live cards in chat, with size, font and surface the user picks and that are remembered per kind. Anything shared as a card should be a widget kind.
 - **One design language:** new screens use the widget grammar and the glass material described in `DESIGN.md` (tiles, `.lab` label rows, big tabular numbers, `--glt`/`--gl-hi` glass, `--spring` presses).
+- **Pulse** (`pulse.js`, `S.pulse`): the 40-second motivation check (wheel of feelings with intensity rings, energy, eight statements) scored with Temporal Motivation Theory and Self-Determination Theory; the day's percentage is a weighted mean that favours the latest check. Feeling in the Palette opens it; the quick feeling check-in stays as "Just log a feeling".
 - **The Palette** (quick panel): floats over pages and is never part of the layout. It is open by itself only on Today; elsewhere it is a handle.
 - **No emojis** anywhere in the text. Use line icons from `art.js`.
 - **Offline:** `atelier/sw.js` may only delete caches starting with `atelier-`.
 
 ## Testing before every publish
+Nejc's preference: for a normal update, run a quick test of the changed feature (a focused Playwright script on an iPhone-sized viewport, light and dark, no script errors). Run the full suite below only when he asks for a big testing cycle.
+
 `bash src/atelier/tests/run.sh` builds Atelier and runs everything: features (270 checks), phone taps in three setups (183 checks), stress and crash (heavy data plus 400 random taps), and offline (7 checks). It needs node with playwright (`npm i playwright`) and python3.
 - All tests must pass with zero errors. Add checks for every new feature to `tests/feat.js` and `tests/phone.js`.
 - Look at screenshots of every changed screen on an iPhone-sized viewport, in light and dark, and compare them with `DESIGN.md`. If it looks plainer or less finished than before, it is not done.

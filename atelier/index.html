@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f6f3ee">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Atelier">
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest?v=thread"><link rel="icon" href="icon.svg?v=thread" type="image/svg+xml"><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=thread">
 <!--HEAD-END-->
 <script>try{var _t=(JSON.parse(localStorage.getItem('atelier-v1')||'{}').settings||{}).theme;if(_t==='dark'||(_t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.dataset.theme='dark'}catch(e){}</script>
 <style>
@@ -507,6 +507,41 @@ html.skinfx,html.skinfx body,html.skinfx .card,html.skinfx #tabs,html.skinfx .bg
 .npaper .ntitle{font-size:30px;margin-top:2px}
 .npaper .ntools{position:sticky;top:calc(8px + env(safe-area-inset-top));z-index:3;margin:6px -6px 10px;padding:6px 8px;border:1px solid var(--gl-edge);border-radius:18px;background:color-mix(in srgb,var(--card2) 80%,transparent);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:inset 0 1px 0 var(--gl-hi),0 8px 20px rgba(40,30,15,.08)}
 .npaper .nbody{min-height:42vh}.npaper .ntools{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.npaper .ntools::-webkit-scrollbar{display:none}.npaper .ntools>*{flex:none}.npaper .ntools .sw{width:22px;height:22px}
+/* ---- Pulse: the motivation check ---- */
+.psheet{max-height:94vh}.psheet .sheet-h{align-items:flex-start}.psheet .sheet-h h2{margin-top:2px}
+.pprog{height:4px;margin:4px 0 10px}.pprog i{transition:width .45s var(--ease)}
+.psub{margin:0 2px 8px;text-align:center}
+.pwrap{display:grid;place-items:center;animation:rise .45s var(--ease)}
+.pwheel{width:min(86vw,340px);height:auto;display:block;overflow:visible;touch-action:manipulation}
+.pwheel .wc{fill:color-mix(in srgb,var(--c) calc(var(--o)*100%),var(--card2));stroke:var(--card2);stroke-width:1;cursor:pointer;transform-origin:150px 150px;transition:transform .35s var(--spring),fill .2s,filter .2s}
+.pwheel .wc:hover{filter:brightness(1.05)}.pwheel .wc.on{fill:var(--c);transform:scale(1.035);filter:drop-shadow(0 4px 10px color-mix(in srgb,var(--c) 45%,transparent))}
+.pwheel .wl{font-size:10.5px;font-weight:700;fill:var(--ink2);pointer-events:none;letter-spacing:.02em}
+.pwheel .wcen{fill:var(--card2);stroke:var(--line);filter:drop-shadow(0 2px 6px rgba(0,0,0,.06))}.pwheel .wct{font-family:var(--hand);font-weight:600;font-size:21px;fill:var(--text)}.pwheel .wcs{font-size:10.5px;font-weight:650;fill:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.pjust,.pback{display:flex;align-items:center;gap:4px;margin:10px auto 0}.pback .ic{width:16px;height:16px}
+.pen{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.pen>.card{margin:0}
+.pent{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 8px;font:inherit;color:var(--text);cursor:pointer;animation:rise .4s var(--ease) both;animation-delay:calc(var(--i)*50ms)}
+.pent .pbatt{width:46px;height:26px;color:var(--ink2)}.pent b{font-size:15px}.pent.on{box-shadow:0 0 0 2px var(--accent),var(--sh)}.pent.on .pbatt{color:var(--accent)}
+.pq{min-height:150px;display:grid;place-items:center;text-align:center;padding:24px 20px;animation:qin .4s var(--ease)}@keyframes qin{from{opacity:0;transform:translateX(26px)}}
+.pq p{margin:0;font-family:var(--serif);font-size:23px;line-height:1.28}
+.pans{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pa{padding:15px 6px;border-radius:18px;border:1px solid var(--gl-edge);background:linear-gradient(180deg,var(--glt),var(--card2));box-shadow:inset 0 1px 0 var(--gl-hi),0 1px 2px rgba(0,0,0,.05);font:inherit;font-weight:650;font-size:16px;color:var(--text);cursor:pointer;transition:transform .3s var(--spring),background .2s}
+.pa:active{transform:scale(.94)}.pa.on{background:var(--text);color:var(--bg)}
+.pres{display:flex;flex-direction:column;align-items:center;padding:6px 0 4px;animation:rise .5s var(--ease)}
+.presr{position:relative;width:124px;height:124px}.presn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:2px}.presn b{font-size:40px;font-weight:650;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.presn span{font-size:16px;color:var(--muted);font-weight:650;margin-top:10px}
+.presb{margin-top:8px;padding:4px 14px;border-radius:99px;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--bc);background:color-mix(in srgb,var(--bc) 13%,transparent)}
+.pdiag{margin-top:14px;animation:rise .5s var(--ease) .08s both}.pdiag h3{font-family:var(--serif);font-weight:400;font-size:22px;margin:2px 0 4px}.pdiag p{margin:0;color:var(--ink2);font-size:14.5px}
+.pother{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.pother .pill{font-size:12px}
+.precs{display:grid;gap:8px}.precs>.card{margin:0}
+.prec{display:flex;align-items:center;gap:12px;padding:12px 14px;animation:rise .45s var(--ease) both;animation-delay:calc(.12s + var(--i)*60ms)}
+.precn{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:13px;font-weight:700;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.prec b{font-size:14.5px}.prec p{margin:2px 0 0;font-size:13px;color:var(--muted);line-height:1.35}.prec .btn{flex:none}
+.phow{margin-top:14px;font-size:13px;color:var(--muted)}.phow summary{cursor:pointer;font-weight:650;color:var(--ink2)}.phow p{margin:6px 0 0;line-height:1.45}
+.pcta{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:var(--text);margin:0 0 10px;cursor:pointer}
+.pci{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;flex:none;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}.pci .ic{width:26px;height:26px}.pcta b{font-size:16px}
+.pday{display:flex;align-items:center;gap:14px;margin:0 0 10px;border-color:color-mix(in srgb,var(--bc) 28%,var(--line));background:linear-gradient(120deg,color-mix(in srgb,var(--bc) 10%,var(--glt)),var(--card) 60%)}.pday b{font-size:15.5px;line-height:1.25}
+.pspark{display:flex;align-items:flex-end;gap:3px;height:36px;flex:none}.pspark i{width:5px;border-radius:3px;background:var(--track)}.pspark i.now{width:7px}
+.enter .pspark i{animation:grow .7s var(--ease) both;transform-origin:bottom}
+.pday-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin:-4px 0 12px}.pday-nav b{min-width:110px;text-align:center}
 @media(max-width:380px){h1{font-size:30px}.grid3{gap:6px}.kpi .v{font-size:22px}#tabs a{font-size:9.5px}}
 @media(prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}.drawn path,#splash path,.uline path,.ln{stroke-dashoffset:0!important}}
 </style>
@@ -555,6 +590,7 @@ eraser:'M8.2 19.4H19M5.4 15.6L13.8 7.2L18.2 11.6L11.4 18.4H8.2Z',undo:'M8.4 8.6H
 bot:'M7 9.5H17V18H7ZM12 9.5V6.5M12 5.5H12.01M9.8 13.4H9.81M14.2 13.4H14.21M10 16H14M5 12.5V15M19 12.5V15',
 vote:'M12 5.5L17.5 12.5H14V18.5H10V12.5H6.5Z',coffee:'M5.5 9.5H16V14A4.5 4.5 0 0 1 11.5 18.5H10A4.5 4.5 0 0 1 5.5 14ZM16 10.6H17.6A2.2 2.2 0 0 1 17.6 15H16M8.4 4.5C7.8 5.6 9.2 6.2 8.6 7.4M11.4 4.5C10.8 5.6 12.2 6.2 11.6 7.4',
 lock:'M6.5 10.5H17.5V19.5H6.5ZM8.8 10.5V8A3.2 3.2 0 0 1 15.2 8V10.5',stop:'M7 7H17V17H7Z',quote:'M5 16.5C5 12 6.6 9 10 7.5L10.6 8.6C8.8 9.6 8 11 8 12.5H10.4V17H5ZM13.6 16.5C13.6 12 15.2 9 18.6 7.5L19.2 8.6C17.4 9.6 16.6 11 16.6 12.5H19V17H13.6Z',chevr:'M9.5 5L16 12L9.5 19',chevl:'M14.5 5L8 12L14.5 19',mic:'M9.4 11.6V7.4A2.6 2.6 0 0 1 14.6 7.4V11.6A2.6 2.6 0 0 1 9.4 11.6ZM6.4 11C6.4 14.4 8.8 16.8 12 16.8S17.6 14.4 17.6 11M12 16.8V20.4M9 20.4H15',logout:'M10 19.5H5.5V4.5H10M14.5 8L18.5 12L14.5 16M18.5 12H9.5',
+pulse:'M3 12.6H7.4L9.6 7.4L13.4 17.4L15.8 10.6L17.4 12.6H21',
 cap:'M3.2 9.6L12 5.2L20.8 9.6L12 14ZM7 11.6V15.8C8.6 17.4 10.2 18 12 18S15.4 17.4 17 15.8V11.6M20.8 9.6V14.6',
 case:'M4 8.6H20V19H4ZM9.2 8.6V6.4C9.2 5.7 9.7 5.2 10.4 5.2H13.6C14.3 5.2 14.8 5.7 14.8 6.4V8.6M4.2 13.2C9.2 14.6 14.8 14.6 19.8 13.2M11 13.9V15.4H13V13.9',
 mail:'M4 6.4H20V17.6H4ZM4.6 7C8 9.8 9.8 11.4 12 12.9C14.2 11.4 16 9.8 19.4 7'};
@@ -632,7 +668,7 @@ const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
 const KEY='atelier-v1',BKEY='atelier-backup';
 /* If the browser blocks storage (some previews do), keep working in memory and say so once. */
 const LS=(()=>{try{const k='__a';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage}catch(e){const m={};window._noStore=true;return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
-const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],widgets:{},study:{goal:60,decks:[],exams:[]},
+const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],widgets:{},pulse:[],study:{goal:60,decks:[],exams:[]},
  focus:{mode:'pomo',custom:{w:30,b:5,r:3},label:'',run:null,sessions:[]},usage:{days:{},total:0,ks:8},
  settings:{theme:'light',sound:true,auto:true,skin:'clay',space:''},created:Date.now()});
 function parseSave(r){if(!r)return null;const d=JSON.parse(r);if(!d||typeof d!=='object'||!Array.isArray(d.notes))throw 0;return d}
@@ -641,7 +677,7 @@ function load(){let d=null;window._from='main';try{d=parseSave(LS.getItem(KEY))}
  return fixData(Object.assign(DEF(),d||{}))}
 /* knots: a normal full day of use is about 1,600 (checked against typical days); older saves are scaled once so everyone keeps their place */
 const KSCALE=8;
-function fixData(s){s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};
+function fixData(s){s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};if(!Array.isArray(s.pulse))s.pulse=[];
  if(!s.usage.ks){Object.values(s.usage.days).forEach(d=>{if(d&&d._n)d._n*=KSCALE});s.usage.total=(s.usage.total||0)*KSCALE;s.usage.ks=KSCALE}return s}
 let S=load(),_bk=0;
 function save(){if(!S.me&&!S.notes.length)return false;let raw;try{raw=JSON.stringify(S)}catch(e){return false}
@@ -726,7 +762,7 @@ const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_e
  msg:['Message','Chat',1],chat_new:['New conversation','Chat',2],group_new:['New group','Groups',5],group_edit:['Group change','Groups',1],bot_new:['New teammate','Groups',3],
  project_new:['New project','Projects',6],task_new:['New task','Projects',2],task_move:['Task update','Projects',1],idea:['Idea','Projects',2],vote:['Vote','Projects',1],
  file:['File upload','Projects',4],board_save:['Drawing saved','Projects',3],inspo:['Inspiration','Projects',2],table_edit:['Table edit','Projects',1],
- focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1],space:['Space switch','Account',1],skin:['Theme change','You',1],frame:['Frame change','You',1],quote:['Quote','You',1],widget:['Widget','Chat',2],
+ focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1],space:['Space switch','Account',1],pulse:['Motivation check','Today',3],skin:['Theme change','You',1],frame:['Frame change','You',1],quote:['Quote','You',1],widget:['Widget','Chat',2],
  photo:['Photo shared','Chat',3],file_share:['File shared','Chat',3],share:['Shared update','Chat',2],pin:['Pin','Chat',1],
  agenda_new:['Agenda item','Today',2],agenda_done:['Agenda done','Today',1],milestone:['Milestone','Projects',2],progress:['Progress update','Projects',1],
  zen:['Deep mode','Focus',1],cal_alerts:['Calendar alerts','Focus',1],deck_new:['New deck','Study',3],card_new:['New card','Study',1],card_review:['Card review','Study',1],exam_new:['Exam','Study',2],study_plan:['Study plan','Study',2],study_goal:['Study goal','Study',1]};
@@ -734,7 +770,7 @@ function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times
 const usedToday=()=>(S.usage.days[today()]||{})._n||0;
 
 /* ---------- ledger: the day's timeline ---------- */
-const LK={focus:['focus','var(--focus)'],break:['coffee','var(--break)'],note:['notes','var(--yellow)'],msg:['chat','var(--blue)'],task:['check','var(--green)'],feel:['sparkle','var(--violet)'],voice:['bell','var(--red)'],project:['projects','var(--accent)'],group:['group','var(--blue)'],idea:['idea','var(--yellow)'],file:['file','var(--ink2)'],board:['draw','var(--accent)'],inspo:['image','var(--violet)'],agenda:['calendar','var(--blue)'],share:['share','var(--blue)'],milestone:['flag','var(--green)'],study:['cap','var(--violet)']};
+const LK={focus:['focus','var(--focus)'],break:['coffee','var(--break)'],note:['notes','var(--yellow)'],msg:['chat','var(--blue)'],task:['check','var(--green)'],feel:['sparkle','var(--violet)'],voice:['bell','var(--red)'],project:['projects','var(--accent)'],group:['group','var(--blue)'],idea:['idea','var(--yellow)'],file:['file','var(--ink2)'],board:['draw','var(--accent)'],inspo:['image','var(--violet)'],agenda:['calendar','var(--blue)'],share:['share','var(--blue)'],milestone:['flag','var(--green)'],study:['cap','var(--violet)'],pulse:['pulse','var(--accent)']};
 function led(k,t,extra={}){S.ledger.push({id:uid(),at:Date.now(),k,t,...extra});if(S.ledger.length>2500)S.ledger=S.ledger.slice(-2000);saveSoon()}
 
 /* ---------- people ---------- */
@@ -779,7 +815,7 @@ const TABS_STUDENT=[['today','Today','home'],['focus','Focus','focus'],['study',
 const space=()=>S.settings.space==='student'?'student':'work';
 const tabsNow=()=>space()==='student'?TABS_STUDENT:TABS;
 function tabOf(k){const t=TAB_OF[k]||'today';if(space()==='student'&&['study','deck','review','projects','project','board'].includes(k))return'study';return t}
-const TAB_OF={rewards:'you',profile:'you',today:'today',ledger:'today',focus:'focus',study:'focus',deck:'focus',review:'focus',notes:'notes',note:'notes',projects:'projects',project:'projects',board:'projects',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
+const TAB_OF={pulse:'today',rewards:'you',profile:'you',today:'today',ledger:'today',focus:'focus',study:'focus',deck:'focus',review:'focus',notes:'notes',note:'notes',projects:'projects',project:'projects',board:'projects',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
 let route={k:'today',a:[]},_prevRoute='';
 /* Pages change in memory, so navigation works everywhere, also in previews that block address changes. */
 let _hash=(()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return''}})()||'today';
@@ -799,7 +835,7 @@ const navBadge=()=>nav();
 function render(){if(!S.me){$('#shell').classList.add('nologin');onboarding();return}$('#shell').classList.remove('nologin');
  route=parseHash();const key=_hash;const fresh=key!==_prevRoute;_prevRoute=key;
  const V=$('#view'),y=fresh?0:scrollY;
- const P={rewards:pRewards,profile:pProfile,study:pStudy,deck:pDeck,review:pReview,person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
+ const P={pulse:pPulse,rewards:pRewards,profile:pProfile,study:pStudy,deck:pDeck,review:pReview,person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
  try{V.innerHTML=P(...route.a)||''}catch(e){console.error(e);V.innerHTML=`<div class="page">${empty('think','Something went wrong','This view could not be shown. Your work is safe.',`<a class="btn primary" href="#today">Back to Today</a>`)}</div>`}
  if(fresh){V.classList.remove('enter');void V.offsetWidth;V.classList.add('enter');scrollTo(0,0)}else scrollTo(0,y);
  nav();paintRail();countUp(V);if(V._after){const f=V._after;V._after=null;f()}miniTimer();loadImgs(V)}
@@ -913,6 +949,7 @@ function pToday(){const g=greet(),nm=S.me.name.split(' ')[0],d=selDay||today(),L
  <header class="th"><a href="#you" class="thav" aria-label="Your account">${avatar(S.me,36)}</a><h1 class="hand ttl">Today<svg class="uline" viewBox="0 0 120 10" preserveAspectRatio="none"><path d="M3 6C30 3 60 8 90 4C100 3 110 4 117 5" fill="none" stroke="var(--blue)" stroke-width="2.4" stroke-linecap="round"/></svg></h1><a href="#groups" class="icon-btn" aria-label="Groups">${ic('group')}</a></header>
  ${weekRow()}
  ${d===today()?spaceHero():''}
+ ${pulseCard(d)}
  ${run?focusCard():''}
  <div class="card motd" id="motd"><button class="playb" onclick="playMotd(${mi})" aria-label="Play message of the day">${ic('play')}</button><div class="grow"><div class="lab" style="--lc:var(--blue)">${ic('quote',2)}<span>Message of the day</span></div><div class="motdt">${esc(MOTD[mi])}</div></div></div>
  ${!run&&d===today()?`<a class="card startf" href="#focus"><span class="sfi">${ic('focus')}</span><div class="grow"><div class="lab" style="--lc:var(--focus)">${ic('focus',2)}<span>Focus</span></div><b>Start a focus session</b><div class="sub">${focusTodayMin()} min focused today</div></div>${ic('arrow')}</a>`:''}
@@ -928,7 +965,7 @@ function pToday(){const g=greet(),nm=S.me.name.split(' ')[0],d=selDay||today(),L
 /* the Palette: Atelier's floating tool panel (note, feeling, action, voice); open on Today, a handle elsewhere */
 const railMark=`<svg viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="${MARK_A}" stroke="currentColor" stroke-width="5.2"/><path d="${MARK_B}" stroke="var(--accent)" stroke-width="4.6"/><circle cx="${MARK_DOT[0]}" cy="${MARK_DOT[1]}" r="3.4" fill="var(--accent)"/></svg>`;
 const railOpen=()=>route.k==='today'?S.settings.rail!==false:!!window._railOpen;
-function railHTML(on){return`<div class="rbtns"><div class="rhd" aria-hidden="true">${railMark}<span>Palette</span></div><button onclick="railAct(quickNote)">${noteGlyph()}<span>Note</span></button><button onclick="railAct(feelSheet)">${ic('sparkle')}<span>Feeling</span></button><button onclick="railAct(actionSheet)">${ic('plus')}<span>Action</span></button><button onclick="railAct(voiceSheet)" class="rv">${ic('mic')}<span>Voice</span></button></div><button class="rtog" onclick="toggleRail()" aria-label="${on?'Hide the Palette':'Show the Palette'}" aria-expanded="${on}">${ic(on?'chevr':'chevl',2.2)}</button>`}
+function railHTML(on){return`<div class="rbtns"><div class="rhd" aria-hidden="true">${railMark}<span>Palette</span></div><button onclick="railAct(quickNote)">${noteGlyph()}<span>Note</span></button><button onclick="railAct(openPulse)">${ic('pulse')}<span>Feeling</span></button><button onclick="railAct(actionSheet)">${ic('plus')}<span>Action</span></button><button onclick="railAct(voiceSheet)" class="rv">${ic('mic')}<span>Voice</span></button></div><button class="rtog" onclick="toggleRail()" aria-label="${on?'Hide the Palette':'Show the Palette'}" aria-expanded="${on}">${ic(on?'chevr':'chevl',2.2)}</button>`}
 function paintRail(){const r=$('#rail');if(!r)return;const show=S.me&&!['c','board','note','review'].includes(route.k);r.hidden=!show;if(!show)return;const on=railOpen();r.classList.toggle('off',!on);if(r._on!==on){r.innerHTML=railHTML(on);r._on=on}}
 function toggleRail(){if(route.k==='today'){S.settings.rail=S.settings.rail===false;save()}else window._railOpen=!window._railOpen;paintRail()}
 function railAct(f){if(route.k!=='today')window._railOpen=false;f();paintRail()}
@@ -1571,6 +1608,97 @@ function revGrade(g){const R=REV,d=R&&deck(R.id);if(!d||!R.shown)return;const c=
 /* Today: a quiet line about what to study */
 function studyStrip(){const due=allDue(),ex=nextExams().find(e=>dayDiff(e.d,today())<=14);if(!due&&!ex)return'';
  return`<a class="card studyrow" href="#study"><span class="sfi">${ic('cap')}</span><div class="grow"><b>${due?`${plural(due,'card')} to review`:'Study'}</b><div class="sub">${ex?`${esc(ex.title)} ${cdText(ex.d).toLowerCase()}`:'Keep the streak going'}</div></div>${ic('arrow')}</a>`}
+
+/* ============ PULSE: a 40-second motivation check with a diagnosis and what to do ============
+   Built on established research:
+   - Temporal Motivation Theory (Steel, 2007): motivation = expectancy x value / (impulsiveness x delay).
+   - Self-Determination Theory (Deci and Ryan, 2000): autonomy, competence and relatedness; amotivation.
+   - Kinds of amotivation (Pelletier et al., 1999; Green-Demers et al., 2008): doubting ability, low energy,
+     low value, an unappealing or unclear task.
+   - Core affect circumplex (Russell, 1980): how pleasant and how activated you feel; the wheel's rings are intensity.
+   - What helps: implementation intentions (Gollwitzer, 1999), temptation bundling (Milkman et al., 2014),
+     daylight, food and short breaks for energy, expressive writing for worry, working alongside others. */
+const PWHEEL=[['Excited',.7,.8,'var(--yellow)'],['Determined',.85,.45,'var(--accent)'],['Content',.75,-.2,'var(--green)'],['Calm',.5,-.6,'var(--blue)'],
+ ['Tired',-.4,-.85,'var(--muted)'],['Bored',-.7,-.4,'var(--violet)'],['Frustrated',-.75,.45,'var(--red)'],['Anxious',-.6,.8,'#c25a86']];
+const PRINGS=['A little','Quite','Very'];
+const PENERGY=[['Drained',0],['Low',.33],['Okay',.66],['Charged',1]];
+/* id, statement; the last value says whether "Yes" points to a problem */
+const PQS=[['value','What I have to do today matters to me.',false],['comp','I feel able to do it well.',false],['clear','I know exactly what my first step is.',false],
+ ['delay','The deadline still feels far away.',true],['distract','Other things keep pulling at my attention.',true],['pressure','I am doing it because I have to, not because I chose to.',true],
+ ['alone','I feel alone with it.',true],['worry','I am worried about how it will turn out.',true]];
+const PCAUSES={
+ energy:{t:'Your body is low on fuel',d:'Motivation needs energy first. When you are tired, every task feels heavier than it is.',r:[['Get ten minutes of daylight','A short walk outside or by a window wakes the body faster than coffee.',''],['Drink water and eat something small','Thirst and low blood sugar feel like low motivation.',''],['Start tiny: one 15-minute focus','Short sessions work best when energy is low.','focus15']]},
+ value:{t:'It does not feel worth it right now',d:'When a task feels pointless, the mind will not spend effort on it.',r:[['Write one line on why it matters','Tie it to something you care about: a goal, a person, your future self.','note:Why this matters'],['Pair it with something you enjoy','Music, a favourite drink or a nicer place. This is called temptation bundling.',''],['Start with the most interesting part','Begin where your curiosity is.','focus15']]},
+ comp:{t:'You doubt you can do it well',d:'Low confidence quietly switches motivation off. A quick win switches it back on.',r:[['Shrink it to an easy first win','Pick a part you can finish in ten minutes.','focus15'],['Remember a time it went well','You have done hard things before; write one down.','note:A time it went well'],['Ask someone for a hint','A small hint can unlock the whole task.','chat']]},
+ clear:{t:'The next step is unclear',d:'A fuzzy task feels like a mountain. A clear first step feels like a stair.',r:[['Write the very next physical step','For example: open the document and write the title.','note:Next step'],['Make an if-then plan','"When it is 16:00, I will start the first step." Plans like this make follow-through far more likely.','agenda'],['Split it into three small tasks','Three small tasks are easier to start than one big one.','task']]},
+ delay:{t:'The deadline feels too far away',d:'Distant deadlines feel unreal, so something sooner always wins.',r:[['Make a nearer deadline','Put one part of it in today\'s agenda.','agenda'],['Tell someone your plan','A small promise makes it feel real.','chat'],['Start for just 15 minutes','Starting is the hardest part. Continuing is easier.','focus15']]},
+ distract:{t:'Your attention keeps getting pulled away',d:'Being easily pulled away is the strongest single cause of putting things off.',r:[['Turn on Deep mode','Only the timer stays on the screen.','zen'],['Put your phone in another room','Out of sight, out of mind.',''],['Work one 25-minute round','A clear end makes it easier to ignore the rest.','focus']]},
+ pressure:{t:'It feels forced, not chosen',d:'"Have to" motivation runs out fast. "Choose to" lasts much longer.',r:[['Choose how and when','Pick your own time, place and order. A sense of choice brings drive back.','agenda'],['Find your own reason','Finish the sentence: I choose to do this because…','note:I choose to do this because'],['Make one part your own','Add a small personal touch or challenge.','']]},
+ alone:{t:'You feel alone with it',d:'People are built to work together. Doing it alone drains drive.',r:[['Work next to someone','A quiet session side by side helps, even online.','groups'],['Message your group','Say what you are working on.','chat'],['Share your plan for today','Let others see your agenda.','share']]},
+ worry:{t:'Worry is getting in the way',d:'Fear of a bad result makes avoiding the task feel safer.',r:[['Write the worry down for two minutes','Putting it on paper frees up your thinking.','note:What I am worried about'],['Lower the bar for the first draft','The first version is allowed to be rough.',''],['Breathe slowly for one minute','In for four, hold for four, out for six.','']]},
+ good:{t:'You are in a good place',d:'Your drive is strong today. Protect it.',r:[['Start the most important task now','Use the wave while it is here.','focus'],['Turn on Deep mode','Keep distractions out.','zen'],['Plan tomorrow\'s first step','So tomorrow starts this easily too.','agenda']]}};
+const PBAND=m=>m>=75?['Driven','var(--green)']:m>=55?['Steady','var(--blue)']:m>=35?['Wavering','var(--yellow)']:['Low','var(--red)'];
+/* the score: expectancy x value over impulsiveness x delay, plus energy, mood and connection */
+function pulseScore(x){const A=x.ans||{},q=k=>(A[k]??1)/2,f=PWHEEL[x.sec]||PWHEEL[2],int=[.45,.75,1][x.ring]??.75,v=f[1]*int,a=f[2]*int,en=x.energy??.66;
+ const val=q('value'),comp=q('comp'),clear=q('clear'),delay=q('delay'),dis=q('distract'),pres=q('pressure'),alone=q('alone'),worry=q('worry');
+ const expct=.6*comp+.4*clear,value=val*(1-.35*pres),tmt=(.15+.85*expct)*(.15+.85*value)/((.5+dis)*(.5+delay)),tmtN=clamp((Math.log(tmt)-Math.log(.01))/(Math.log(4)-Math.log(.01)),0,1);
+ const aff=clamp(.5+.4*v+.1*a*(v>=0?1:-.6),0,1),m=Math.round(100*clamp(.45*tmtN+.25*en+.2*aff+.1*(1-.5*alone-.5*worry),0,1));
+ const nm=f[0],bonus={energy:nm==='Tired'?.3:0,value:nm==='Bored'?.3:0,worry:nm==='Anxious'?.3:0,comp:nm==='Frustrated'?.15:0,clear:nm==='Frustrated'?.15:0};
+ const C={energy:1-en,value:1-val,comp:1-comp,clear:1-clear,delay,distract:dis,pressure:pres,alone,worry};
+ return{m,causes:Object.entries(C).map(([k,s])=>({k,s:Math.round(clamp(s+(bonus[k]||0)*int,0,1.3)*100)/100})).sort((a,b)=>b.s-a.s).filter(c=>c.s>=.5).slice(0,3).map(c=>c.k)}}
+/* a day's motivation: every check counts, the latest ones count most, so it corrects itself during the day */
+const pulsesOn=d=>(S.pulse||[]).filter(p=>p.d===d).sort((a,b)=>a.at-b.at);
+function dayPulse(d){const L=pulsesOn(d);if(!L.length)return null;let w=0,s=0;L.forEach((p,i)=>{w+=i+1;s+=p.m*(i+1)});return Math.round(s/w)}
+/* the wheel: eight feelings around, three rings from a little (inside) to very (outside) */
+function wheelSVG(sel){const cx=150,cy=150,R=[46,82,116,148],seg=(r0,r1,a0,a1)=>{const p=(r,a)=>[cx+r*Math.sin(a),cy-r*Math.cos(a)];const [x0,y0]=p(r1,a0),[x1,y1]=p(r1,a1),[x2,y2]=p(r0,a1),[x3,y3]=p(r0,a0);
+  return`M${x0.toFixed(1)} ${y0.toFixed(1)}A${r1} ${r1} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}A${r0} ${r0} 0 0 0 ${x3.toFixed(1)} ${y3.toFixed(1)}Z`};
+ let g='';PWHEEL.forEach(([n,,,c],i)=>{const a0=(i-.5)*Math.PI/4+.012,a1=(i+.5)*Math.PI/4-.012;for(let r=0;r<3;r++){const on=sel&&sel.sec===i&&sel.ring===r;
+  g+=`<path class="wc ${on?'on':''}" data-s="${i}" data-r="${r}" d="${seg(R[r]+1.5,R[r+1]-1.5,a0,a1)}" style="--c:${c};--o:${[.22,.42,.7][r]}"><title>${PRINGS[r]} ${n.toLowerCase()}</title></path>`}
+  const am=i*Math.PI/4,tx=cx+133*Math.sin(am),ty=cy-133*Math.cos(am);g+=`<text x="${tx.toFixed(1)}" y="${(ty+4).toFixed(1)}" text-anchor="middle" class="wl">${n}</text>`});
+ const f=sel&&PWHEEL[sel.sec];return`<svg class="pwheel" viewBox="0 0 300 300" role="group" aria-label="How do you feel">${g}<circle cx="150" cy="150" r="43" class="wcen"/><text x="150" y="${f?146:154}" text-anchor="middle" class="wct">${f?f[0]:'Tap how'}</text><text x="150" y="${f?163:170}" text-anchor="middle" class="wcs">${f?PRINGS[sel.ring].toLowerCase():'you feel'}</text></svg>`}
+const batt=v=>`<svg class="pbatt" viewBox="0 0 40 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="31" height="16" rx="4"/><path d="M36.5 9V13"/>${v>0?`<rect x="5" y="6" width="${Math.max(3,25*v).toFixed(1)}" height="10" rx="2" fill="currentColor" stroke="none"/>`:''}</svg>`;
+/* the check itself: wheel, energy, eight statements, then the diagnosis */
+let PS=null;
+function openPulse(){PS={step:0,sec:null,ring:null,energy:null,ans:{},qi:0,t0:Date.now()};
+ openModal(`<div class="sheet psheet" role="dialog" aria-modal="true" aria-label="Pulse"><div class="sheet-h"><div><div class="lab" style="--lc:var(--accent)">${ic('pulse',2)}<span>Pulse · about 40 seconds</span></div><h2 id="pTitle">How do you feel?</h2></div><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div>
+ <div class="pbar pprog"><i id="pProg" style="width:0%"></i></div><div id="pBody"></div></div>`);pulseStep()}
+function pulseStep(){const b=$('#pBody');if(!b||!PS)return;const total=2+PQS.length,done=PS.step===0?0:PS.step===1?1:2+PS.qi;$('#pProg').style.width=Math.round(done/total*100)+'%';
+ if(PS.step===0){$('#pTitle').textContent='How do you feel?';b.innerHTML=`<p class="sub psub">Pick the feeling, then how strong it is: inside is a little, outside is very.</p><div class="pwrap">${wheelSVG(PS.sec!=null?PS:null)}</div><button class="lnk pjust" id="pJust">Just log a feeling instead</button>`;
+  b.querySelector('.pwheel').onclick=e=>{const c=e.target.closest('[data-s]');if(!c)return;PS.sec=+c.dataset.s;PS.ring=+c.dataset.r;b.querySelector('.pwrap').innerHTML=wheelSVG(PS);try{navigator.vibrate&&navigator.vibrate(6)}catch(x){}clearTimeout(PS._t);PS._t=setTimeout(()=>{if(PS&&PS.step===0){PS.step=1;pulseStep()}},520)};
+  $('#pJust').onclick=()=>{closeSheet();setTimeout(feelSheet,230)};return}
+ if(PS.step===1){$('#pTitle').textContent='How is your energy?';b.innerHTML=`<p class="sub psub">Your body, not your mood.</p><div class="pen">${PENERGY.map(([n,v],i)=>`<button class="card pent" data-e="${v}" style="--i:${i}">${batt(v)}<b>${n}</b></button>`).join('')}</div><button class="lnk pback" id="pBk">${ic('chevl')} Back</button>`;
+  $$('.pent').forEach(x=>x.onclick=()=>{PS.energy=+x.dataset.e;x.classList.add('on');setTimeout(()=>{if(PS){PS.step=2;PS.qi=0;pulseStep()}},260)});$('#pBk').onclick=()=>{PS.step=0;pulseStep()};return}
+ if(PS.step===2){const [k,t]=PQS[PS.qi];$('#pTitle').textContent='Quick truths';const cur=PS.ans[k];
+  b.innerHTML=`<p class="sub psub">${PS.qi+1} of ${PQS.length} · go with your first answer.</p><div class="card pq" key="${k}"><p>${esc(t)}</p></div><div class="pans">${[['No',0],['A bit',1],['Yes',2]].map(([n,v])=>`<button class="pa ${cur===v?'on':''}" data-v="${v}">${n}</button>`).join('')}</div><button class="lnk pback" id="pBk">${ic('chevl')} Back</button>`;
+  $$('.pa').forEach(x=>x.onclick=()=>{PS.ans[k]=+x.dataset.v;x.classList.add('on');setTimeout(()=>{if(!PS)return;if(PS.qi<PQS.length-1){PS.qi++;pulseStep()}else pulseDone()},180)});
+  $('#pBk').onclick=()=>{if(PS.qi>0)PS.qi--;else PS.step=1;pulseStep()};return}}
+function pulseDone(){const x={sec:PS.sec,ring:PS.ring,energy:PS.energy,ans:{...PS.ans}},sc=pulseScore(x),f=PWHEEL[x.sec],rec={id:uid(),at:Date.now(),d:today(),m:sc.m,feel:f[0],ring:x.ring,sec:x.sec,energy:x.energy,ans:x.ans,causes:sc.causes,secs:Math.round((Date.now()-PS.t0)/1000)};
+ (S.pulse=S.pulse||[]).push(rec);if(S.pulse.length>2000)S.pulse=S.pulse.slice(-1500);use('pulse');const top=sc.causes[0]||'good';led('pulse',`Motivation ${sc.m}% · ${PCAUSES[top].t}`,{sub:`${PRINGS[x.ring]} ${f[0].toLowerCase()}`,ref:'pulse'});save();PS={step:3};
+ $('#pProg').style.width='100%';$('#pTitle').textContent='Your pulse';$('#pBody').innerHTML=pulseResult(rec,true);countUp($('#pBody'));render()}
+/* the result: the number, what is behind it, and what to do next */
+function pulseResult(rec,fresh){const [band,bc]=PBAND(rec.m),top=rec.causes.length?rec.causes:['good'],day=dayPulse(rec.d),n=pulsesOn(rec.d).length;
+ return`<div class="pres"><div class="presr">${ring(rec.m/100,bc,124,11,'')}<div class="presn"><b data-n="${rec.m}">${rec.m}</b><span>%</span></div></div><div class="presb" style="--bc:${bc}">${band}</div>
+ <p class="sub center" style="margin:6px 0 0">${n>1?`Today so far: <b>${day}%</b> from ${n} checks`:'Check again later and today\'s number corrects itself.'}</p></div>
+ <div class="card pdiag" style="--dc:${PBAND(rec.m)[1]}"><div class="lab" style="--lc:var(--accent)">${ic('sparkle',2)}<span>Diagnosis</span></div><h3>${esc(PCAUSES[top[0]].t)}</h3><p>${esc(PCAUSES[top[0]].d)}</p>
+ ${top.length>1?`<div class="pother">${top.slice(1).map(k=>`<span class="pill">${esc(PCAUSES[k].t)}</span>`).join('')}</div>`:''}</div>
+ <div class="flabel">What to do now</div><div class="precs">${PCAUSES[top[0]].r.map(([t,d,a],i)=>`<div class="card prec" style="--i:${i}"><span class="precn">${i+1}</span><div class="grow"><b>${esc(t)}</b><p>${esc(d)}</p></div>${a?`<button class="btn sm" onclick="pulseAct('${a.replace(/'/g,'')}')">${pulseActLabel(a)}</button>`:''}</div>`).join('')}</div>
+ ${fresh?`<button class="btn primary full" data-close>Done</button>`:''}<details class="phow"><summary>How Pulse works</summary><p>Pulse scores what research links to motivation: how much the task matters to you and whether you feel able to do it, against distraction and how far away the deadline feels (Temporal Motivation Theory). It also weighs your energy, your mood on the wheel, feeling forced or alone (Self-Determination Theory) and worry. The biggest gaps become your diagnosis. It is a reflection, not a medical test.</p></details>`}
+const pulseActLabel=a=>a==='focus15'?'Start 15 min':a==='focus'?'Start focus':a==='zen'?'Deep mode':a.startsWith('note')?'Write it':a==='agenda'?'Plan it':a==='task'?'Add tasks':a==='chat'?'Message':a==='groups'?'Groups':a==='share'?'Share':'Do it';
+function pulseAct(a){closeSheet();setTimeout(()=>{if(a==='focus15'){S.focus.mode='quick';save();go('focus')}else if(a==='focus'){S.focus.mode='pomo';save();go('focus')}else if(a==='zen')enterZen();
+ else if(a.startsWith('note')){const n=newNote({title:a.split(':')[1]||'Note',body:''});_editMode[n.id]=true;go('note:'+n.id)}else if(a==='agenda')agendaForm(today());else if(a==='task')taskQuick();
+ else if(a==='chat')go('chat');else if(a==='groups')go('groups');else if(a==='share')shareTo(agendaAtt(today()))},230)}
+/* on Today: the day's motivation, or an invitation to check */
+function pulseCard(d){const v=dayPulse(d),L=pulsesOn(d);if(v==null)return d===today()?`<button class="card pcta" onclick="openPulse()"><span class="pci">${ic('pulse',2)}</span><div class="grow"><div class="lab" style="--lc:var(--accent)">${ic('pulse',2)}<span>Pulse</span></div><b>How is your drive today?</b><div class="sub">A 40-second check with a diagnosis</div></div>${ic('arrow')}</button>`:'';
+ const [band,bc]=PBAND(v),last=L[L.length-1],top=last.causes[0]||'good',wk=[];for(let i=6;i>=0;i--){const x=new Date(d+'T12:00');x.setDate(x.getDate()-i);wk.push(dayPulse(isoD(x)))}
+ return`<a class="card pday" href="#pulse" style="--bc:${bc}" onclick="window._pday='${d}'">${ring(v/100,bc,64,7,v+'%')}<div class="grow"><div class="lab" style="--lc:${bc}">${ic('pulse',2)}<span>Motivation · ${band}</span></div><b>${esc(PCAUSES[top].t)}</b><div class="sub">${plural(L.length,'check')} · last at ${tHM(last.at)}</div></div><div class="pspark" aria-hidden="true">${wk.map((x,i)=>`<i style="height:${x==null?6:Math.max(8,x*.36)}px;${x==null?'':`background:${PBAND(x)[1]}`}" class="${i===6?'now':''}"></i>`).join('')}</div></a>`}
+/* the Pulse page: any day, its checks, and the last two weeks */
+function pPulse(){let d=window._pday||selDay||today();if(d>today())d=today();const v=dayPulse(d),L=pulsesOn(d),days=[];for(let i=13;i>=0;i--){const x=new Date(d+'T12:00');x.setDate(x.getDate()-i);const iso=isoD(x),p=dayPulse(iso);days.push({l:i%2?'':x.getDate()+'.',v:p||0,c:p==null?'var(--track)':PBAND(p)[1]})}
+ const prev=new Date(d+'T12:00');prev.setDate(prev.getDate()-1);const next=new Date(d+'T12:00');next.setDate(next.getDate()+1);const nx=isoD(next);
+ return`<div class="page">${header('Motivation',{sub:'Pulse',back:'today',right:`<button class="btn primary sm" onclick="openPulse()">${ic('pulse',2)} Check</button>`})}
+ <div class="pday-nav"><button class="icon-btn sm" onclick="window._pday='${isoD(prev)}';render()" aria-label="Previous day">${ic('chevl')}</button><b>${fmtDay(new Date(d+'T12:00').getTime())}</b><button class="icon-btn sm" ${nx>today()?'disabled':''} onclick="window._pday='${nx}';render()" aria-label="Next day">${ic('chevr')}</button></div>
+ ${v==null?empty('think',d===today()?'No pulse yet today':'No pulse that day',d===today()?'Forty seconds to see how motivated you are, why, and what to do about it.':'Use the arrows to see other days.',d===today()?`<button class="btn primary" onclick="openPulse()">Check my pulse</button>`:''):`${pulseResult(L[L.length-1],false).replace(/<b data-n="\d+">\d+<\/b>/,`<b data-n="${v}">${v}</b>`).replace(/Today so far: <b>\d+%<\/b> from \d+ checks|Check again later and today's number corrects itself\./,`${plural(L.length,'check')} this day, the latest counts most`)}
+ <section><div class="sh"><h2>Checks</h2><span class="sub">${L.length}</span></div><div class="card list">${L.slice().reverse().map(p=>`<div class="li" style="cursor:default"><span class="tlh" style="padding:0;width:44px">${tHM(p.at)}</span><div class="grow"><div class="t">${p.m}% · ${esc(PRINGS[p.ring]||'')} ${esc((p.feel||'').toLowerCase())}</div><div class="sub sm">${esc(PCAUSES[p.causes[0]||'good'].t)}</div></div><span class="pill" style="color:${PBAND(p.m)[1]}">${PBAND(p.m)[0]}</span></div>`).join('')}</div></section>`}
+ <section><div class="sh"><h2>Two weeks</h2><span class="sub">daily motivation</span></div><div class="card">${barChart(days,{h:110,fmt:x=>x+'%'})}</div></section></div>`}
 
 /* ============ WIDGETS: Atelier's branded way to show your work in a conversation ============
    A widget is a live card with a size, a font and a surface you choose. Your style is remembered per widget. */
