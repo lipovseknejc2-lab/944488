@@ -40,34 +40,47 @@ function pulseScore(x){const A=x.ans||{},q=k=>(A[k]??1)/2,f=PWHEEL[x.sec]||PWHEE
 const pulsesOn=d=>(S.pulse||[]).filter(p=>p.d===d).sort((a,b)=>a.at-b.at);
 function dayPulse(d){const L=pulsesOn(d);if(!L.length)return null;let w=0,s=0;L.forEach((p,i)=>{w+=i+1;s+=p.m*(i+1)});return Math.round(s/w)}
 /* the wheel: eight feelings around, three rings from a little (inside) to very (outside).
-   Rounded tiles with even gaps on a glass disc; the names curve along the outer ring and always read upright. */
-function wheelSVG(sel){const cx=150,cy=150,R=[52,86,117,150],CR=4.5,GAP=3,P=(r,a)=>[(cx+r*Math.sin(a)).toFixed(2),(cy-r*Math.cos(a)).toFixed(2)];
+   Rounded tiles with roomy gaps on a glass disc; rings grow thicker as feelings get stronger; names curve along
+   the outer ring and always read upright. It is drawn once: picking only slides a tile out and fades colours. */
+const PRAD=[48,78,111,150];
+function wheelSVG(){const cx=150,cy=150,R=PRAD,CR=5,GAP=6.5,P=(r,a)=>[(cx+r*Math.sin(a)).toFixed(2),(cy-r*Math.cos(a)).toFixed(2)];
  const tile=(r0,r1,a0,a1)=>{const o=r1-CR,i=r0+CR,dO=(CR+GAP/2)/o,dI=(CR+GAP/2)/i,[x0,y0]=P(o,a0+dO),[x1,y1]=P(o,a1-dO),[x2,y2]=P(i,a1-dI),[x3,y3]=P(i,a0+dI);
   return`M${x0} ${y0}A${o} ${o} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${i} ${i} 0 0 0 ${x3} ${y3}Z`};
- let defs='',g='',lab='';
- PWHEEL.forEach(([n,,,c],i)=>{const a0=(i-.5)*Math.PI/4,a1=(i+.5)*Math.PI/4,deg=i*45,flip=deg>90&&deg<270,rm=(R[2]+R[3])/2;
-  for(let r=0;r<3;r++){const on=sel&&sel.sec===i&&sel.ring===r;g+=`<path class="wc r${r} ${on?'on':''}" data-s="${i}" data-r="${r}" d="${tile(R[r],R[r+1],a0,a1)}" style="--c:${c}"><title>${PRINGS[r]} ${n.toLowerCase()}</title></path>`}
+ let defs='',g='';
+ PWHEEL.forEach(([n,,,c],i)=>{const a0=(i-.5)*Math.PI/4,a1=(i+.5)*Math.PI/4,am=i*Math.PI/4,deg=i*45,flip=deg>90&&deg<270,rm=(R[2]+R[3])/2,tx=(Math.sin(am)*8).toFixed(2),ty=(-Math.cos(am)*8).toFixed(2);
+  for(let r=0;r<3;r++)g+=`<path class="wc r${r}" data-s="${i}" data-r="${r}" d="${tile(R[r],R[r+1],a0,a1)}" style="--c:${c};--tx:${tx}px;--ty:${ty}px"><title>${PRINGS[r]} ${n.toLowerCase()}</title></path>`;
   const [sx,sy]=P(rm,flip?a1:a0),[ex,ey]=P(rm,flip?a0:a1);defs+=`<path id="pwl${i}" d="M${sx} ${sy}A${rm} ${rm} 0 0 ${flip?0:1} ${ex} ${ey}"/>`;
-  lab+=`<text class="wl ${sel&&sel.sec===i?'on':''}" dy="3.6"><textPath href="#pwl${i}" startOffset="50%" text-anchor="middle">${n}</textPath></text>`});
- const f=sel&&PWHEEL[sel.sec];
- return`<svg class="pwheel ${f?'has':''}" viewBox="-6 -6 312 312" role="group" aria-label="How do you feel"><defs>${defs}<radialGradient id="pwg" cx="50%" cy="30%" r="75%"><stop offset="0" stop-color="var(--glt)"/><stop offset="1" stop-color="var(--card2)"/></radialGradient></defs>
- <circle cx="150" cy="150" r="155" class="wbg"/>${g}${lab}<circle cx="150" cy="150" r="46" class="wcen"/>${f?`<circle cx="150" cy="150" r="46" class="wcring" style="--c:${f[3]}"/>`:''}
- <text x="150" y="143" text-anchor="middle" dominant-baseline="central" class="wct ${f?(f[0].length>8?'wctl':''):'wct0'}">${f?f[0]:'Tap a'}</text><text x="150" y="161" text-anchor="middle" dominant-baseline="central" class="wcs">${f?PRINGS[sel.ring]:'feeling'}</text></svg>`}
+  g+=`<text class="wl" data-s="${i}" dy="3.6" style="--tx:${tx}px;--ty:${ty}px"><textPath href="#pwl${i}" startOffset="50%" text-anchor="middle">${n}</textPath></text>`});
+ return`<svg class="pwheel" viewBox="-10 -10 320 320" role="group" aria-label="How do you feel"><defs>${defs}<radialGradient id="pwg" cx="50%" cy="28%" r="78%"><stop offset="0" stop-color="var(--glt)"/><stop offset="1" stop-color="var(--card2)"/></radialGradient></defs>
+ <circle cx="150" cy="150" r="157" class="wbg"/>${g}<circle cx="150" cy="150" r="${R[0]-3}" class="wcen"/><circle cx="150" cy="150" r="${R[0]-3}" class="wcring"/>
+ <text x="150" y="145" text-anchor="middle" dominant-baseline="central" class="wct" id="wcT">Your mood</text>
+ <path id="wcU" class="wcu" pathLength="1" d="M124 158C134 155.5 146 160 158 156.6C164 155 170 155.6 176 157"/>
+ <text x="150" y="171" text-anchor="middle" dominant-baseline="central" class="wcs" id="wcS">tap a tile</text></svg>`}
+/* picking: the tile slides out, the rest dims, the centre names it; nothing else moves */
+function pickCell(svg,i,r){const f=PWHEEL[i];svg.classList.add('has');svg.querySelectorAll('.wc.on,.wl.on').forEach(x=>x.classList.remove('on','out'));
+ const t=svg.querySelector(`.wc[data-s="${i}"][data-r="${r}"]`);t.classList.add('on');const l=svg.querySelector(`.wl[data-s="${i}"]`);l.classList.add('on');if(r===2)l.classList.add('out');
+ svg.style.setProperty('--pc',f[3]);const T=svg.querySelector('#wcT'),S2=svg.querySelector('#wcS'),U=svg.querySelector('#wcU');
+ T.textContent=f[0];T.classList.toggle('long',f[0].length>8);S2.textContent=PRINGS[r];U.classList.remove('draw');void U.getBoundingClientRect();U.classList.add('draw');
+ document.querySelectorAll('.pleg span').forEach((x,k)=>x.classList.toggle('on',k===r))}
 const batt=v=>`<svg class="pbatt" viewBox="0 0 40 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="31" height="16" rx="4"/><path d="M36.5 9V13"/>${v>0?`<rect x="5" y="6" width="${Math.max(3,25*v).toFixed(1)}" height="10" rx="2" fill="currentColor" stroke="none"/>`:''}</svg>`;
 /* the check itself: wheel, energy, eight statements, then the diagnosis */
 let PS=null;
 function openPulse(){PS={step:0,sec:null,ring:null,energy:null,ans:{},qi:0,t0:Date.now()};
  openModal(`<div class="sheet psheet" role="dialog" aria-modal="true" aria-label="Pulse"><div class="sheet-h"><div><div class="lab" style="--lc:var(--accent)">${ic('pulse',2)}<span>Pulse · about 40 seconds</span></div><h2 id="pTitle">How do you feel?</h2></div><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div>
  <div class="pbar pprog"><i id="pProg" style="width:0%"></i></div><div id="pBody"></div></div>`);pulseStep()}
-function pulseStep(){const b=$('#pBody');if(!b||!PS)return;const total=2+PQS.length,done=PS.step===0?0:PS.step===1?1:2+PS.qi;$('#pProg').style.width=Math.round(done/total*100)+'%';
- if(PS.step===0){$('#pTitle').textContent='How do you feel?';b.innerHTML=`<p class="sub psub">Pick the feeling, then how strong it is: inside is a little, outside is very.</p><div class="pwrap">${wheelSVG(PS.sec!=null?PS:null)}</div><button class="lnk pjust" id="pJust">Just log a feeling instead</button>`;
-  b.querySelector('.pwheel').onclick=e=>{const c=e.target.closest('[data-s]');if(!c)return;PS.sec=+c.dataset.s;PS.ring=+c.dataset.r;b.querySelector('.pwrap').innerHTML=wheelSVG(PS);try{navigator.vibrate&&navigator.vibrate(6)}catch(x){}clearTimeout(PS._t);PS._t=setTimeout(()=>{if(PS&&PS.step===0){PS.step=1;pulseStep()}},520)};
+function pulseStep(){const b=$('#pBody');if(!b||!PS)return;PS._lock=0;if(b.childElementCount&&!PS._in){PS._lock=1;b.classList.add('pfade');clearTimeout(PS._f);PS._f=setTimeout(()=>{if(!PS)return;PS._in=1;pulseStep();PS._in=0;b.classList.remove('pfade')},170);return}const total=2+PQS.length,done=PS.step===0?0:PS.step===1?1:2+PS.qi;$('#pProg').style.width=Math.round(done/total*100)+'%';
+ if(PS.step===0){$('#pTitle').textContent='How do you feel?';b.innerHTML=`<p class="sub psub">Pick a feeling. Inside is a little, outside is very.</p><div class="pwrap">${wheelSVG()}</div>
+ <div class="pleg">${PRINGS.map((n,k)=>`<span><em>${'<i></i>'.repeat(k+1)}</em>${n}</span>`).join('')}</div>
+ <button class="btn primary full pcont" id="pCont" ${PS.sec==null?'disabled':''}>Continue</button><button class="lnk pjust" id="pJust">Just log a feeling instead</button>`;
+  const svg=b.querySelector('.pwheel');if(PS.sec!=null)pickCell(svg,PS.sec,PS.ring);
+  svg.onclick=e=>{const c=e.target.closest('.wc');if(!c)return;PS.sec=+c.dataset.s;PS.ring=+c.dataset.r;pickCell(svg,PS.sec,PS.ring);$('#pCont').disabled=false;try{navigator.vibrate&&navigator.vibrate(6)}catch(x){}};
+  $('#pCont').onclick=()=>{if(PS.sec==null)return;PS.step=1;pulseStep()};
   $('#pJust').onclick=()=>{closeSheet();setTimeout(feelSheet,230)};return}
  if(PS.step===1){$('#pTitle').textContent='How is your energy?';b.innerHTML=`<p class="sub psub">Your body, not your mood.</p><div class="pen">${PENERGY.map(([n,v],i)=>`<button class="card pent" data-e="${v}" style="--i:${i}">${batt(v)}<b>${n}</b></button>`).join('')}</div><button class="lnk pback" id="pBk">${ic('chevl')} Back</button>`;
-  $$('.pent').forEach(x=>x.onclick=()=>{PS.energy=+x.dataset.e;x.classList.add('on');setTimeout(()=>{if(PS){PS.step=2;PS.qi=0;pulseStep()}},260)});$('#pBk').onclick=()=>{PS.step=0;pulseStep()};return}
+  $$('.pent').forEach(x=>x.onclick=()=>{if(PS._lock)return;PS._lock=1;PS.energy=+x.dataset.e;x.classList.add('on');setTimeout(()=>{if(PS){PS.step=2;PS.qi=0;pulseStep()}},260)});$('#pBk').onclick=()=>{PS.step=0;pulseStep()};return}
  if(PS.step===2){const [k,t]=PQS[PS.qi];$('#pTitle').textContent='Quick truths';const cur=PS.ans[k];
   b.innerHTML=`<p class="sub psub">${PS.qi+1} of ${PQS.length} · go with your first answer.</p><div class="card pq" key="${k}"><p>${esc(t)}</p></div><div class="pans">${[['No',0],['A bit',1],['Yes',2]].map(([n,v])=>`<button class="pa ${cur===v?'on':''}" data-v="${v}">${n}</button>`).join('')}</div><button class="lnk pback" id="pBk">${ic('chevl')} Back</button>`;
-  $$('.pa').forEach(x=>x.onclick=()=>{PS.ans[k]=+x.dataset.v;x.classList.add('on');setTimeout(()=>{if(!PS)return;if(PS.qi<PQS.length-1){PS.qi++;pulseStep()}else pulseDone()},180)});
+  $$('.pa').forEach(x=>x.onclick=()=>{if(PS._lock)return;PS._lock=1;PS.ans[k]=+x.dataset.v;x.classList.add('on');setTimeout(()=>{if(!PS)return;if(PS.qi<PQS.length-1){PS.qi++;pulseStep()}else pulseDone()},180)});
   $('#pBk').onclick=()=>{if(PS.qi>0)PS.qi--;else PS.step=1;pulseStep()};return}}
 function pulseDone(){const x={sec:PS.sec,ring:PS.ring,energy:PS.energy,ans:{...PS.ans}},sc=pulseScore(x),f=PWHEEL[x.sec],rec={id:uid(),at:Date.now(),d:today(),m:sc.m,feel:f[0],ring:x.ring,sec:x.sec,energy:x.energy,ans:x.ans,causes:sc.causes,secs:Math.round((Date.now()-PS.t0)/1000)};
  (S.pulse=S.pulse||[]).push(rec);if(S.pulse.length>2000)S.pulse=S.pulse.slice(-1500);use('pulse');const top=sc.causes[0]||'good';led('pulse',`Motivation ${sc.m}% · ${PCAUSES[top].t}`,{sub:`${PRINGS[x.ring]} ${f[0].toLowerCase()}`,ref:'pulse'});save();PS={step:3};
