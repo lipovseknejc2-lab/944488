@@ -22,6 +22,7 @@ const LINES={
  deck:{warm:['Ooh, can I borrow these cards?','Great deck, let\'s quiz each other.'],brief:['Useful, thanks.','Got the deck.'],curious:['How many do you know already?','Which card is the hardest?']},
  quote:{warm:['That is a lovely line.','I needed that today, thank you.'],brief:['Good one.','True.'],curious:['Where is that from?','What made you pick it?']},
  countdown:{warm:['You have got this! Want to study together?','We can plan the last days together.'],brief:['Noted. Good luck.','Counting with you.'],curious:['How ready do you feel?','Which part worries you most?']},
+ pulse:{warm:['Thanks for sharing how you feel. Want to work on it together?','Proud of you for checking in.'],brief:['Noted. Hang in there.','Thanks for sharing.'],curious:['What would help most right now?','Which step will you try first?']},
  gen:{warm:['Sounds good!','Love it. Keep going.','I\'m with you on this.'],brief:['OK.','Noted.','Sure.'],curious:['Tell me more?','Why do you think so?','Interesting!']}};
 function topicOf(t){t=t.toLowerCase();if(/\b(hi|hey|hello|živjo|zdravo|good morning)\b/.test(t))return'greet';if(/thank|hvala|thx/.test(t))return'thanks';if(/idea|ideja|what if|maybe we/.test(t))return'idea';if(/deadline|due|tomorrow|today|friday|rok|jutri/.test(t))return'time';if(/meet|call|sestan|session/.test(t))return'meet';if(/\?$/.test(t.trim()))return'q';return'gen'}
 const pick=a=>a[Math.floor(Math.random()*a.length)];

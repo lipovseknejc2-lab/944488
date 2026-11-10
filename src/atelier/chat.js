@@ -3,7 +3,7 @@ const unreadOf=c=>c.msgs.filter(m=>m.from!=='me'&&m.at>(c.read||0)).length;
 const convoName=c=>c.kind==='dm'?(person(c.with)?.name||'Someone'):(grp(c.with)?.name||'Group');
 const lastMsg=c=>c.msgs[c.msgs.length-1];
 /* what can be shared in a conversation: [label, icon] */
-const ATT={note:['Note','notes'],project:['Project','projects'],file:['File','file'],photo:['Photo','image'],doc:['File','file'],focus:['Focus','focus'],day:['My day','sun'],agenda:['Agenda','calendar'],progress:['Progress','chart'],deck:['Flashcards','cap'],countdown:['Countdown','flag'],quote:['Quote','quote']};
+const ATT={note:['Note','notes'],project:['Project','projects'],file:['File','file'],photo:['Photo','image'],doc:['File','file'],focus:['Focus','focus'],day:['My day','sun'],agenda:['Agenda','calendar'],progress:['Progress','chart'],deck:['Flashcards','cap'],countdown:['Countdown','flag'],quote:['Quote','quote'],pulse:['Pulse','pulse']};
 function msgPreview(m){if(!m)return'No messages yet';const who=m.from==='me'?'You: ':'';if(!m.att)return who+m.text;if(isWidget(m.att))return`${who}${wLabel(m.att.kind)} widget${m.att.kind==='quote'||m.att.kind==='photo'?'':' · '+(m.att.title||'')}`;const a=m.att,L=(ATT[a.kind]||ATT.file)[0];
  return who+(a.kind==='photo'?'Photo'+(m.text?' · '+m.text:''):a.kind==='progress'?`Progress: ${a.title} ${a.pct}%`:`${L}: ${a.title}`)}
 /* group look: its own line icon in its colour */

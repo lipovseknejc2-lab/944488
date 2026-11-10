@@ -1,6 +1,6 @@
 /* ============ WIDGETS: Atelier's branded way to show your work in a conversation ============
    A widget is a live card with a size, a font and a surface you choose. Your style is remembered per widget. */
-const WKINDS=[['focus','Focus','focus'],['day','My day','sun'],['agenda','Agenda','calendar'],['project','Project','projects'],['deck','Flashcards','cap'],['countdown','Countdown','flag'],['quote','Quote','quote'],['photo','Photo','image']];
+const WKINDS=[['focus','Focus','focus'],['day','My day','sun'],['agenda','Agenda','calendar'],['project','Project','projects'],['deck','Flashcards','cap'],['countdown','Countdown','flag'],['quote','Quote','quote'],['photo','Photo','image'],['pulse','Pulse','pulse']];
 const WK=new Set(WKINDS.map(w=>w[0]));
 const WFONTS=[['sans','Sans'],['serif','Serif'],['hand','Hand']],WLAYOUTS=[['small','Small'],['wide','Wide']],WTONES=[['glass','Glass'],['tint','Tint'],['ink','Ink']];
 const isWidget=a=>!!a&&WK.has(a.kind)&&(a.kind!=='photo'||!!a.w)&&a.kind!=='progress';
@@ -19,6 +19,7 @@ function widgetHTML(a,preview,c,m){const k=a.kind,w=Object.assign(wStyle(k),a.w|
  else if(k==='deck'){const d=deck(a.id),n=d?d.cards.length:(a.count||0),ms=d&&d.cards.length?Math.round(masteredOf(d)/d.cards.length*100):(a.mastered||0);col=d?.col||a.col||'var(--violet)';href='#deck:'+a.id;
   body=`<div class="wtitle">${esc(d?.name||a.title)}</div><div class="wbig"><b>${n}</b><span>cards</span></div><div class="pbar"><i style="width:${ms}%"></i></div><div class="wsub">${ms}% mastered${wide&&d?` · ${dueOf(d).length} due`:''}</div>`}
  else if(k==='countdown'){const n=dayDiff(a.d,today());col=a.col||'var(--red)';href='#study';body=`<div class="wtitle">${esc(a.title)}</div><div class="wbig"><b>${n<=0?(n===0?'Today':'Done'):n}</b>${n>0?`<span>${n===1?'day':'days'}</span>`:''}</div><div class="wsub">${new Date(a.d+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}${wide&&a.note?' · '+esc(a.note):''}</div>`}
+ else if(k==='pulse'){const [bn,bc]=PBAND(a.m||0),cz=PCAUSES[a.cause]||PCAUSES.good;col=bc;href='#pulse';body=wide?`<div class="wtitle">${esc(cz.t)}</div><div class="wbig"><b>${a.m}</b><span>% · ${bn}</span></div><div class="pbar"><i style="width:${a.m}%"></i></div><div class="wsub">${esc(PRINGS[a.ring]||'')} ${esc((a.feel||'').toLowerCase())}${a.day!=null&&a.day!==a.m?' · today '+a.day+'%':''}</div>`:`<div class="wbig"><b>${a.m}</b><span>%</span></div><div class="wsub">${bn} · ${esc((a.feel||'').toLowerCase())}</div><div class="pbar"><i style="width:${a.m}%"></i></div><div class="wfoot"><span>${esc(cz.t)}</span></div>`}
  else if(k==='quote'){const q=a.q||{};col=(QCOLS.find(x=>x[0]===q.col)||QCOLS[0])[1];body=`<blockquote class="wq qf-${q.font||w.font}">${esc(q.t||'')}</blockquote><div class="wsub">${esc(a.by||'')}</div>`}
  else if(k==='photo'){col='var(--violet)';tap=c&&m?`onclick="viewAtt('${c.id}','${m.id}')"`:'';body=`<div class="wph">${a.src?`<img src="${a.src}" alt="">`:a.fid?`<img data-fid="${a.fid}" alt="" decoding="async">`:`<span class="wphe">${ic('image',1.5)}</span>`}</div>${a.cap?`<div class="wcap">${esc(a.cap)}</div>`:''}`}
  const lab=k==='quote'?'Quote':k==='photo'?(a.cap?'Photo':'Photo'):wLabel(k);
@@ -32,10 +33,10 @@ function openWidget(cid,kind,preset,after){const c=cid?S.chats.find(x=>x.id===ci
  const build=()=>{if(kind==='focus')return focusAtt();if(kind==='day')return dayAtt(today());if(kind==='agenda')return agendaAtt(agendaOf(selDay||today()).length?(selDay||today()):today());
   if(kind==='quote')return S.me.quote&&S.me.quote.t?{kind:'quote',title:'Quote',q:{...S.me.quote},by:fullName()}:null;
   if(kind==='project'){const p=S.projects[S.projects.length-1];return p?projAtt(p):null}if(kind==='deck'){const d=S.study.decks[S.study.decks.length-1];return d?deckAtt(d):null}
-  if(kind==='countdown'){const e=nextExams()[0];return e?examAtt(e):null}if(kind==='photo')return{kind:'photo',title:'Photo',cap:''};return null};
+  if(kind==='countdown'){const e=nextExams()[0];return e?examAtt(e):null}if(kind==='pulse'){const p=pulseLatest();return p?{kind:'pulse',title:'Pulse',m:p.m,d:p.d,feel:p.feel,ring:p.ring,cause:p.causes[0]||'good',day:dayPulse(p.d)}:null}if(kind==='photo')return{kind:'photo',title:'Photo',cap:''};return null};
  if(!a)a=build();
  const pick=kind==='project'?S.projects.map(p=>[p.id,p.name]):kind==='deck'?S.study.decks.map(d=>[d.id,d.name]):kind==='countdown'?nextExams().map(e=>[e.id,e.title]):null;
- const none={project:['No projects yet','Start a project','projectForm()'],deck:['No flashcard decks yet','Make a deck','deckForm()'],countdown:['No exams or deadlines yet','Add one','examForm()'],quote:['You have no quote yet','Write your quote','quoteSheet()']}[kind];
+ const none={project:['No projects yet','Start a project','projectForm()'],deck:['No flashcard decks yet','Make a deck','deckForm()'],countdown:['No exams or deadlines yet','Add one','examForm()'],quote:['You have no quote yet','Write your quote','quoteSheet()'],pulse:['No pulse checks yet','Check my pulse','openPulse()']}[kind];
  const seg=(id,L,v)=>`<div class="seg sm wseg" id="${id}">${L.map(([k,n])=>`<button type="button" data-v="${k}" class="${v===k?'on':''}">${n}</button>`).join('')}</div>`;
  openModal(`<div class="sheet wsheet" role="dialog" aria-modal="true" aria-label="${esc(wLabel(kind))} widget"><div class="sheet-h"><h2>${esc(wLabel(kind))} widget</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div>
  <div class="wstage" id="wSt"></div>

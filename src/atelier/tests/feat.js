@@ -214,7 +214,7 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await G('projects');ok(await E(()=>/90%/.test(document.querySelector('.card.list').textContent)),'project list shows the percentage');
  // group chat: header opens info, share everything
  await G('c:'+gc);await Z(2500);ok(await E(c=>S.chats.find(x=>x.id===c).msgs.some(m=>m.from!=='me'),gc),'bots react to the progress update');
- await r.click('.composer [aria-label="Share"]');await Z(400);ok(await E(()=>document.querySelectorAll('.wtile').length===8&&document.querySelectorAll('.shopt:not(.wtile)').length===3),'share sheet: eight widgets, then photo, file and note');
+ await r.click('.composer [aria-label="Share"]');await Z(400);ok(await E(()=>document.querySelectorAll('.wtile').length===9&&document.querySelectorAll('.shopt:not(.wtile)').length===3),'share sheet: eight widgets, then photo, file and note');
  await r.setInputFiles('#sh_photo',D+'/t.gif');await Z(900);
  const ph=await E(c=>{const m=S.chats.find(x=>x.id===c).msgs.filter(m=>m.att&&m.att.kind==='photo').pop();return m&&{fid:m.att.fid,id:m.id}},gc);
  ok(ph&&await E(f=>IDB.get(f).then(b=>b instanceof Blob),ph.fid),'photo shared and kept on the device');
@@ -316,7 +316,7 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  const exd=await E(()=>{const d=new Date();d.setDate(d.getDate()+3);return isoD(d)});
  await r.click('.sh .lnk:has-text("New") >> nth=0');await Z(300);await r.fill('#exT','Chemistry exam');await r.fill('#exD',exd);await r.click('#sf button[type=submit]');await Z(400);
  ok(await E(()=>S.study.exams.length===1&&/in 3 days/.test(document.querySelector('.exam').textContent)&&!!document.querySelector('.exam .cd.urgent')),'exam counts down, close ones in red');
- await r.click('.exam [aria-label="Plan study blocks"]');await Z(300);await r.fill('#plT','23:59');await r.fill('#plN','2');await r.click('#sf button[type=submit]');await Z(400);
+ await E(()=>planSheet(S.study.exams[0].id));await Z(300);await r.fill('#plT','23:59');await r.fill('#plN','2');await r.click('#sf button[type=submit]');await Z(400);
  x=await E(e=>({blocks:S.agenda.filter(a=>a.title==='Study: Chemistry exam').map(a=>a.d),exam:S.agenda.some(a=>a.title==='Exam: Chemistry exam'&&a.d===e)}),exd);
  ok(x.blocks.length===2&&x.blocks.every(d=>d<exd)&&x.exam,'plan adds study blocks before the exam, and the exam ('+JSON.stringify(x)+')');
  await E(e=>planSheet(S.study.exams[0].id));await Z(300);await r.fill('#plT','23:59');await r.fill('#plN','2');await r.click('#sf button[type=submit]');await Z(300);ok(await E(()=>S.agenda.filter(a=>a.title==='Study: Chemistry exam').length===2),'planning again adds no doubles');
