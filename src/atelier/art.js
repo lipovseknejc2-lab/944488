@@ -45,10 +45,11 @@ const noteGlyph=(col='var(--accent)')=>`<svg class="ng" viewBox="0 0 48 48" fill
 /* knot: tracking unit (shown only on the You page) */
 const KNOT='M11 51C17 41 24 31 21 22C18 13 7 17 10.5 27C14 37 35 38 45 27C53 18 47.5 9 40.5 13C33 17 40 34 53 51';
 const knot=(cls='kn',sw=4.4)=>`<svg class="${cls}" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${KNOT}"/></svg>`;
-/* app mark: a symmetrical A in one ink line; a soft rounded top and one gently arched clay crossbar, the hand-drawn trace */
-const MARK_A='M12.5 47L25.6 15.2C26.4 13.2 27.2 12.2 28 12.2C28.8 12.2 29.6 13.2 30.4 15.2L43.5 47';
-const MARK_B='M16.8 33.6C21 31.8 24.4 31.2 28 31.2C31.6 31.2 35 31.8 39.2 33.6';
-function markSVG(bg=true,sw=4){return`<svg viewBox="0 0 56 56" aria-hidden="true">${bg?'<rect width="56" height="56" rx="13" fill="#f4efe6"/>':''}<g fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"><path d="${MARK_A}" stroke="${bg?'#24211d':'currentColor'}"/><path d="${MARK_B}" stroke-width="${(sw*.9).toFixed(2)}" stroke="${bg?'#d9764f':'var(--accent)'}"/></g></svg>`}
+/* app mark: a symmetrical A in one ink line; a soft rounded top; the clay crossbar runs through it like a thread and curls up to a small knot at the end */
+const MARK_A='M10.5 47L23.6 15.2C24.4 13.2 25.2 12.2 26 12.2C26.8 12.2 27.6 13.2 28.4 15.2L41.5 47';
+const MARK_B='M12.6 34.2C18 31.8 22.6 31.2 26 31.2C31.8 31.2 37.4 32.6 42.2 30.4C45.4 28.9 46.6 25.8 45.6 23.4';
+const MARK_DOT=[44.4,19.6]; // the end of the thread
+function markSVG(bg=true,sw=4){return`<svg viewBox="0 0 56 56" aria-hidden="true">${bg?'<rect width="56" height="56" rx="13" fill="#f4efe6"/>':''}<g fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"><path d="${MARK_A}" stroke="${bg?'#24211d':'currentColor'}"/><path d="${MARK_B}" stroke-width="${(sw*.9).toFixed(2)}" stroke="${bg?'#d9764f':'var(--accent)'}"/></g><circle cx="${MARK_DOT[0]}" cy="${MARK_DOT[1]}" r="${(sw*.65).toFixed(2)}" fill="${bg?'#d9764f':'var(--accent)'}"/></svg>`}
 
 /* ---- characters: gesture figures, unfinished on purpose. P = ink paths, A = accent paths ---- */
 const FIG={
@@ -84,7 +85,7 @@ function posterSVG(po,w){const bg=po.dark?'#1f1d1a':'#f4efe6',ink=po.dark?'#f2ec
  <g transform="translate(58 46) scale(2.1)" fill="none">${figure(po.fig,{ink,acc:po.acc,sw:2.1}).replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</g>
  <text x="28" y="${po.t.includes('\n')?312:330}" font-size="27" fill="${ink}" letter-spacing="-.3">${po.t.split('\n').map((l,i)=>`<tspan x="28" dy="${i?31:0}">${escH(l)}</tspan>`).join('')}</text>
  <text x="28" y="364" font-size="9.5" fill="${mu}" letter-spacing="2.4" font-family="Instrument Sans, Helvetica, sans-serif" font-weight="600">${escH(po.s)}</text>
- <g transform="translate(246 342) scale(.5)" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="${MARK_A}" stroke="${ink}"/><path d="${MARK_B}" stroke="${po.acc}" stroke-width="3.6"/></g></svg>`}
+ <g transform="translate(246 342) scale(.5)" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="${MARK_A}" stroke="${ink}"/><path d="${MARK_B}" stroke="${po.acc}" stroke-width="3.6"/><circle cx="${MARK_DOT[0]}" cy="${MARK_DOT[1]}" r="2.6" fill="${po.acc}" stroke="none"/></g></svg>`}
 /* ---- focus clock ---- */
 function clockSVG(frac,phase){const R=118,C=2*Math.PI*R,ticks=[];for(let i=0;i<60;i++){const a=i/60*Math.PI*2-Math.PI/2,big=i%5===0,r1=R+16,r2=R+(big?27:22),j=((i*37)%7-3)*.12;
   ticks.push(`<line x1="${(150+Math.cos(a+j*.01)*r1).toFixed(1)}" y1="${(150+Math.sin(a+j*.01)*r1).toFixed(1)}" x2="${(150+Math.cos(a)*r2).toFixed(1)}" y2="${(150+Math.sin(a)*r2).toFixed(1)}" stroke-width="${big?2.2:1.3}" opacity="${big?.75:.35}"/>`)}

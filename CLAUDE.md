@@ -36,9 +36,10 @@ The repository also contains other apps (the site root and the other folders). *
 - **Tab bar** is built once (`nav()`); afterwards only the active tab, the sliding highlight and the badge change. Never rebuild it on a new message, or it jumps.
 - **Themes:** every theme only sets design tokens (`SKINS` in `rewards.js` generates the CSS). Every new feature must use the tokens (`--bg`, `--card`, `--text`, `--accent`, `--line`, `--fill` and so on), never raw colours, so it looks right in every theme, light and dark; the tests open every screen in every theme. New themes can be added over time, always priced above the ones before.
 - **Knots** use `KSCALE` (8): a normal full day is about 1,600 knots. Themes and frames unlock at all-time totals and are never spent; the top theme is over a million (about two years). `fixData()` scales older saves once.
-- **Logo:** `MARK_A` (the symmetrical A) and `MARK_B` (the arched clay crossbar) in `art.js` are the only source; the splash, posters, widgets and `atelier/icon.svg` plus the PNG icons must always use the current mark.
+- **Logo (Thread):** `MARK_A` (the symmetrical A), `MARK_B` (the clay thread crossbar) and `MARK_DOT` (its end) in `art.js` are the only source; the splash, posters, widgets and `atelier/icon.svg` plus the PNG icons must always use the current mark.
 - **Widgets** (`widgets.js`): Atelier's branded live cards in chat, with size, font and surface the user picks and that are remembered per kind. Anything shared as a card should be a widget kind.
-- **Quick panel:** floats over pages and is never part of the layout. It is open by itself only on Today; elsewhere it is a handle.
+- **One design language:** new screens use the widget grammar and the glass material described in `DESIGN.md` (tiles, `.lab` label rows, big tabular numbers, `--glt`/`--gl-hi` glass, `--spring` presses).
+- **The Palette** (quick panel): floats over pages and is never part of the layout. It is open by itself only on Today; elsewhere it is a handle.
 - **No emojis** anywhere in the text. Use line icons from `art.js`.
 - **Offline:** `atelier/sw.js` may only delete caches starting with `atelier-`.
 

@@ -36,11 +36,11 @@ ok(await ev(()=>S.usage.total===8),'sign-in uses 1 knot unit (8 knots)');
 ok(await p.isVisible('.ttl')&&await p.isVisible('.week')&&await p.isVisible('#motd'),'today: title, week, message of the day');
 ok(!(await p.isVisible('text=knots')),'knots hidden on Today');
 let k0=await K();await p.click('.playb');await W(300);ok(await K()===k0+8,'message of the day play is metered');
-await p.click('.rail .rbtns button:nth-child(2)');await W(400);await p.click('[data-f="thankful"]');await p.fill('#flN','after the walk');await p.click('#flS');await W(500);
+await p.click('.rail .rbtns button:has-text("Feeling")');await W(400);await p.click('[data-f="thankful"]');await p.fill('#flN','after the walk');await p.click('#flS');await W(500);
 ok(await p.isVisible('.timeline .feelchip >> text=thankful'),'feeling check-in shows on the timeline');
 ok(await p.isVisible('.wday.today b.has'),'today circle gets a colour after activity');
 // notes
-await p.click('.rail .rbtns button:nth-child(1)');await W(500);ok(await ev(()=>route.k==='note'),'quick note opens editor');
+await p.click('.rail .rbtns button:has-text("Note")');await W(500);ok(await ev(()=>route.k==='note'),'quick note opens editor');
 await p.fill('#nT','Sprint plan');await p.fill('#nB','# Goals\n[ ] Draft layout\n[ ] Test flows\n- keep it simple');await W(500);
 const nid=await ev(()=>route.a[0]);ok(await ev(id=>note(id).title==='Sprint plan'&&note(id).body.includes('Draft'),nid),'note autosaves');
 await p.click('text=Done');await W(300);ok(await p.isVisible('.prose h3 >> text=Goals'),'preview renders heading');
@@ -376,8 +376,8 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  ok(await E(()=>S.usage.days[today()].space===1),'switching space uses a knot');
  await G('you');await r.click('.spseg [data-sp=student]');await Z(700);
  // logo
- ok(await E(()=>MARK_A.startsWith('M12.5 47L25.6 15.2')&&MARK_B.startsWith('M16.8 33.6')&&posterSVG(POSTERS[0]).includes(MARK_B)&&markSVG().includes(MARK_A)&&document.querySelector('#splash')===null||document.querySelector('#splash path').getAttribute('d')===MARK_A),'the new mark is used in the app, splash and posters');
- ok(await E(()=>{const n=MARK_A.match(/[\d.]+/g).map(Number);const xs=n.filter((_,i)=>i%2===0);return xs.every((x,i)=>Math.abs(x+xs[xs.length-1-i]-56)<.01)}),'the A is exactly symmetrical');
+ ok(await E(()=>MARK_A.startsWith('M10.5 47L23.6 15.2')&&MARK_B.startsWith('M12.6 34.2')&&Array.isArray(MARK_DOT)&&posterSVG(POSTERS[0]).includes(MARK_B)&&markSVG().includes(MARK_A)&&document.querySelector('#splash')===null||document.querySelector('#splash path').getAttribute('d')===MARK_A),'the new mark is used in the app, splash and posters');
+ ok(await E(()=>{const n=MARK_A.match(/[\d.]+/g).map(Number);const xs=n.filter((_,i)=>i%2===0);return xs.every((x,i)=>Math.abs(x+xs[xs.length-1-i]-(xs[0]+xs[xs.length-1]))<.01)}),'the A is exactly symmetrical');
  // knot scale
  let k=await E(()=>S.usage.total);await E(()=>use('msg'));ok(await E(k=>S.usage.total===k+8,k),'one message is 8 knots');
  ok(await E(()=>{const s=fixData({usage:{days:{'2026-01-01':{_n:10,msg:10}},total:10},focus:{},settings:{},study:{}});return s.usage.total===80&&s.usage.days['2026-01-01']._n===80&&s.usage.ks===8&&fixData(s).usage.total===80}),'older knots are scaled once, never twice');

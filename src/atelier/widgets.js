@@ -6,7 +6,7 @@ const WFONTS=[['sans','Sans'],['serif','Serif'],['hand','Hand']],WLAYOUTS=[['sma
 const isWidget=a=>!!a&&WK.has(a.kind)&&(a.kind!=='photo'||!!a.w)&&a.kind!=='progress';
 const wStyle=k=>Object.assign({font:k==='quote'?'serif':'sans',layout:['photo','agenda','day','quote'].includes(k)?'wide':'small',tone:'glass'},(S.widgets||{})[k]||{});
 const wLabel=k=>(WKINDS.find(w=>w[0]===k)||WKINDS[0])[1];
-const wMark=`<svg class="wmk" viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${MARK_A}" stroke="currentColor" stroke-width="5"/><path d="${MARK_B}" stroke="var(--wc)" stroke-width="4.4"/></svg>`;
+const wMark=`<svg class="wmk" viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${MARK_A}" stroke="currentColor" stroke-width="5"/><path d="${MARK_B}" stroke="var(--wc)" stroke-width="4.4"/><circle cx="${MARK_DOT[0]}" cy="${MARK_DOT[1]}" r="3.2" fill="var(--wc)"/></svg>`;
 function examAtt(e){return{kind:'countdown',id:e.id,title:e.title,d:e.d,col:e.col,note:e.note||''}}
 /* the card itself; live where it can be (a project shows its progress today), a snapshot otherwise */
 function widgetHTML(a,preview,c,m){const k=a.kind,w=Object.assign(wStyle(k),a.w||{}),wide=w.layout==='wide';let col='var(--accent)',body='',href='',tap='';

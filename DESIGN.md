@@ -45,7 +45,7 @@ Meaning colours (light/dark): red `--red`, yellow `--yellow`, green `--green`, b
 - Characters (`FIG` in `art.js`): gesture figures on a 100 grid. One ink colour plus **one** accent prop. Deliberately unfinished, with no faces (at most a dot), no shading, and at least one open line. Poses include think, write, walk, read, reach, rest, wave, duo and team.
 - Avatars: a hair shape plus shoulders inside a tinted circle, with no face. Bots get a small bot badge.
 - Posters: one figure, a soft off-register wash, a serif headline (two short lines at most), a small uppercase caption and the mark. Cream or charcoal background.
-- Mark: a clean, symmetrical A in one ink line with a soft rounded top, crossed by one gently arched clay bar (`MARK_A`, `MARK_B` in `art.js`). It sits on the splash, in the corner of every poster, on widgets and on the app icons.
+- Mark ("Thread"): a clean, symmetrical ink A with a soft rounded top; the clay crossbar runs through it like a thread, leaves on the right and curls up to a small clay dot, the thread's end (`MARK_A`, `MARK_B`, `MARK_DOT` in `art.js`). It sits on the splash (the dot lands last), in the corner of every poster, on widgets, on the Palette and on the app icons.
 - Knots: in Atelier they measure usage like tokens and appear only on the You page. Always draw the same one-stroke knot. Never coins or bills. See `.claude/skills/knots-points`.
 
 ### Motion
@@ -75,6 +75,11 @@ No emojis. Short, warm, plain sentences. Empty states get a drawing, one serif l
   - the floating quick panel (Note, Feeling, Action, Voice) with a tuck-away handle.
 - **Deep mode:** pure black (#000) for OLED, dim warm ink, the phase in Caveat in its colour, a big sans timer, a 2px progress line and round dashes. Controls appear on tap and fade after four seconds. No blur, no glow, no motion except the numbers.
 - **Study:** decks are stacked cards with the cap icon in the deck colour; exams have a date tile and a countdown pill (red within three days, yellow within a week); flashcards flip in 3D with a serif question and a sans answer; grades are four tinted pills (Again red, Hard yellow, Good green, Easy blue).
+- **One design language:** everything looks like the widgets. Tiles are glass with a 22 to 26px radius; a small uppercase label row with a line icon in the tile's colour (`.lab`, `.nlab`, `.wh`); one bold line; big tabular numbers; thin progress bars. Not everything carries the mark, but everything uses this grammar.
+- **Glass:** every surface is the same material: a soft light falling from the top edge (`--glt`, `--gl-hi`), deep blur with extra saturation, a hairline edge and layered shadows. The tab bar, the Palette, icon buttons, buttons, segmented controls and sheets all use it. It is built from theme tokens, so every theme and dark mode get it for free.
+- **Motion:** spring presses (`--spring`) on everything you tap, tiles rise in with a short stagger, the active tab icon gives a small hop, sheets settle with a soft overshoot, theme changes cross-fade. Only transform and opacity move; reduced motion turns it off.
+- **The Palette:** the floating tool panel (Note, Feeling, Action, Voice) is called the Palette and carries the mark at its top.
+- **Notes:** each note is a tile tinted with its colour, with a label row (Note, Pinned, Shared and the time), the title, a few lines and a checklist bar; pinned and long notes are wide. An open note is one paper tile with a sticky glass toolbar.
 - **Themes:** each theme is a full token set for light and dark plus three wash colours; the rarer the theme, the richer the wash (Grand atelier drifts slowly). Never hard-code colours in new screens.
 - **Profile frames:** one fine line around your avatar in the accent colour, never heavy: hairline, stitch, laurel, knot, orbit, gilded.
 - **Quote card:** a small sticky-note gadget with a quote mark, in Serif, Hand or Sans, on Paper, Glass or Ink, with one subtle colour.
