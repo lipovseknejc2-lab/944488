@@ -7,8 +7,9 @@
    - Core affect circumplex (Russell, 1980): how pleasant and how activated you feel; the wheel's rings are intensity.
    - What helps: implementation intentions (Gollwitzer, 1999), temptation bundling (Milkman et al., 2014),
      daylight, food and short breaks for energy, expressive writing for worry, working alongside others. */
+/* colours walk around the wheel: warm and bright at the top, cool and calm on the right, muted at the bottom, sharp on the left */
 const PWHEEL=[['Excited',.7,.8,'var(--yellow)'],['Determined',.85,.45,'var(--accent)'],['Content',.75,-.2,'var(--green)'],['Calm',.5,-.6,'var(--blue)'],
- ['Tired',-.4,-.85,'var(--muted)'],['Bored',-.7,-.4,'var(--violet)'],['Frustrated',-.75,.45,'var(--red)'],['Anxious',-.6,.8,'#c25a86']];
+ ['Tired',-.4,-.85,'#8b8798'],['Bored',-.7,-.4,'var(--violet)'],['Frustrated',-.75,.45,'var(--red)'],['Anxious',-.6,.8,'#c95b8b']];
 const PRINGS=['A little','Quite','Very'];
 const PENERGY=[['Drained',0],['Low',.33],['Okay',.66],['Charged',1]];
 /* id, statement; the last value says whether "Yes" points to a problem */
@@ -38,15 +39,20 @@ function pulseScore(x){const A=x.ans||{},q=k=>(A[k]??1)/2,f=PWHEEL[x.sec]||PWHEE
 /* a day's motivation: every check counts, the latest ones count most, so it corrects itself during the day */
 const pulsesOn=d=>(S.pulse||[]).filter(p=>p.d===d).sort((a,b)=>a.at-b.at);
 function dayPulse(d){const L=pulsesOn(d);if(!L.length)return null;let w=0,s=0;L.forEach((p,i)=>{w+=i+1;s+=p.m*(i+1)});return Math.round(s/w)}
-/* the wheel: eight feelings around, three rings from a little (inside) to very (outside) */
-function wheelSVG(sel){const cx=150,cy=150,R=[46,82,116,148],seg=(r0,r1,a0,a1)=>{const p=(r,a)=>[cx+r*Math.sin(a),cy-r*Math.cos(a)];const [x0,y0]=p(r1,a0),[x1,y1]=p(r1,a1),[x2,y2]=p(r0,a1),[x3,y3]=p(r0,a0);
-  return`M${x0.toFixed(1)} ${y0.toFixed(1)}A${r1} ${r1} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}A${r0} ${r0} 0 0 0 ${x3.toFixed(1)} ${y3.toFixed(1)}Z`};
- let g='';PWHEEL.forEach(([n,,,c],i)=>{const a0=(i-.5)*Math.PI/4+.012,a1=(i+.5)*Math.PI/4-.012;for(let r=0;r<3;r++){const on=sel&&sel.sec===i&&sel.ring===r;
-  g+=`<path class="wc ${on?'on':''}" data-s="${i}" data-r="${r}" d="${seg(R[r]+1.5,R[r+1]-1.5,a0,a1)}" style="--c:${c};--o:${[.22,.42,.7][r]}"><title>${PRINGS[r]} ${n.toLowerCase()}</title></path>`}
-  /* the name sits inside its outer segment, turned along the circle, never upside down */
-  const deg=i*45,am=deg*Math.PI/180,tx=cx+132*Math.sin(am),ty=cy-132*Math.cos(am),rot=deg>90&&deg<270?deg+180:deg;
-  g+=`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" transform="rotate(${rot} ${tx.toFixed(1)} ${ty.toFixed(1)})" text-anchor="middle" dominant-baseline="central" class="wl">${n}</text>`});
- const f=sel&&PWHEEL[sel.sec];return`<svg class="pwheel" viewBox="0 0 300 300" role="group" aria-label="How do you feel">${g}<circle cx="150" cy="150" r="43" class="wcen"/><text x="150" y="143" text-anchor="middle" dominant-baseline="central" class="wct ${f?(f[0].length>8?'wctl':''):'wct0'}">${f?f[0]:'Tap a'}</text><text x="150" y="161" text-anchor="middle" dominant-baseline="central" class="wcs">${f?PRINGS[sel.ring]:'feeling'}</text></svg>`}
+/* the wheel: eight feelings around, three rings from a little (inside) to very (outside).
+   Rounded tiles with even gaps on a glass disc; the names curve along the outer ring and always read upright. */
+function wheelSVG(sel){const cx=150,cy=150,R=[52,86,117,150],CR=4.5,GAP=3,P=(r,a)=>[(cx+r*Math.sin(a)).toFixed(2),(cy-r*Math.cos(a)).toFixed(2)];
+ const tile=(r0,r1,a0,a1)=>{const o=r1-CR,i=r0+CR,dO=(CR+GAP/2)/o,dI=(CR+GAP/2)/i,[x0,y0]=P(o,a0+dO),[x1,y1]=P(o,a1-dO),[x2,y2]=P(i,a1-dI),[x3,y3]=P(i,a0+dI);
+  return`M${x0} ${y0}A${o} ${o} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${i} ${i} 0 0 0 ${x3} ${y3}Z`};
+ let defs='',g='',lab='';
+ PWHEEL.forEach(([n,,,c],i)=>{const a0=(i-.5)*Math.PI/4,a1=(i+.5)*Math.PI/4,deg=i*45,flip=deg>90&&deg<270,rm=(R[2]+R[3])/2;
+  for(let r=0;r<3;r++){const on=sel&&sel.sec===i&&sel.ring===r;g+=`<path class="wc r${r} ${on?'on':''}" data-s="${i}" data-r="${r}" d="${tile(R[r],R[r+1],a0,a1)}" style="--c:${c}"><title>${PRINGS[r]} ${n.toLowerCase()}</title></path>`}
+  const [sx,sy]=P(rm,flip?a1:a0),[ex,ey]=P(rm,flip?a0:a1);defs+=`<path id="pwl${i}" d="M${sx} ${sy}A${rm} ${rm} 0 0 ${flip?0:1} ${ex} ${ey}"/>`;
+  lab+=`<text class="wl ${sel&&sel.sec===i?'on':''}" dy="3.6"><textPath href="#pwl${i}" startOffset="50%" text-anchor="middle">${n}</textPath></text>`});
+ const f=sel&&PWHEEL[sel.sec];
+ return`<svg class="pwheel ${f?'has':''}" viewBox="-6 -6 312 312" role="group" aria-label="How do you feel"><defs>${defs}<radialGradient id="pwg" cx="50%" cy="30%" r="75%"><stop offset="0" stop-color="var(--glt)"/><stop offset="1" stop-color="var(--card2)"/></radialGradient></defs>
+ <circle cx="150" cy="150" r="155" class="wbg"/>${g}${lab}<circle cx="150" cy="150" r="46" class="wcen"/>${f?`<circle cx="150" cy="150" r="46" class="wcring" style="--c:${f[3]}"/>`:''}
+ <text x="150" y="143" text-anchor="middle" dominant-baseline="central" class="wct ${f?(f[0].length>8?'wctl':''):'wct0'}">${f?f[0]:'Tap a'}</text><text x="150" y="161" text-anchor="middle" dominant-baseline="central" class="wcs">${f?PRINGS[sel.ring]:'feeling'}</text></svg>`}
 const batt=v=>`<svg class="pbatt" viewBox="0 0 40 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="31" height="16" rx="4"/><path d="M36.5 9V13"/>${v>0?`<rect x="5" y="6" width="${Math.max(3,25*v).toFixed(1)}" height="10" rx="2" fill="currentColor" stroke="none"/>`:''}</svg>`;
 /* the check itself: wheel, energy, eight statements, then the diagnosis */
 let PS=null;
