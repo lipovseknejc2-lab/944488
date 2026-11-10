@@ -18,6 +18,8 @@ async function run(name,url,frameSel,block){const b=await chromium.launch();cons
  await F.locator('#obF button[type=submit]').tap();await W(1100);ok(await F.locator('.ttl').isVisible(),name+': account created, Today opens');
  await F.locator('#tabs a:has-text("You")').tap();await W(700);ok((await F.locator('.prof h2').textContent())==='Nejc Lipovšek'&&await F.locator('.prof .pmail').isVisible(),name+': You shows the full name and email');
  ok(!(await F.locator('.prof .vpill').count())&&!/encrypt/i.test(await F.locator('#view').textContent()),name+': no encryption notes on show');
+ ok(await F.locator('#tabs a:has-text("Study")').isVisible()&&!(await F.locator('#tabs a:has-text("Projects")').count()),name+': a student gets the student tabs');
+ await F.locator('#tabs a:has-text("You")').tap();await W(500);await F.locator('.spseg [data-sp=work]').tap();await W(900);ok(await F.locator('#tabs a:has-text("Projects")').isVisible()&&await F.locator('.shero').isVisible(),name+': switch to the work space');
  for(const [tab,check] of [['Focus','.clockwrap'],['Notes','.ngrid'],['Projects','text=Small steps, far places'],['Chat','.convo'],['You','.knotsum'],['Today','.ttl']]){
   await F.locator(`#tabs a:has-text("${tab}")`).tap();await W(600);ok(await F.locator(check).first().isVisible(),`${name}: tab ${tab} opens`)}
  await F.locator('.thav').tap();await W(500);ok(await F.locator('.knotsum').isVisible(),name+': avatar opens account');
@@ -57,9 +59,9 @@ async function run(name,url,frameSel,block){const b=await chromium.launch();cons
  await F.locator('[aria-label=Stop]').tap();await W(400);
  await F.locator('#tabs a:has-text("Chat")').tap();await W(400);await F.locator('.convo').first().tap();await W(600);ok(await F.locator('#ci').isVisible(),name+': conversation opens');
  await F.locator('#ci').fill('Hi team');await F.locator('.sendb').tap();await W(400);ok(await F.locator('.msg.me >> text=Hi team').isVisible(),name+': message sends');
- await F.locator('.composer [aria-label=Share]').tap();await W(450);ok(await F.locator('.shopt').count()===7,name+': share sheet opens');
- await F.locator('.shopt[data-k=day]').tap();await W(700);ok(await F.locator('.msg.me .rday').first().isVisible(),name+': share my day with a tap');
- await F.locator('.composer [aria-label=Share]').tap();await W(400);await F.locator('.shopt[data-k=agenda]').tap();await W(700);ok(await F.locator('.msg.me .rag').first().isVisible(),name+': share the agenda with a tap');
+ await F.locator('.composer [aria-label=Share]').tap();await W(450);ok(await F.locator('.wtile').count()===8,name+': share sheet opens with widgets');
+ await F.locator('.wtile[data-k=day]').tap();await W(600);await F.locator('#wT [data-v=tint]').tap();await W(200);await F.locator('#wSend').tap();await W(700);ok(await F.locator('.msg.me .w-day.wt-tint').first().isVisible(),name+': my day widget, styled with a tap');
+ await F.locator('.composer [aria-label=Share]').tap();await W(400);await F.locator('.wtile[data-k=agenda]').tap();await W(600);await F.locator('#wSend').tap();await W(700);ok(await F.locator('.msg.me .w-agenda').first().isVisible(),name+': agenda widget with a tap');
  await F.locator('.chinfo').tap();await W(700);ok(await F.locator('.mstrip').isVisible(),name+': tap the chat header for group info');
  ok(await F.locator('.sh h2:has-text("Active projects")').isVisible()||await F.locator('.sh h2:has-text("Active projects")').count()===1,name+': group info lists active projects');
  await F.locator('.ph .icon-btn[aria-label=Back]').tap();await W(600);ok(await F.locator('#ci').isVisible(),name+': back from group info to the chat');

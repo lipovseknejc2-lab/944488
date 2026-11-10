@@ -31,11 +31,11 @@ ok(await ev(async()=>{const o=await VAULT.open(S.me.vault);return o.last==='Lipo
 ok(await ev(async()=>{const a=await VAULT.seal({x:1}),b=await VAULT.seal({x:1});return a.iv!==b.iv&&a.ct!==b.ct}),'every seal uses a fresh random IV');
 ok(await ev(async()=>{const box={...S.me.vault},c=atob(box.ct).split('');c[3]=String.fromCharCode(c[3].charCodeAt(0)^1);box.ct=btoa(c.join(''));try{await VAULT.open(box);return false}catch(e){return true}}),'a changed vault is refused, not misread');
 ok(await ev(()=>S.people.length===5&&S.groups[0].name==='Studio'&&S.groups[0].members.length===6),'five bot teammates and Studio group');
-ok(await ev(()=>S.usage.total===1),'sign-in uses 1 knot');
+ok(await ev(()=>S.usage.total===8),'sign-in uses 1 knot unit (8 knots)');
 // today
 ok(await p.isVisible('.ttl')&&await p.isVisible('.week')&&await p.isVisible('#motd'),'today: title, week, message of the day');
 ok(!(await p.isVisible('text=knots')),'knots hidden on Today');
-let k0=await K();await p.click('.playb');await W(300);ok(await K()===k0+1,'message of the day play is metered');
+let k0=await K();await p.click('.playb');await W(300);ok(await K()===k0+8,'message of the day play is metered');
 await p.click('.rail .rbtns button:nth-child(2)');await W(400);await p.click('[data-f="thankful"]');await p.fill('#flN','after the walk');await p.click('#flS');await W(500);
 ok(await p.isVisible('.timeline .feelchip >> text=thankful'),'feeling check-in shows on the timeline');
 ok(await p.isVisible('.wday.today b.has'),'today circle gets a colour after activity');
@@ -128,7 +128,7 @@ ok(await ev(()=>{const c=document.querySelector('.prof');return c.querySelector(
  await p.click('#pfSt label:has-text("Working")');await p.fill('#pfRole','Ceramics lead');await p.fill('#pfMail','nejc@studio.si');await p.fill('#pfName','Nejko');await p.click('#sf button[type=submit]');await W(700);
  ok(await ev(()=>!isOpen()&&S.me.name==='Nejko'&&PROFILE.status==='work'&&document.querySelector('.prof h2').textContent==='Nejko Lipovšek'&&/Ceramics lead/.test(document.querySelector('.prof').textContent)),'profile edits show at once');
  ok(await ev(iv=>S.me.vault.iv!==iv&&!/studio\.si|Ceramics lead/.test(localStorage.getItem('atelier-v1')),iv0),'edited profile is sealed again with a new IV');
- ok(await K()===k0+1&&await ev(()=>S.usage.days[today()].profile===1),'profile update uses one knot');
+ ok(await K()===k0+8&&await ev(()=>S.usage.days[today()].profile===1),'profile update uses one knot unit');
  await go('people');ok(await ev(()=>/Nejko Lipovšek \(you\)/.test(document.querySelector('#view').textContent)&&/Ceramics lead/.test(document.querySelector('#view').textContent)),'People shows your full name and work');
  await go('you')}
 await go('posters');ok(await ev(()=>document.querySelectorAll('.poster').length===8),'8 posters');
@@ -191,7 +191,7 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await G('today');ok(await r.isVisible('.agsec .agempty'),'Today has an agenda with an empty state');
  let k0=await E(()=>S.usage.total);await r.click('.agsec [aria-label="Add to agenda"]');await Z(400);await r.fill('#agT','Team stand-up');await r.fill('#agH','09:30');await r.click('#sf button[type=submit]');await Z(500);
  ok(await E(()=>S.agenda.length===1&&S.agenda[0].t==='09:30'&&S.agenda[0].d===today()&&document.querySelectorAll('.agi').length===1),'agenda item added for today');
- ok(await E(k=>S.usage.total===k+2&&S.usage.days[today()].agenda_new===1&&S.ledger.some(x=>x.k==='agenda'&&/Planned: Team stand-up/.test(x.t)),k0),'agenda uses knots and shows in the ledger');
+ ok(await E(k=>S.usage.total===k+16&&S.usage.days[today()].agenda_new===1&&S.ledger.some(x=>x.k==='agenda'&&/Planned: Team stand-up/.test(x.t)),k0),'agenda uses knots and shows in the ledger');
  await r.click('.agi .agc');await Z(400);ok(await E(()=>S.agenda[0].done&&document.querySelector('.agi').classList.contains('done')&&/1 of 1 done/.test(document.querySelector('.agfoot').textContent)&&S.usage.days[today()].agenda_done===1),'tick an agenda item off');
  await r.click('.agi .agb');await Z(400);await r.fill('#agT','Team stand-up, short');await r.click('#sf button[type=submit]');await Z(400);ok(await E(()=>S.agenda[0].title==='Team stand-up, short'&&S.agenda.length===1),'edit an agenda item');
  const tmr=await E(()=>{const d=new Date();d.setDate(d.getDate()+1);return isoD(d)});
@@ -214,18 +214,18 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await G('projects');ok(await E(()=>/90%/.test(document.querySelector('.card.list').textContent)),'project list shows the percentage');
  // group chat: header opens info, share everything
  await G('c:'+gc);await Z(2500);ok(await E(c=>S.chats.find(x=>x.id===c).msgs.some(m=>m.from!=='me'),gc),'bots react to the progress update');
- await r.click('.composer [aria-label="Share"]');await Z(400);ok(await E(()=>document.querySelectorAll('.shopt').length===7),'share sheet: photo, file, note, project, focus, my day, agenda');
+ await r.click('.composer [aria-label="Share"]');await Z(400);ok(await E(()=>document.querySelectorAll('.wtile').length===8&&document.querySelectorAll('.shopt:not(.wtile)').length===3),'share sheet: eight widgets, then photo, file and note');
  await r.setInputFiles('#sh_photo',D+'/t.gif');await Z(900);
  const ph=await E(c=>{const m=S.chats.find(x=>x.id===c).msgs.filter(m=>m.att&&m.att.kind==='photo').pop();return m&&{fid:m.att.fid,id:m.id}},gc);
  ok(ph&&await E(f=>IDB.get(f).then(b=>b instanceof Blob),ph.fid),'photo shared and kept on the device');
  ok(await E(()=>{const i=document.querySelector('.msg .aph img');return!!(i&&i.src)}),'photo shows in the chat');
  await r.click('.composer [aria-label="Share"]');await Z(300);await r.setInputFiles('#sh_doc',D+'/t.pdf');await Z(800);
  ok(await E(c=>S.chats.find(x=>x.id===c).msgs.some(m=>m.att&&m.att.kind==='doc'&&m.att.title==='t.pdf'),gc),'file shared in the chat');
- for(const k of ['focus','day','agenda']){await r.click('.composer [aria-label="Share"]');await Z(300);await r.click(`.shopt[data-k=${k}]`);await Z(400)}
+ for(const k of ['focus','day','agenda']){await r.click('.composer [aria-label="Share"]');await Z(300);await r.click(`.wtile[data-k=${k}]`);await Z(450);await r.click('#wSend');await Z(450)}
  ok(await E(c=>{const M=S.chats.find(x=>x.id===c).msgs.map(m=>m.att).filter(Boolean);const f=M.find(a=>a.kind==='focus'),d=M.find(a=>a.kind==='day'),a=M.find(a=>a.kind==='agenda');return f&&typeof f.mins==='number'&&d&&d.st&&d.st.agenda==='1/1'&&a&&a.items.length===1&&a.items[0].done},gc),'focus, day and agenda shared as snapshots');
- await r.click('.composer [aria-label="Share"]');await Z(300);await r.click('.shopt[data-k=project]');await Z(300);await r.click('[data-pk]');await Z(500);
+ await r.click('.composer [aria-label="Share"]');await Z(300);await r.click('.wtile[data-k=project]');await Z(450);await r.click('#wSend');await Z(500);
  ok(await E(c=>S.chats.find(x=>x.id===c).msgs.some(m=>m.att&&m.att.kind==='project'&&m.att.pct===90),gc),'project shared with its progress');
- ok(await E(()=>document.querySelectorAll('.msg .rc').length>=5),'shared things show as cards');
+ ok(await E(()=>document.querySelectorAll('.msg .wdg').length>=4&&document.querySelectorAll('.msg .rc').length>=1),'shared things show as widgets and cards');
  ok(await E(()=>['photo','file_share','share'].every(k=>S.usage.days[today()][k]>0)),'sharing uses knots');
  // pin from the message menu
  await r.click('.msg:has(.aph) .bub',{button:'right'});await Z(400);ok(await r.isVisible('#maPin'),'press and hold opens the message menu');
@@ -343,8 +343,8 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await r.click('.rdone .btn:has-text("Back to the deck")');await Z(500);ok(await E(()=>/Nothing is due/.test(document.querySelector('.dhero').textContent)),'deck says when the next card comes back');
  await r.click('.dhero .btn.primary');await Z(500);ok(await E(()=>REV.practise&&REV.q.length===4&&REV.i===0),'practise all when nothing is due');await G('deck:'+did);
  // share, Today, subjects, You
- await r.click('.ph [aria-label="Share deck"]');await Z(300);await r.click('.sheet [data-i] >> nth=0');await Z(700);ok(await E(()=>S.chats.some(c=>c.msgs.some(m=>m.att&&m.att.kind==='deck'&&m.att.count===4))&&!!document.querySelector('.msg .rdeck')),'share a deck in chat');
- await E(i=>{deck(i).cards[0].due=today()},did);await G('today');ok(await E(()=>{const s=document.querySelector('.studyrow');return s&&/1 card to review/.test(s.textContent)&&/Chemistry exam in 3 days/.test(s.textContent)}),'Today shows cards to review and the next exam');
+ await r.click('.ph [aria-label="Share deck"]');await Z(400);await r.click('#wSend');await Z(400);await r.click('.sheet [data-i] >> nth=0');await Z(700);ok(await E(()=>S.chats.some(c=>c.msgs.some(m=>m.att&&m.att.kind==='deck'&&m.att.count===4))&&!!document.querySelector('.msg .w-deck')),'share a deck in chat');
+ await E(i=>{deck(i).cards[0].due=today()},did);await G('today');ok(await E(()=>{const s=document.querySelector(space()==='student'?'.shero':'.studyrow');return s&&/1 card to review/.test(s.textContent)&&/Chemistry exam in 3 days/.test(s.textContent)}),'Today shows cards to review and the next exam');
  await E(()=>{S.focus.sessions.push({at:Date.now()-3600e3,end:Date.now(),mins:35,mode:'study',label:'Chemistry'});save()});await G('study');
  ok(await E(()=>[...document.querySelectorAll('.srow')].some(s=>/Chemistry/.test(s.textContent)&&/35/.test(s.textContent))),'time per subject this week');
  await r.click('.srow:has-text("Chemistry")');await Z(400);ok(await E(()=>route.k==='focus'&&S.focus.mode==='study'&&S.focus.label==='Chemistry'),'tap a subject to study it');
@@ -354,6 +354,78 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await E(()=>{delete S.study;S.focus.zen=undefined;save()});await r.reload();await Z(1900);ok(await E(()=>S.study&&S.study.goal===60&&Array.isArray(S.study.decks)&&Array.isArray(S.study.exams)),'older saves get the study space');
  for(const h of ['study','focus','today','you']){await G(h);ok(await E(()=>!/Something went wrong/.test(document.querySelector('#view').textContent)),'older save opens '+h)}
  await c4.close()}
+
+{// ===== tab bar, spaces, logo, knot scale, themes, frames, quotes, profiles, widgets =====
+ const c5=await b.newContext({...devices['iPhone 13']}),r=await c5.newPage();r.on('pageerror',e=>errs.push('rewards: '+e.message));r.on('console',m=>{if(m.type()==='error'&&!/manifest|icon|404/.test(m.text()))errs.push('rewards: '+m.text())});
+ c5.on('page',pg=>pg.close().catch(()=>{}));
+ const E=(f,a)=>r.evaluate(f,a),Z=t=>r.waitForTimeout(t),G=async h=>{await E(h=>go(h),h);await Z(450)};
+ await r.goto(U);await Z(1800);await r.click('#obS');await Z(300);await r.fill('#obName','Iva');await r.fill('#obSur','Kos');await r.click('#obSt label:has-text("Student")');await r.fill('#obMail','iva@uni.si');await r.click('#obF button[type=submit]');await Z(1500);
+ // spaces
+ ok(await E(()=>S.settings.space==='student'&&document.documentElement.dataset.space==='student'&&S.focus.mode==='study'),'a student account opens in the student space');
+ ok(await E(()=>{const t=[...document.querySelectorAll('#tabs a span')].map(s=>s.textContent);return t.join()==='Today,Focus,Study,Notes,Chat,You'}),'student tabs: Today, Focus, Study, Notes, Chat, You');
+ ok(await E(()=>/Study/.test(document.querySelector('.shero').textContent)),'student Today opens with study');
+ await G('project:x');await G('study');ok(await E(()=>document.querySelector('#tabs a.on').dataset.tab==='study'&&/Projects and assignments/.test(document.querySelector('#view').textContent)),'study tab holds projects and assignments');
+ await E(()=>actionSheet());await Z(300);ok(await E(()=>/Flashcards/.test(document.querySelector('.actgrid').textContent)&&/Exam/.test(document.querySelector('.actgrid').textContent)),'student quick actions');await E(()=>closeSheet());await Z(300);
+ // the tab bar stays put when a reply comes in elsewhere; only the badge pops
+ const gc=await E(()=>S.chats.find(c=>c.kind==='group').id);await G('today');
+ await E(c=>{window._tg=document.querySelector('#tabs .tabglow');window._ta=document.querySelector('#tabs a');const ch=S.chats.find(x=>x.id===c);sendMsg(ch,'Hello all')},gc);await Z(4200);
+ ok(await E(()=>window._tg===document.querySelector('#tabs .tabglow')&&window._ta===document.querySelector('#tabs a')),'the tab bar is not rebuilt when a reply arrives');
+ ok(await E(()=>{const b=document.querySelector('#tabs a[data-tab=chat] .badge');return!b.hidden&&+b.textContent>=1&&b.classList.contains('pop')}),'the unread badge pops in');
+ await G('you');await r.click('.spseg [data-sp=work]');await Z(900);
+ ok(await E(()=>S.settings.space==='work'&&[...document.querySelectorAll('#tabs a span')].map(s=>s.textContent).join()==='Today,Focus,Notes,Projects,Chat,You'&&route.k==='today'&&/Work/.test(document.querySelector('.shero').textContent)),'switch to the work space: work tabs and a work Today');
+ ok(await E(()=>S.usage.days[today()].space===1),'switching space uses a knot');
+ await G('you');await r.click('.spseg [data-sp=student]');await Z(700);
+ // logo
+ ok(await E(()=>MARK_A.startsWith('M12.5 47L25.6 15.2')&&MARK_B.startsWith('M16.8 33.6')&&posterSVG(POSTERS[0]).includes(MARK_B)&&markSVG().includes(MARK_A)&&document.querySelector('#splash')===null||document.querySelector('#splash path').getAttribute('d')===MARK_A),'the new mark is used in the app, splash and posters');
+ ok(await E(()=>{const n=MARK_A.match(/[\d.]+/g).map(Number);const xs=n.filter((_,i)=>i%2===0);return xs.every((x,i)=>Math.abs(x+xs[xs.length-1-i]-56)<.01)}),'the A is exactly symmetrical');
+ // knot scale
+ let k=await E(()=>S.usage.total);await E(()=>use('msg'));ok(await E(k=>S.usage.total===k+8,k),'one message is 8 knots');
+ ok(await E(()=>{const s=fixData({usage:{days:{'2026-01-01':{_n:10,msg:10}},total:10},focus:{},settings:{},study:{}});return s.usage.total===80&&s.usage.days['2026-01-01']._n===80&&s.usage.ks===8&&fixData(s).usage.total===80}),'older knots are scaled once, never twice');
+ // themes and frames
+ await E(()=>{S.usage.total=24000;save()});await G('rewards');ok(await E(()=>document.querySelectorAll('.sk').length===11&&document.querySelectorAll('.frc').length===7),'collection: 11 themes and 6 frames plus none');
+ await r.click('.sk:has-text("Harbour")');await Z(300);ok(await E(()=>document.documentElement.dataset.skin==='clay'&&/unlocks at 25,000/.test(document.querySelector('#toast').textContent)),'a locked theme says what it takes');
+ await E(()=>{S.usage.total=24996;use('msg')});await Z(600);ok(await E(()=>S.ledger.some(l=>/Unlocked the Harbour theme/.test(l.t))&&/Unlocked: Harbour/.test(document.querySelector('#toast').textContent)),'reaching a mark unlocks the theme');
+ ok(await E(()=>S.usage.total>=25000),'knots are never spent');
+ await G('rewards');await r.click('.sk:has-text("Harbour")');await Z(400);ok(await E(()=>document.documentElement.dataset.skin==='harbour'&&getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()==='#eef3f8'&&S.settings.skin==='harbour'),'use an unlocked theme');
+ await E(()=>{S.settings.theme='dark';applyTheme()});ok(await E(()=>getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()==='#0f1824'),'themes have a dark version');await E(()=>{S.settings.theme='light';applyTheme()});
+ await r.reload();await Z(1900);ok(await E(()=>document.documentElement.dataset.skin==='harbour'),'the theme stays after reopening');
+ await E(()=>{S.settings.skin='prism';applyTheme()});ok(await E(()=>document.documentElement.dataset.skin==='clay'),'a theme you have not reached cannot be forced');
+ await G('rewards');await r.click('.frc:has-text("Hairline")');await Z(300);ok(await E(()=>!S.me.frame),'a locked frame stays locked');
+ await E(()=>{S.usage.total=400000;render()});await Z(300);await r.click('.frc:has-text("Stitch")');await Z(400);ok(await E(()=>S.me.frame==='dotted'&&!!document.querySelector('.frc.on .frm-dotted')),'wear a frame');
+ await G('today');ok(await E(()=>!!document.querySelector('.thav .frm-dotted')),'the frame shows on your avatar');
+ ok(await E(()=>SKINS.every((s,i)=>i===0||s.at>SKINS[i-1].at)&&SKINS[SKINS.length-1].at>=1000000&&FRAMES[0].at>=SKINS[5].at&&FRAMES[FRAMES.length-1].at>SKINS[SKINS.length-1].at),'prices rise to over a million; frames start at mid-theme prices and end above the top theme');
+ // every screen in every theme, light and dark
+ const scr=['today','focus','study','notes','projects','chat','groups','you','rewards','profile','settings','posters'];let bad=[];
+ for(const sk of await E(()=>SKINS.map(s=>s.id)))for(const th of ['light','dark']){const x=await E(([sk,th,scr])=>{S.usage.total=2e6;S.settings.skin=sk;S.settings.theme=th;applyTheme();const out=[];for(const h of scr){go(h);if(/Something went wrong/.test(document.querySelector('#view').textContent))out.push(h)}return out},[sk,th,scr]);if(x.length)bad.push(sk+'/'+th+': '+x.join())}
+ ok(!bad.length,'every screen opens in every theme, light and dark'+(bad.length?' '+bad.join(' | '):''));
+ await E(()=>{S.settings.skin='clay';S.settings.theme='light';S.usage.total=400000;applyTheme()});
+ // quotes and profiles
+ await G('profile');ok(await r.isVisible('.qempty'),'profile invites a quote');await r.click('.qempty');await Z(400);await r.fill('#qT','Slow is smooth, smooth is fast.');await r.click('#qF label:has-text("Hand")');await r.click('#qL label:has-text("Ink")');
+ ok(await E(()=>{const q=document.querySelector('#qPv .qcard');return q.classList.contains('qf-hand')&&q.classList.contains('ql-ink')&&/Slow is smooth/.test(q.textContent)}),'quote preview follows font and look');
+ await r.click('#sf button[type=submit]');await Z(500);ok(await E(()=>S.me.quote.t==='Slow is smooth, smooth is fast.'&&S.me.quote.font==='hand'&&!!document.querySelector('.proq .qcard.qf-hand')&&S.usage.days[today()].quote===1),'quote saved on the profile');
+ const bot=await E(()=>S.people[0].id);await G('person:'+bot);ok(await E(()=>!!document.querySelector('.proq .qcard')),'teammates have a quote on their profile');
+ // widgets
+ await G('c:'+gc);await r.click('.composer [aria-label=Share]');await Z(400);await r.click('.wtile[data-k=focus]');await Z(500);
+ ok(await E(()=>!!document.querySelector('.wstage .wdg.w-focus.wl-small.wt-glass.wf-sans')),'widget editor shows a live preview');
+ await r.click('#wL [data-v=wide]');await r.click('#wF [data-v=serif]');await r.click('#wT [data-v=ink]');await Z(200);
+ ok(await E(()=>!!document.querySelector('.wstage .wdg.wl-wide.wt-ink.wf-serif')),'size, font and surface change the preview');
+ await r.click('#wSend');await Z(600);ok(await E(c=>{const m=S.chats.find(x=>x.id===c).msgs.filter(m=>m.att&&m.att.kind==='focus').pop();return m&&m.att.w.layout==='wide'&&m.att.w.tone==='ink'&&m.att.w.font==='serif'},gc)&&await E(()=>!!document.querySelector('.msg .wdg.w-focus.wt-ink')),'focus widget sent with its style');
+ ok(await E(()=>S.widgets.focus.tone==='ink'&&S.usage.days[today()].widget>=1),'the style is remembered and the widget uses knots');
+ await r.click('.composer [aria-label=Share]');await Z(300);await r.click('.wtile[data-k=focus]');await Z(400);ok(await E(()=>!!document.querySelector('.wstage .wdg.wt-ink.wf-serif')),'next time it opens in your style');await E(()=>closeSheet());await Z(300);
+ await r.click('.composer [aria-label=Share]');await Z(300);await r.click('.wtile[data-k=quote]');await Z(400);await r.click('#wSend');await Z(600);ok(await E(()=>!!document.querySelector('.msg .w-quote .wq.qf-hand')&&/Slow is smooth/.test(document.querySelector('.msg .w-quote').textContent)),'quote widget keeps the quote style');
+ await r.click('.composer [aria-label=Share]');await Z(300);await r.click('.wtile[data-k=countdown]');await Z(400);ok(await E(()=>document.querySelector('#wSend').disabled&&/No exams/.test(document.querySelector('.wsheet').textContent)),'a widget with nothing to show says how to start');await E(()=>closeSheet());await Z(300);
+ await E(()=>{const d=new Date();d.setDate(d.getDate()+6);S.study.exams.push({id:uid(),title:'History',d:isoD(d),col:GCOL[0],note:'',at:Date.now()});save()});
+ await r.click('.composer [aria-label=Share]');await Z(300);await r.click('.wtile[data-k=countdown]');await Z(400);await r.click('#wSend');await Z(600);ok(await E(()=>/6\s*days/.test(document.querySelector('.msg .w-countdown').textContent)),'countdown widget');
+ await r.click('.composer [aria-label=Share]');await Z(300);await r.click('.wtile[data-k=photo]');await Z(400);ok(await E(()=>document.querySelector('#wSend').disabled),'photo widget waits for a photo');
+ await r.setInputFiles('#wPh',D+'/t.gif');await Z(300);await r.fill('#wCap','Our desk');await Z(200);await r.click('#wSend');await Z(900);
+ ok(await E(c=>{const m=S.chats.find(x=>x.id===c).msgs.filter(m=>m.att&&m.att.kind==='photo').pop();return m&&m.att.w&&m.att.cap==='Our desk'&&m.att.fid&&m.att.fid!=='pending'},gc),'photo widget with a caption');
+ ok(await E(c=>{const m=S.chats.find(x=>x.id===c).msgs.filter(m=>m.att&&m.att.kind==='photo').pop();return IDB.get(m.att.fid).then(b=>b instanceof Blob)},gc),'the widget photo is kept on the device');
+ ok(await E(()=>/Photo widget/.test(msgPreview(S.chats.find(c=>c.kind==='group').msgs.filter(m=>m.att&&m.att.kind==='photo').pop()))),'the chat list says it is a widget');
+ ok(await E(c=>{const ch=S.chats.find(x=>x.id===c);ch.msgs.push({id:uid(),from:'me',text:'',att:{kind:'day',title:'My day',date:today(),st:{focus:5,tasks:1,notes:0,agenda:'0/0'},items:[]},at:Date.now()});render();return!!document.querySelector('.msg:last-of-type .wdg.w-day')||document.querySelectorAll('.wdg.w-day').length>=1},gc),'older shared cards show as widgets');
+ await G('projects');await E(()=>projectForm());await Z(300);await r.fill('#pN','Thesis');await r.click('#sf button[type=submit]');await Z(800);
+ await r.click('.ph [aria-label="Share project"]');await Z(400);ok(await E(()=>!!document.querySelector('.wstage .wdg.w-project')),'sharing a project opens its widget');await E(()=>closeSheet());await Z(300);
+ ok(await E(()=>{let s=0;Object.values(S.usage.days).forEach(d=>s+=d._n);return Math.abs(s-S.usage.total)<1||S.usage.total>=400000}),'knots stay consistent');
+ await c5.close()}
 
 ok(errs.length===0,'no script errors'+(errs.length?': '+[...new Set(errs)].slice(0,5).join(' | '):''));
 console.log(`\n${pass} passed, ${fail} failed`);await b.close()})();

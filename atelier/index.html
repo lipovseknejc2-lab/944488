@@ -37,9 +37,9 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit}
 .hand{font-family:var(--hand);font-weight:600;letter-spacing:.005em}
 .bgwash{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .bgwash i{position:absolute;border-radius:50%;filter:blur(90px)}
-.bgwash i:nth-child(1){width:70vmax;height:70vmax;left:-30vmax;top:-40vmax;background:var(--accent);opacity:.08}
-.bgwash i:nth-child(2){width:60vmax;height:60vmax;right:-30vmax;top:20vh;background:var(--blue);opacity:.06}
-.bgwash i:nth-child(3){width:50vmax;height:50vmax;left:10vw;bottom:-35vmax;background:var(--green);opacity:.05}
+.bgwash i:nth-child(1){width:70vmax;height:70vmax;left:-30vmax;top:-40vmax;background:var(--w1,var(--accent));opacity:calc(.08*var(--wo,1))}
+.bgwash i:nth-child(2){width:60vmax;height:60vmax;right:-30vmax;top:20vh;background:var(--w2,var(--blue));opacity:calc(.06*var(--wo,1))}
+.bgwash i:nth-child(3){width:50vmax;height:50vmax;left:10vw;bottom:-35vmax;background:var(--w3,var(--green));opacity:calc(.05*var(--wo,1))}
 .bgwash::after{content:"";position:absolute;inset:0;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
 #shell{position:relative;z-index:1}
 #view{max-width:760px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(110px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
@@ -384,13 +384,93 @@ body.zenon{background:#000}body.zenon #shell,body.zenon .bgwash,body.zenon #toas
 .grade b{font-size:15px;color:var(--gc)}.grade span{font-size:11.5px;color:var(--muted)}
 .rdone .fig{width:150px;height:150px}
 @media(prefers-reduced-motion:reduce){.fface{transition:none}}
+/* ---- tab bar: built once, the highlight slides, the badge pops; a space switch fades the tabs in ---- */
+.tabglow.still{transition:none!important}
+#tabs.swap a{animation:tabin .5s var(--ease) both}#tabs.swap a:nth-child(2){animation-delay:.03s}#tabs.swap a:nth-child(3){animation-delay:.06s}#tabs.swap a:nth-child(4){animation-delay:.09s}#tabs.swap a:nth-child(5){animation-delay:.12s}#tabs.swap a:nth-child(6){animation-delay:.15s}
+@keyframes tabin{from{opacity:0;transform:translateY(6px)}}
+.badge.pop{animation:bpop .5s cubic-bezier(.3,1.6,.5,1)}@keyframes bpop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.18);opacity:1}100%{transform:scale(1)}}
+/* ---- themes: the background wash follows the theme ---- */
+[data-skin=prism] .bgwash i{animation:drift 38s ease-in-out infinite alternate}[data-skin=prism] .bgwash i:nth-child(2){animation-duration:46s;animation-direction:alternate-reverse}[data-skin=prism] .bgwash i:nth-child(3){animation-duration:54s}
+@keyframes drift{50%{transform:translate(6vmax,4vmax) scale(1.08)}100%{transform:translate(-4vmax,8vmax) scale(.96)}}
+/* ---- profile frames: a fine line around your avatar ---- */
+.av .frm{position:absolute;left:-15%;top:-15%;width:130%!important;height:130%!important;border-radius:0!important;color:var(--accent);pointer-events:none;overflow:visible}
+.frm .orb{transform-box:view-box;transform-origin:24px 24px;animation:spin 16s linear infinite}
+/* ---- spaces ---- */
+.spcard .spseg{margin-top:8px}.spseg button{padding:10px 8px}.spseg .ic{width:18px;height:18px}
+.shero{display:flex;align-items:center;gap:14px;margin:0 0 10px;border-color:color-mix(in srgb,var(--sc) 30%,var(--line));background:linear-gradient(120deg,color-mix(in srgb,var(--sc) 10%,transparent),transparent 65%),var(--card)}
+.shero .shl{font-size:17px;color:var(--sc)}.shero b{font-size:16.5px}.shero .ring{flex:none}
+.setln{display:block;padding:2px 16px;margin-top:10px}.setln .li{cursor:pointer}
+/* ---- profile and quotes ---- */
+.prohero{text-align:center;padding:22px 18px 18px}.proav{display:flex;justify-content:center;margin:6px 0 14px}.prohero h2{font-family:var(--serif);font-weight:400;font-size:28px}
+.frpill{margin-top:8px;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}.frpill .ic{width:13px;height:13px}
+.proq{margin-top:14px;text-align:left;cursor:pointer}
+.qcard{--qc:var(--text);position:relative;margin:0;padding:14px 16px 12px 44px;border-radius:6px 18px 18px 18px;text-align:left;color:var(--text);background:color-mix(in srgb,var(--qc) 7%,var(--card2));border:1px solid color-mix(in srgb,var(--qc) 16%,var(--line));box-shadow:0 6px 16px rgba(40,30,15,.06)}
+.qcard.ql-paper{transform:rotate(-.6deg);background:color-mix(in srgb,var(--qc) 6%,#fffaf0);color:#2a2620;border-color:rgba(60,45,25,.08)}[data-theme=dark] .qcard.ql-paper{background:color-mix(in srgb,var(--qc) 10%,#2b2823);color:#f2ece2}
+.qcard.ql-glass{background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.qcard.ql-ink{background:#1d1b18;color:#f2ece2;border-color:#2c2925}
+.qcard .qm{position:absolute;left:14px;top:14px;width:20px;height:20px;color:var(--qc);opacity:.85}
+.qcard blockquote{margin:0;line-height:1.3;color:inherit}.qcard figcaption{margin-top:6px;font-size:11.5px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;opacity:.55}
+.qf-serif blockquote,.wq.qf-serif{font-family:var(--serif);font-size:19px}.qf-hand blockquote,.wq.qf-hand{font-family:var(--hand);font-weight:600;font-size:24px;line-height:1.1}.qf-sans blockquote,.wq.qf-sans{font-family:var(--sans);font-size:16px;font-weight:600}
+span.qf-serif{font-family:var(--serif)}span.qf-hand{font-family:var(--hand);font-size:17px}
+.qstage{padding:18px 14px;border-radius:20px;background:var(--fill);margin-bottom:4px}
+.qempty{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;padding:14px;border-radius:16px;border:1.5px dashed var(--line2);background:none;color:var(--muted);font:inherit;font-weight:650;cursor:pointer}.qempty .ic{width:18px;height:18px}
+/* ---- the collection ---- */
+.rwhero{display:flex;align-items:center;gap:14px}.rwhero .v{font-size:36px;font-weight:650;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
+.rwnext{margin-top:10px}.rwnext .pbar{margin:10px 0 7px}
+.skgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.skgrid>.card{margin:0}
+.sk{display:flex;flex-direction:column;gap:6px;padding:10px;text-align:left;font:inherit;color:var(--text);cursor:pointer;transition:transform .16s}.sk:active{transform:scale(.97)}
+.sk.on{box-shadow:0 0 0 2px var(--accent),var(--sh)}.skn{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:2px}.skn b{font-size:14.5px}.sk .sub{line-height:1.3}.sk .pbar{height:5px;margin-top:2px}
+.lockp{color:var(--muted)}.lockp .ic{width:12px;height:12px}
+.skprev{position:relative;height:96px;border-radius:14px;overflow:hidden;background:var(--pb);border:1px solid rgba(127,127,127,.15)}
+.skprev .w1,.skprev .w2{position:absolute;width:90px;height:90px;border-radius:50%;filter:blur(22px);opacity:.55}.skprev .w1{background:var(--pw1);left:-20px;top:-30px}.skprev .w2{background:var(--pw2);right:-24px;bottom:-34px}
+.skprev .h{position:absolute;left:10px;top:10px;width:46px;height:7px;border-radius:4px;background:var(--pt);opacity:.75}
+.skprev .c1,.skprev .c2{position:absolute;left:10px;right:10px;height:24px;border-radius:8px;background:var(--pc);box-shadow:0 2px 6px rgba(0,0,0,.08);display:flex;align-items:center;gap:6px;padding:0 8px}.skprev .c1{top:26px}.skprev .c2{top:56px;right:38px}
+.skprev em{display:block;height:5px;border-radius:3px;background:var(--pt);opacity:.35;width:40%}.skprev em+em{width:22%;opacity:.2}
+.skprev u{position:absolute;right:10px;bottom:13px;width:22px;height:22px;border-radius:50%;background:var(--pa)}
+.sk.lock .skprev{filter:saturate(.7);opacity:.75}
+.frgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.frgrid>.card{margin:0}
+.frc{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 6px 12px;font:inherit;color:var(--text);cursor:pointer;text-align:center;transition:transform .16s}.frc:active{transform:scale(.96)}.frc .av{margin:6px 0 4px}.frc b{font-size:14px}.frc .sub{line-height:1.25}.frc .sub .ic{width:12px;height:12px;vertical-align:-2px}
+.frc.on{box-shadow:0 0 0 2px var(--accent),var(--sh)}.frc.lock .av{opacity:.7}
+/* ---- widgets: Atelier's live cards for conversations ---- */
+.wdg{--wfg:var(--text);--wmut:var(--muted);position:relative;display:flex;flex-direction:column;gap:3px;width:166px;min-height:166px;padding:13px 14px 12px;border-radius:24px;text-align:left;color:var(--wfg);background:var(--card);-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 28px rgba(40,30,15,.10);overflow:hidden;font:inherit;cursor:pointer;transition:transform .18s var(--ease)}
+.wdg:active{transform:scale(.97)}.wdg.wl-wide{width:min(300px,70vw);min-height:150px}
+.wdg.wt-tint{background:linear-gradient(150deg,color-mix(in srgb,var(--wc) 22%,var(--card2)),color-mix(in srgb,var(--wc) 7%,var(--card2)));border-color:color-mix(in srgb,var(--wc) 26%,transparent)}
+.wdg.wt-ink{--wfg:#f2ece2;--wmut:#a39a8c;background:#1c1a17;border-color:#2c2925;box-shadow:0 12px 28px rgba(0,0,0,.22)}
+.wh{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--wc)}.wh .ic{width:15px;height:15px}.wh .wmk{margin-left:auto;width:16px;height:16px;color:var(--wfg);opacity:.55;flex:none}
+.wtitle{font-weight:650;font-size:15px;line-height:1.25;margin-top:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.wbig{display:flex;align-items:baseline;gap:5px;margin-top:auto}.wbig b{font-size:42px;font-weight:650;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums}.wbig span{font-size:14px;color:var(--wmut);font-weight:600}
+.wsub{font-size:12.5px;color:var(--wmut);line-height:1.3}
+.wfoot{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--wmut);font-weight:600;margin-top:5px;overflow:hidden;white-space:nowrap}.wfoot span{overflow:hidden;text-overflow:ellipsis}.wfoot .ic{width:13px;height:13px;vertical-align:-2px}
+.wdg .pbar{height:6px;margin:7px 0 3px;background:color-mix(in srgb,var(--wfg) 12%,transparent)}.wdg .pbar i{background:var(--wc)}
+.wl{list-style:none;margin:7px 0 0;padding:0;display:grid;gap:5px;font-size:13.5px}.wl li{display:flex;gap:8px;line-height:1.25;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.wl li span{flex:none;width:40px;font-size:11.5px;font-weight:700;color:var(--wc);font-variant-numeric:tabular-nums;padding-top:1px}.wl li.done{opacity:.5;text-decoration:line-through}
+.wstats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px}.wstats span{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px;border-radius:12px;background:color-mix(in srgb,var(--wfg) 6%,transparent)}.wstats .ic{width:15px;height:15px;color:var(--wc)}.wstats b{font-size:15px;font-variant-numeric:tabular-nums}.wstats i{font-style:normal;font-size:10.5px;color:var(--wmut)}
+.wfeel{align-self:flex-start;margin-top:6px;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:650;color:#fff;background:var(--fc)}
+.wlive{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:12px;font-weight:650;color:var(--wc)}
+.wq{margin:10px 0 8px;line-height:1.28;color:var(--wfg)}
+.wf-serif .wbig b,.wf-serif .wtitle{font-family:var(--serif);font-weight:400}.wf-serif .wbig b{font-size:46px;letter-spacing:-.02em}.wf-serif .wtitle{font-size:17px}
+.wf-hand .wbig b,.wf-hand .wtitle{font-family:var(--hand);font-weight:600;letter-spacing:0}.wf-hand .wbig b{font-size:50px}.wf-hand .wtitle{font-size:21px;line-height:1.05}
+.w-photo{padding:0}.w-photo .wh{position:absolute;z-index:2;left:13px;right:13px;top:11px;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.35)}.w-photo .wh .wmk{color:#fff;opacity:.85}
+.wph{position:absolute;inset:0;background:var(--fill2)}.wph img{width:100%;height:100%;object-fit:cover;display:block}.wphe{display:grid;place-items:center;height:100%;color:var(--muted)}.wphe .ic{width:40px;height:40px}
+.wcap{position:absolute;z-index:2;left:0;right:0;bottom:0;padding:26px 14px 12px;color:#fff;font-weight:650;font-size:14px;line-height:1.25;background:linear-gradient(transparent,rgba(0,0,0,.55))}.w-photo.wl-wide{min-height:196px}
+.w-photo.wf-serif .wcap{font-family:var(--serif);font-weight:400;font-size:18px}.w-photo.wf-hand .wcap{font-family:var(--hand);font-weight:600;font-size:22px}
+.w-photo.wt-tint{border:3px solid color-mix(in srgb,var(--wc) 40%,var(--card2))}.w-photo.wt-ink{padding:8px 8px 34px;background:#1c1a17}.w-photo.wt-ink .wph{inset:8px 8px 34px;border-radius:16px;overflow:hidden}.w-photo.wt-ink .wcap{background:none;padding:0 14px 10px}
+.bub.wb{background:none!important;border:none!important;padding:0!important;box-shadow:none!important;min-width:0}.bub.wb .mtime{color:var(--muted);opacity:1;padding:5px 8px 0}.bub.wb .who{padding:0 8px 5px}
+.msg.pop .wdg,.wstage .wdg{animation:wpop .45s var(--ease)}@keyframes wpop{from{opacity:0;transform:translateY(8px) scale(.94)}}
+/* the widget editor and gallery */
+.wbrand{display:flex;align-items:center;gap:8px;margin:2px 2px 10px}.wbrand .wmk{width:22px;height:22px;--wc:var(--accent);color:var(--text)}.wbrand b{font-family:var(--serif);font-weight:400;font-size:20px}.wbrand span{margin-left:auto;font-size:12.5px;color:var(--muted)}
+.wgal{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.actgrid .wtile,.wtile{padding:14px 4px;border-radius:20px;background:linear-gradient(160deg,var(--card2),var(--fill))}
+.wtile[data-k=focus] .ic{color:var(--focus)}.wtile[data-k=day] .ic{color:var(--yellow)}.wtile[data-k=agenda] .ic{color:var(--blue)}.wtile[data-k=project] .ic{color:var(--accent)}.wtile[data-k=deck] .ic{color:var(--violet)}.wtile[data-k=countdown] .ic{color:var(--red)}.wtile[data-k=quote] .ic{color:var(--green)}.wtile[data-k=photo] .ic{color:var(--violet)}
+.sh3{grid-template-columns:repeat(3,1fr)}
+.wstage{display:grid;place-items:center;min-height:212px;padding:20px 10px;margin-bottom:6px;border-radius:24px;background:radial-gradient(80% 70% at 30% 20%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 70%),radial-gradient(70% 60% at 80% 90%,color-mix(in srgb,var(--blue) 10%,transparent),transparent 70%),var(--fill)}
+.wstage .wdg{cursor:default}.wopts .seg{margin-bottom:2px}.wseg button{padding:8px 6px}
+@media(max-width:360px){.wgal{grid-template-columns:repeat(3,1fr)}.frgrid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:380px){h1{font-size:30px}.grid3{gap:6px}.kpi .v{font-size:22px}#tabs a{font-size:9.5px}}
 @media(prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}.drawn path,#splash path,.uline path,.ln{stroke-dashoffset:0!important}}
 </style>
 </head>
 <body>
 <div class="bgwash"><i></i><i></i><i></i></div>
-<div id="splash"><svg viewBox="0 0 56 56" fill="none" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" stroke="var(--text)" d="M10 46C16 34 22 22 30 14C34 26 38 38 46 48"/><path pathLength="1" stroke="var(--accent)" d="M18 34C26 30 36 30 44 33C48 35 50 31 47 28C44 25 39 29 43 34"/></svg><b>Atelier</b></div>
+<div id="splash"><svg viewBox="0 0 56 56" fill="none" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" stroke="var(--text)" d="M12.5 47L25.6 15.2C26.4 13.2 27.2 12.2 28 12.2C28.8 12.2 29.6 13.2 30.4 15.2L43.5 47"/><path pathLength="1" stroke="var(--accent)" stroke-width="3.3" d="M16.8 33.6C21 31.8 24.4 31.2 28 31.2C31.6 31.2 35 31.8 39.2 33.6"/></svg><b>Atelier</b></div>
 <div id="shell"><main id="view"></main><nav id="tabs" aria-label="Main"></nav><div id="mini" hidden onclick="go('focus')"></div><aside id="rail" class="rail" aria-label="Quick actions" hidden></aside></div>
 <div id="modal"></div><div id="toast" role="status"></div>
 <script>
@@ -441,10 +521,10 @@ const noteGlyph=(col='var(--accent)')=>`<svg class="ng" viewBox="0 0 48 48" fill
 /* knot: tracking unit (shown only on the You page) */
 const KNOT='M11 51C17 41 24 31 21 22C18 13 7 17 10.5 27C14 37 35 38 45 27C53 18 47.5 9 40.5 13C33 17 40 34 53 51';
 const knot=(cls='kn',sw=4.4)=>`<svg class="${cls}" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${KNOT}"/></svg>`;
-/* app mark: two lines meeting in a loop, people working on one thread */
-const MARK_A='M10 46C16 34 22 22 30 14C34 26 38 38 46 48';
-const MARK_B='M18 34C26 30 36 30 44 33C48 35 50 31 47 28C44 25 39 29 43 34';
-function markSVG(bg=true,sw=4){return`<svg viewBox="0 0 56 56" aria-hidden="true">${bg?'<rect width="56" height="56" rx="13" fill="#f4efe6"/>':''}<g fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"><path d="${MARK_A}" stroke="${bg?'#24211d':'currentColor'}"/><path d="${MARK_B}" stroke="${bg?'#d9764f':'var(--accent)'}"/></g></svg>`}
+/* app mark: a symmetrical A in one ink line; a soft rounded top and one gently arched clay crossbar, the hand-drawn trace */
+const MARK_A='M12.5 47L25.6 15.2C26.4 13.2 27.2 12.2 28 12.2C28.8 12.2 29.6 13.2 30.4 15.2L43.5 47';
+const MARK_B='M16.8 33.6C21 31.8 24.4 31.2 28 31.2C31.6 31.2 35 31.8 39.2 33.6';
+function markSVG(bg=true,sw=4){return`<svg viewBox="0 0 56 56" aria-hidden="true">${bg?'<rect width="56" height="56" rx="13" fill="#f4efe6"/>':''}<g fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"><path d="${MARK_A}" stroke="${bg?'#24211d':'currentColor'}"/><path d="${MARK_B}" stroke-width="${(sw*.9).toFixed(2)}" stroke="${bg?'#d9764f':'var(--accent)'}"/></g></svg>`}
 
 /* ---- characters: gesture figures, unfinished on purpose. P = ink paths, A = accent paths ---- */
 const FIG={
@@ -463,7 +543,7 @@ function figure(pose,{ink='currentColor',acc='var(--accent)',sw=2.4,cls='fig',dr
 const HAIR=['M13 19C12 11 17 7 21 7C26 7 29.5 11 28 19','M12.5 21C11 12 15 7.5 20.5 7.5C26.5 7.5 30 12.5 28 24C27 20 25 16 23 15C20 18 16 19 12.5 21','M14 15C14 9 18 7 21 7.5C26 8 28 11.5 27.5 16C24 15 20 13 18 11C17 13 16 14.5 14 15','M12 23C10 14 14 7 20.5 7.5C27 8 31 14 29 23C30 28 31 31 33 33M12 23C11 28 10 31 8 33','M14.5 12C16 8 19 7 21.5 7C25 7 27 9 27.5 12C25 11 22 10.5 20 11.5C18 10.5 16 11 14.5 12','M13.5 16C12 10 15.5 6.5 20 6.5C23 6.5 25 8 26 10C28 9 30 11 29 14C28 16 27.5 17 27.5 19'];
 const AV_COL=['#e08f70','#6fa8f0','#5fc98a','#f0c94f','#ef7b8c','#b28cf0','#4fc4c0','#e0a86a'];
 function avatar(p,size=40,cls='av'){const fg=p&&p.fig||{h:0,c:0};const c=AV_COL[(fg.c||0)%AV_COL.length];
- return`<span class="${cls}" style="--ac:${c};width:${size}px;height:${size}px" title="${p?escH(p.name):''}"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${HAIR[(fg.h||0)%HAIR.length]}"/><path d="M14.5 18C14.5 23 17 26 20.5 26C23.5 26 26 23.5 26.5 19.5"/><path d="M17.5 26.5V29.5M23.5 26V29M8 39C9 33 13.5 30 20.5 30C27 30 31 33 32.5 39"/></svg>${p&&p.bot?`<i class="botdot">${ic('bot',2)}</i>`:''}</span>`}
+ return`<span class="${cls}" style="--ac:${c};width:${size}px;height:${size}px" title="${p?escH(p.name):''}"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${HAIR[(fg.h||0)%HAIR.length]}"/><path d="M14.5 18C14.5 23 17 26 20.5 26C23.5 26 26 23.5 26.5 19.5"/><path d="M17.5 26.5V29.5M23.5 26V29M8 39C9 33 13.5 30 20.5 30C27 30 31 33 32.5 39"/></svg>${p&&p.bot?`<i class="botdot">${ic('bot',2)}</i>`:''}${p&&p.frame&&typeof frameSVG==='function'?frameSVG(p.frame):''}</span>`}
 function escH(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 /* ---- posters: one figure, one headline, lots of room ---- */
 const POSTERS=[
@@ -480,7 +560,7 @@ function posterSVG(po,w){const bg=po.dark?'#1f1d1a':'#f4efe6',ink=po.dark?'#f2ec
  <g transform="translate(58 46) scale(2.1)" fill="none">${figure(po.fig,{ink,acc:po.acc,sw:2.1}).replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</g>
  <text x="28" y="${po.t.includes('\n')?312:330}" font-size="27" fill="${ink}" letter-spacing="-.3">${po.t.split('\n').map((l,i)=>`<tspan x="28" dy="${i?31:0}">${escH(l)}</tspan>`).join('')}</text>
  <text x="28" y="364" font-size="9.5" fill="${mu}" letter-spacing="2.4" font-family="Instrument Sans, Helvetica, sans-serif" font-weight="600">${escH(po.s)}</text>
- <g transform="translate(246 342) scale(.5)" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="${MARK_A}" stroke="${ink}"/><path d="${MARK_B}" stroke="${po.acc}"/></g></svg>`}
+ <g transform="translate(246 342) scale(.5)" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="${MARK_A}" stroke="${ink}"/><path d="${MARK_B}" stroke="${po.acc}" stroke-width="3.6"/></g></svg>`}
 /* ---- focus clock ---- */
 function clockSVG(frac,phase){const R=118,C=2*Math.PI*R,ticks=[];for(let i=0;i<60;i++){const a=i/60*Math.PI*2-Math.PI/2,big=i%5===0,r1=R+16,r2=R+(big?27:22),j=((i*37)%7-3)*.12;
   ticks.push(`<line x1="${(150+Math.cos(a+j*.01)*r1).toFixed(1)}" y1="${(150+Math.sin(a+j*.01)*r1).toFixed(1)}" x2="${(150+Math.cos(a)*r2).toFixed(1)}" y2="${(150+Math.sin(a)*r2).toFixed(1)}" stroke-width="${big?2.2:1.3}" opacity="${big?.75:.35}"/>`)}
@@ -508,13 +588,17 @@ const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
 const KEY='atelier-v1',BKEY='atelier-backup';
 /* If the browser blocks storage (some previews do), keep working in memory and say so once. */
 const LS=(()=>{try{const k='__a';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage}catch(e){const m={};window._noStore=true;return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
-const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],study:{goal:60,decks:[],exams:[]},
- focus:{mode:'pomo',custom:{w:30,b:5,r:3},label:'',run:null,sessions:[]},usage:{days:{},total:0},
- settings:{theme:'light',sound:true,auto:true},created:Date.now()});
+const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],widgets:{},study:{goal:60,decks:[],exams:[]},
+ focus:{mode:'pomo',custom:{w:30,b:5,r:3},label:'',run:null,sessions:[]},usage:{days:{},total:0,ks:8},
+ settings:{theme:'light',sound:true,auto:true,skin:'clay',space:''},created:Date.now()});
 function parseSave(r){if(!r)return null;const d=JSON.parse(r);if(!d||typeof d!=='object'||!Array.isArray(d.notes))throw 0;return d}
 function load(){let d=null;window._from='main';try{d=parseSave(LS.getItem(KEY))}catch(e){d=null;window._from='bad'}
  if(!d){try{d=parseSave(LS.getItem(BKEY));if(d&&window._from==='bad')window._from='restored'}catch(e){}}
- const s=Object.assign(DEF(),d||{});s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});return s}
+ return fixData(Object.assign(DEF(),d||{}))}
+/* knots: a normal full day of use is about 1,600 (checked against typical days); older saves are scaled once so everyone keeps their place */
+const KSCALE=8;
+function fixData(s){s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};
+ if(!s.usage.ks){Object.values(s.usage.days).forEach(d=>{if(d&&d._n)d._n*=KSCALE});s.usage.total=(s.usage.total||0)*KSCALE;s.usage.ks=KSCALE}return s}
 let S=load(),_bk=0;
 function save(){if(!S.me&&!S.notes.length)return false;let raw;try{raw=JSON.stringify(S)}catch(e){return false}
  try{LS.setItem(KEY,raw)}catch(e){toast('Storage is full. Export a backup in You, Settings.');return false}
@@ -523,7 +607,7 @@ let _st=0;const saveSoon=()=>{clearTimeout(_st);_st=setTimeout(save,350)};
 addEventListener('pagehide',()=>{try{if(S.me)save()}catch(e){}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&S.me)try{save()}catch(e){}});
 /* another tab changed the data: reload it here so tabs never overwrite each other */
-addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const d=parseSave(e.newValue);if(d){S=Object.assign(DEF(),d);S.study=Object.assign(DEF().study,S.study||{});if(!isOpen())render();if(S.me&&typeof unlockProfile==='function')unlockProfile()}}catch(x){}}});
+addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const d=parseSave(e.newValue);if(d){S=fixData(Object.assign(DEF(),d));if(!isOpen())render();if(S.me&&typeof unlockProfile==='function')unlockProfile()}}catch(x){}}});
 
 /* ---------- IndexedDB for files, images, drawings, voice ---------- */
 const IDB={db:null,open(){if(this.db)return Promise.resolve(this.db);return new Promise((res,rej)=>{if(!window.indexedDB)return rej(new Error('no idb'));const r=indexedDB.open('atelier',1);r.onupgradeneeded=()=>r.result.createObjectStore('b');r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>rej(r.error)})},
@@ -563,7 +647,7 @@ async function unlockProfile(){const m=S.me;if(!m)return;
   else if(m.profile){PROFILE=cleanProfile(m.profile);if(VAULT.ok())await storeProfile(m.profile)}
   else{const [first,...rest]=String(m.name||'').trim().split(/\s+/),r=String(m.role||'').trim(),stu=/stud|school|pupil|univ|dijak|šol/i.test(r);
    await storeProfile({first:first||m.name||'',last:rest.join(' '),email:'',status:stu?'student':r?'work':'',what:/^student$/i.test(r)?'':r})}
-  window._vaultErr=false}catch(e){PROFILE=null;window._vaultErr=true}
+  window._vaultErr=false;if(S.me&&!S.settings.space&&PROFILE){S.settings.space=PROFILE.status==='student'?'student':'work';save();applyTheme();nav()}}catch(e){PROFILE=null;window._vaultErr=true}
  if(S.me&&['you','settings','people','group'].includes(route.k)&&!isOpen())render()}
 const fullName=()=>PROFILE?[PROFILE.first,PROFILE.last].filter(Boolean).join(' '):(S.me?S.me.name:'');
 function meRole(){const p=PROFILE;if(!p)return S.me&&S.me.role||'';if(p.status==='student')return p.what?'Student · '+p.what:'Student';return p.what||(p.status==='work'?'Working':'')}
@@ -598,11 +682,11 @@ const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_e
  msg:['Message','Chat',1],chat_new:['New conversation','Chat',2],group_new:['New group','Groups',5],group_edit:['Group change','Groups',1],bot_new:['New teammate','Groups',3],
  project_new:['New project','Projects',6],task_new:['New task','Projects',2],task_move:['Task update','Projects',1],idea:['Idea','Projects',2],vote:['Vote','Projects',1],
  file:['File upload','Projects',4],board_save:['Drawing saved','Projects',3],inspo:['Inspiration','Projects',2],table_edit:['Table edit','Projects',1],
- focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1],
+ focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1],space:['Space switch','Account',1],skin:['Theme change','You',1],frame:['Frame change','You',1],quote:['Quote','You',1],widget:['Widget','Chat',2],
  photo:['Photo shared','Chat',3],file_share:['File shared','Chat',3],share:['Shared update','Chat',2],pin:['Pin','Chat',1],
  agenda_new:['Agenda item','Today',2],agenda_done:['Agenda done','Today',1],milestone:['Milestone','Projects',2],progress:['Progress update','Projects',1],
  zen:['Deep mode','Focus',1],cal_alerts:['Calendar alerts','Focus',1],deck_new:['New deck','Study',3],card_new:['New card','Study',1],card_review:['Card review','Study',1],exam_new:['Exam','Study',2],study_plan:['Study plan','Study',2],study_goal:['Study goal','Study',1]};
-function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times,d=today();const day=S.usage.days[d]||(S.usage.days[d]={});day[a]=(day[a]||0)+times;day._n=(day._n||0)+n;S.usage.total+=n;saveSoon()}
+function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times*KSCALE,d=today(),before=S.usage.total;const day=S.usage.days[d]||(S.usage.days[d]={});day[a]=(day[a]||0)+times;day._n=(day._n||0)+n;S.usage.total+=n;saveSoon();if(typeof checkUnlocks==='function')checkUnlocks(before,S.usage.total)}
 const usedToday=()=>(S.usage.days[today()]||{})._n||0;
 
 /* ---------- ledger: the day's timeline ---------- */
@@ -647,7 +731,11 @@ function ring(frac,col,size=56,sw=6,txt=''){const r=(size-sw)/2,c=2*Math.PI*r;re
 
 /* ---------- router ---------- */
 const TABS=[['today','Today','home'],['focus','Focus','focus'],['notes','Notes','notes'],['projects','Projects','projects'],['chat','Chat','chat'],['you','You','you']];
-const TAB_OF={today:'today',ledger:'today',focus:'focus',study:'focus',deck:'focus',review:'focus',notes:'notes',note:'notes',projects:'projects',project:'projects',board:'projects',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
+const TABS_STUDENT=[['today','Today','home'],['focus','Focus','focus'],['study','Study','cap'],['notes','Notes','notes'],['chat','Chat','chat'],['you','You','you']];
+const space=()=>S.settings.space==='student'?'student':'work';
+const tabsNow=()=>space()==='student'?TABS_STUDENT:TABS;
+function tabOf(k){const t=TAB_OF[k]||'today';if(space()==='student'&&['study','deck','review','projects','project','board'].includes(k))return'study';return t}
+const TAB_OF={rewards:'you',profile:'you',today:'today',ledger:'today',focus:'focus',study:'focus',deck:'focus',review:'focus',notes:'notes',note:'notes',projects:'projects',project:'projects',board:'projects',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
 let route={k:'today',a:[]},_prevRoute='';
 /* Pages change in memory, so navigation works everywhere, also in previews that block address changes. */
 let _hash=(()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return''}})()||'today';
@@ -657,20 +745,25 @@ function redirect(h){_hash=h;try{history.replaceState(null,'','#'+h)}catch(e){}q
 /* every in-app link navigates here, even if the browser or preview cancels the tap's default action */
 document.addEventListener('click',e=>{if(e.button>0||e.metaKey||e.ctrlKey)return;const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;const inner=e.target.closest('button,input,select,textarea,label');if(inner&&inner!==a&&a.contains(inner))return;e.preventDefault();go(a.getAttribute('href'))},true);
 addEventListener('popstate',()=>{let h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}_hash=h||'today';render()});
-function nav(){const cur=TAB_OF[route.k]||'today',unread=S.chats.reduce((a,c)=>a+unreadOf(c),0);
- $('#tabs').innerHTML=TABS.map(([k,n,i])=>`<a href="#${k}" class="${cur===k?'on':''}" ${cur===k?'aria-current="page"':''}>${ic(i)}<span>${n}</span>${k==='chat'&&unread?`<b class="badge">${unread>9?'9+':unread}</b>`:''}</a>`).join('')+'<i class="tabglow"></i>';
- const on=$('#tabs a.on'),g=$('#tabs .tabglow');if(on&&g){g.style.cssText=`--x:${on.offsetLeft}px;--y:${on.offsetTop}px;--w:${on.offsetWidth}px;--h:${on.offsetHeight}px`}}
+function nav(){const el=$('#tabs');if(!el)return;const T=tabsNow(),cur=tabOf(route.k),unread=S.chats.reduce((a,c)=>a+unreadOf(c),0),sig=T.map(t=>t[0]).join();
+ let fresh=false;if(el._sig!==sig){fresh=true;el.innerHTML=T.map(([k,n,i])=>`<a href="#${k}" data-tab="${k}">${ic(i)}<span>${n}</span>${k==='chat'?'<b class="badge" hidden></b>':''}</a>`).join('')+'<i class="tabglow"></i>';if(el._sig){el.classList.remove('swap');void el.offsetWidth;el.classList.add('swap')}el._sig=sig;el._unr=0}
+ el.querySelectorAll('a[data-tab]').forEach(a=>{const on=a.dataset.tab===cur;a.classList.toggle('on',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+ const b=el.querySelector('a[data-tab=chat] .badge');if(b){const txt=unread?(unread>9?'9+':String(unread)):'';if(b.textContent!==txt||fresh){b.textContent=txt;b.hidden=!unread;if(unread>(el._unr||0)&&!fresh){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop')}}el._unr=unread}
+ const on=el.querySelector('a.on'),g=el.querySelector('.tabglow');if(on&&g){const css=`--x:${on.offsetLeft}px;--y:${on.offsetTop}px;--w:${on.offsetWidth}px;--h:${on.offsetHeight}px`;if(g._css!==css){if(fresh)g.classList.add('still');g.style.cssText=css;g._css=css;if(fresh)requestAnimationFrame(()=>requestAnimationFrame(()=>g.classList.remove('still')))}}}
+/* only the unread badge, for messages that arrive while you are elsewhere */
+const navBadge=()=>nav();
 function render(){if(!S.me){$('#shell').classList.add('nologin');onboarding();return}$('#shell').classList.remove('nologin');
  route=parseHash();const key=_hash;const fresh=key!==_prevRoute;_prevRoute=key;
  const V=$('#view'),y=fresh?0:scrollY;
- const P={study:pStudy,deck:pDeck,review:pReview,person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
+ const P={rewards:pRewards,profile:pProfile,study:pStudy,deck:pDeck,review:pReview,person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
  try{V.innerHTML=P(...route.a)||''}catch(e){console.error(e);V.innerHTML=`<div class="page">${empty('think','Something went wrong','This view could not be shown. Your work is safe.',`<a class="btn primary" href="#today">Back to Today</a>`)}</div>`}
  if(fresh){V.classList.remove('enter');void V.offsetWidth;V.classList.add('enter');scrollTo(0,0)}else scrollTo(0,y);
  nav();paintRail();countUp(V);if(V._after){const f=V._after;V._after=null;f()}miniTimer();loadImgs(V)}
 const after=f=>{$('#view')._after=f};
 addEventListener('hashchange',()=>{let h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}if(h&&h!==_hash){_hash=h;render()}});
 addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(nav,120)});
-function applyTheme(){const d=S.settings.theme==='dark'||(S.settings.theme==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';const m=$('meta[name=theme-color]');if(m)m.content=d?'#1b1a18':'#f6f3ee'}
+function applyTheme(){const d=S.settings.theme==='dark'||(S.settings.theme==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches),R=document.documentElement;R.dataset.theme=d?'dark':'light';R.dataset.skin=(typeof skinOK==='function'&&skinOK(S.settings.skin))?S.settings.skin:'clay';R.dataset.space=space();
+ const m=$('meta[name=theme-color]');if(m){let bg=d?'#1b1a18':'#f6f3ee';try{bg=getComputedStyle(R).getPropertyValue('--bg').trim()||bg}catch(e){}m.content=bg}}
 function header(title,{sub='',back='',right=''}={}){return`<header class="ph">${back?`<a class="icon-btn" href="#${back}" aria-label="Back">${ic('back')}</a>`:''}<div class="grow"><div class="eyebrow">${sub}</div><h1>${title}</h1></div>${right}</header>`}
 
 /* ============ TEAMMATES (bots) ============ */
@@ -695,6 +788,8 @@ const LINES={
  day:{warm:['Sounds like a good day so far.','Thanks for sharing your day!'],brief:['Productive.','Nice day.'],curious:['What was the best part?','How are you feeling about it?']},
  agenda:{warm:['Nice plan for the day!','Good plan. Shout if I can take something.'],brief:['Plan noted.','Clear plan.'],curious:['Which one matters most?','Is there time for a break in there?']},
  deck:{warm:['Ooh, can I borrow these cards?','Great deck, let\'s quiz each other.'],brief:['Useful, thanks.','Got the deck.'],curious:['How many do you know already?','Which card is the hardest?']},
+ quote:{warm:['That is a lovely line.','I needed that today, thank you.'],brief:['Good one.','True.'],curious:['Where is that from?','What made you pick it?']},
+ countdown:{warm:['You have got this! Want to study together?','We can plan the last days together.'],brief:['Noted. Good luck.','Counting with you.'],curious:['How ready do you feel?','Which part worries you most?']},
  gen:{warm:['Sounds good!','Love it. Keep going.','I\'m with you on this.'],brief:['OK.','Noted.','Sure.'],curious:['Tell me more?','Why do you think so?','Interesting!']}};
 function topicOf(t){t=t.toLowerCase();if(/\b(hi|hey|hello|živjo|zdravo|good morning)\b/.test(t))return'greet';if(/thank|hvala|thx/.test(t))return'thanks';if(/idea|ideja|what if|maybe we/.test(t))return'idea';if(/deadline|due|tomorrow|today|friday|rok|jutri/.test(t))return'time';if(/meet|call|sestan|session/.test(t))return'meet';if(/\?$/.test(t.trim()))return'q';return'gen'}
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -731,7 +826,7 @@ function onboarding(){const slides=[['wave','Work better, together.','Notes, pro
  $('#obC').onclick=e=>{const b=e.target.closest('[data-c]');if(b){OB.c=+b.dataset.c;pick()}};
  F.onsubmit=e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(F));if(!showErrs(F,checkProfile(fd)))return;
   const p=cleanProfile(fd),name=p.first;
-  S.me={id:'me',name,handle:name.split(/\s+/)[0].toLowerCase(),fig:{h:OB.h,c:OB.c},created:Date.now()};storeProfile(p);use('signin');
+  S.me={id:'me',name,handle:name.split(/\s+/)[0].toLowerCase(),fig:{h:OB.h,c:OB.c},created:Date.now()};S.settings.space=p.status==='student'?'student':'work';S.focus.mode=p.status==='student'?'study':'pomo';storeProfile(p);use('signin');applyTheme();
   if(fd.team){seedBots();const ids=S.people.map(p=>p.id);const g={id:uid(),name:'Studio',col:GCOL[0],desc:'Your first working group.',members:['me',...ids],at:Date.now()};S.groups.push(g);
    const c={id:uid(),kind:'group',with:g.id,msgs:[],read:Date.now(),at:Date.now()};S.chats.push(c);c.msgs.push({id:uid(),from:ids[3],text:`Welcome to Studio, ${name.split(' ')[0]}! This is where we plan things.`,at:Date.now()});
    S.notes.push({id:uid(),title:'Welcome to Atelier',body:'# Start here\nNotes are yours until you share them.\n\n[ ] Make your first note\n[ ] Start a focus session\n[ ] Create a project with Studio\n\n- Share notes with a group from the note menu\n- Your activity shows up on Today',col:0,pin:true,share:{groups:[],projects:[]},at:Date.now(),up:Date.now()})}
@@ -773,6 +868,7 @@ function pToday(){const g=greet(),nm=S.me.name.split(' ')[0],d=selDay||today(),L
  return`<div class="page today">
  <header class="th"><a href="#you" class="thav" aria-label="Your account">${avatar(S.me,36)}</a><h1 class="hand ttl">Today<svg class="uline" viewBox="0 0 120 10" preserveAspectRatio="none"><path d="M3 6C30 3 60 8 90 4C100 3 110 4 117 5" fill="none" stroke="var(--blue)" stroke-width="2.4" stroke-linecap="round"/></svg></h1><a href="#groups" class="icon-btn" aria-label="Groups">${ic('group')}</a></header>
  ${weekRow()}
+ ${d===today()?spaceHero():''}
  ${run?focusCard():''}
  <div class="card motd" id="motd"><button class="playb" onclick="playMotd(${mi})" aria-label="Play message of the day">${ic('play')}</button><div class="grow"><div class="lbl" style="color:var(--blue)">message of the day</div><div class="motdt">${esc(MOTD[mi])}</div></div></div>
  ${!run&&d===today()?`<a class="card startf" href="#focus"><span class="sfi">${ic('focus')}</span><div class="grow"><div class="lbl hand" style="font-size:17px;color:var(--focus)">${ic('sparkle',2)} Focus</div><b>Start a focus session</b><div class="sub">${focusTodayMin()} min focused today</div></div>${ic('arrow')}</a>`:''}
@@ -780,9 +876,9 @@ function pToday(){const g=greet(),nm=S.me.name.split(' ')[0],d=selDay||today(),L
  <div class="lhead"><span class="sub">${d===today()?'Your day so far':fmtDay(new Date(d+'T12:00').getTime())}</span><span class="row" style="gap:14px">${d<=today()&&L.length?`<button class="lnk" onclick="shareTo(dayAtt('${d}'),c=>go('c:'+c.id))">${ic('share')} Share</button>`:''}<a href="#ledger" class="lnk">Ledger ›</a></span></div>
  <div class="timeline ${L.length?'':'none'}">${L.length?L.slice(0,10).map(ledgerItem).join(''):`<div class="tlempty">${figure('think',{draw:true})}<p class="sub">${d===today()?'Nothing yet. Start a focus session, write a note or check in how you feel.':d>today()?'This day is still ahead. Plan it in the agenda above.':'Nothing happened that day.'}</p></div>`}</div>
  ${agendaHTML(d)}
- ${d===today()?studyStrip():''}
+ ${d===today()&&space()==='work'?studyStrip():''}
  ${ups.length&&d===today()?`<section><div class="sh"><h2>Unread</h2><a class="lnk" href="#chat">Chat</a></div><div class="card list">${ups.slice(0,3).map(convoRow).join('')}</div></section>`:''}
- ${open.length&&d===today()?`<section><div class="sh"><h2>Your open tasks</h2><a class="lnk" href="#projects">Projects</a></div><div class="card list">${open.map(({t,p})=>`<div class="li" onclick="go('project:${p.id}:tasks')"><span class="tdot" style="--tc:${p.col}"></span><div class="grow"><div class="t">${esc(t.t)}</div><div class="sub">${esc(p.name)}${t.due?' · due '+fmtDay(new Date(t.due).getTime()):''}</div></div><span class="pill st-${t.st}">${t.st==='doing'?'doing':'to do'}</span></div>`).join('')}</div></section>`:''}
+ ${open.length&&d===today()?`<section><div class="sh"><h2>${space()==='student'?'Your assignments':'Your open tasks'}</h2><a class="lnk" href="#projects">Projects</a></div><div class="card list">${open.map(({t,p})=>`<div class="li" onclick="go('project:${p.id}:tasks')"><span class="tdot" style="--tc:${p.col}"></span><div class="grow"><div class="t">${esc(t.t)}</div><div class="sub">${esc(p.name)}${t.due?' · due '+fmtDay(new Date(t.due).getTime()):''}</div></div><span class="pill st-${t.st}">${t.st==='doing'?'doing':'to do'}</span></div>`).join('')}</div></section>`:''}
  </div>
 `}
 /* quick panel: floats over every page, can be tucked away to a small handle */
@@ -799,8 +895,15 @@ function quickNote(){const n=newNote();go('note:'+n.id)}
 function feelSheet(){openModal(`<div class="sheet" role="dialog" aria-modal="true" aria-label="Feeling"><div class="sheet-h"><h2>How do you feel?</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div><div class="feels" id="fls">${FEELS.map(([f,c])=>`<button class="feelchip big" style="--fc:${c}" data-f="${f}">${f}</button>`).join('')}</div><label for="flN">A line about it (optional)</label><input id="flN" placeholder="e.g. resting pleasant after the walk"><button class="btn primary full" id="flS" disabled>Check in</button></div>`);
  let f=null;$('#fls').onclick=e=>{const b=e.target.closest('[data-f]');if(!b)return;f=b.dataset.f;$$('#fls button').forEach(x=>x.classList.toggle('on',x===b));$('#flS').disabled=false};
  $('#flS').onclick=()=>{if(!f)return;led('feel',$('#flN').value.trim(),{feel:f});use('feel');closeSheet();save();render();toast('Checked in: '+f)}}
+/* each space opens with its own summary and its own quick actions */
+function spaceHero(){if(space()==='student'){const g=S.study.goal||60,min=focusTodayMin(),due=allDue(),ex=nextExams()[0];
+  return`<a class="card shero" href="#study" style="--sc:var(--violet)">${ring(Math.min(1,min/g),'var(--violet)',58,6,String(min))}<div class="grow"><div class="lbl hand shl">${ic('cap',2)} Study</div><b>${min>=g?'Daily goal reached':`${g-min} min to your goal`}</b><div class="sub">${due?plural(due,'card')+' to review':'No cards due'}${ex?` · ${esc(ex.title)} ${cdText(ex.d).toLowerCase()}`:''}</div></div>${ic('arrow')}</a>`}
+ const open=S.projects.reduce((a,p)=>a+(p.tasks||[]).filter(t=>t.st!=='done'&&(t.who==='me'||!t.who)).length,0),act=S.projects.filter(p=>pctOf(p)<100),avg=act.length?Math.round(act.reduce((a,p)=>a+pctOf(p),0)/act.length):0,now=tHM(Date.now()),nx=agendaOf(today()).find(a=>!a.done&&(!a.t||a.t>=now));
+ return`<a class="card shero" href="#projects" style="--sc:var(--accent)">${ring(avg/100,'var(--accent)',58,6,avg+'%')}<div class="grow"><div class="lbl hand shl">${ic('case',2)} Work</div><b>${act.length?plural(act.length,'active project'):'No active projects'}</b><div class="sub">${plural(open,'open task')}${nx?` · next: ${esc((nx.t?nx.t+' ':'')+nx.title)}`:''}</div></div>${ic('arrow')}</a>`}
+const ACTS={work:[['notes','Note','quickNote()'],['focus','Focus session',"go('focus')"],['check','Task','taskQuick()'],['projects','Project','projectForm()'],['group','Group','groupForm()'],['chat','Message','newChat()'],['calendar','Agenda','agendaForm(today())'],['share','Share my day','shareTo(dayAtt(today()))']],
+ student:[['notes','Note','quickNote()'],['focus','Study session',"go('focus')"],['cap','Flashcards',"go('study')"],['flag','Exam','examForm()'],['calendar','Agenda','agendaForm(today())'],['check','Assignment','taskQuick()'],['group','Study group','groupForm()'],['chat','Message','newChat()'],['share','Share my day','shareTo(dayAtt(today()))']]};
 function actionSheet(){openModal(`<div class="sheet" role="dialog" aria-modal="true" aria-label="New"><div class="sheet-h"><h2>New</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div><div class="actgrid">
- ${[['notes','Note','quickNote()'],['focus','Focus session',"go('focus')"],['check','Task','taskQuick()'],['projects','Project','projectForm()'],['group','Group','groupForm()'],['chat','Message','newChat()'],['calendar','Agenda','agendaForm(today())'],['share','Share my day','shareTo(dayAtt(today()))']].map(([i,n,f])=>`<button onclick="closeSheet();setTimeout(()=>{${f}},${f.startsWith('go')?0:230})">${ic(i)}<span>${n}</span></button>`).join('')}</div></div>`)}
+ ${ACTS[space()].map(([i,n,f])=>`<button onclick="closeSheet();setTimeout(()=>{${f}},${f.startsWith('go')?0:230})">${ic(i)}<span>${n}</span></button>`).join('')}</div></div>`)}
 function taskQuick(){if(!S.projects.length){projectForm({name:'My tasks',size:'small'});return}sheet('New task',`<label for="tqT">Task</label><input id="tqT" name="t" required placeholder="What needs doing?"><label for="tqP">Project</label><select id="tqP" name="p">${S.projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select>`,fd=>{if(!fd.t.trim())return false;const p=proj(fd.p);addTask(p,{t:fd.t.trim()});toast('Task added to '+p.name)})}
 /* voice memos */
 /* voice memos: the wave and timer always run while you record or dictate, the main button always stops,
@@ -1011,8 +1114,8 @@ const unreadOf=c=>c.msgs.filter(m=>m.from!=='me'&&m.at>(c.read||0)).length;
 const convoName=c=>c.kind==='dm'?(person(c.with)?.name||'Someone'):(grp(c.with)?.name||'Group');
 const lastMsg=c=>c.msgs[c.msgs.length-1];
 /* what can be shared in a conversation: [label, icon] */
-const ATT={note:['Note','notes'],project:['Project','projects'],file:['File','file'],photo:['Photo','image'],doc:['File','file'],focus:['Focus','focus'],day:['My day','sun'],agenda:['Agenda','calendar'],progress:['Progress','chart'],deck:['Flashcards','cap']};
-function msgPreview(m){if(!m)return'No messages yet';const who=m.from==='me'?'You: ':'';if(!m.att)return who+m.text;const a=m.att,L=(ATT[a.kind]||ATT.file)[0];
+const ATT={note:['Note','notes'],project:['Project','projects'],file:['File','file'],photo:['Photo','image'],doc:['File','file'],focus:['Focus','focus'],day:['My day','sun'],agenda:['Agenda','calendar'],progress:['Progress','chart'],deck:['Flashcards','cap'],countdown:['Countdown','flag'],quote:['Quote','quote']};
+function msgPreview(m){if(!m)return'No messages yet';const who=m.from==='me'?'You: ':'';if(!m.att)return who+m.text;if(isWidget(m.att))return`${who}${wLabel(m.att.kind)} widget${m.att.kind==='quote'||m.att.kind==='photo'?'':' · '+(m.att.title||'')}`;const a=m.att,L=(ATT[a.kind]||ATT.file)[0];
  return who+(a.kind==='photo'?'Photo'+(m.text?' · '+m.text:''):a.kind==='progress'?`Progress: ${a.title} ${a.pct}%`:`${L}: ${a.title}`)}
 /* group look: its own line icon in its colour */
 const GICONS=['group','cap','case','idea','draw','chart','coffee','star','flag','notes','focus','projects'];
@@ -1037,9 +1140,9 @@ const SHARE_USE={deck:'share',photo:'photo',doc:'file_share',focus:'share',day:'
 function sendMsg(c,text,att){if(!text.trim()&&!att)return;const m={id:uid(),from:'me',text:text.trim(),att,at:Date.now()};c.msgs.push(m);c.read=Date.now();use('msg');if(att&&SHARE_USE[att.kind])use(SHARE_USE[att.kind]);
  led(att?'share':'msg',`${att?'Shared '+(att.kind==='photo'?'a photo':att.title)+' with':'Message to'} ${convoName(c)}`,{ref:'c:'+c.id});save();botReply(c,text,att);return m}
 /* share something into a conversation, from anywhere in the app */
-function shareTo(att,after){pickConvo(c=>{sendMsg(c,'',att);toast('Shared with '+convoName(c));if(after)after(c);else go('c:'+c.id)},'Share with')}
+function shareTo(att,after){if(isWidget(att))return openWidget(null,att.kind,att,after);pickConvo(c=>{sendMsg(c,'',att);toast('Shared with '+convoName(c));if(after)after(c);else go('c:'+c.id)},'Share with')}
 const pctOf=p=>Math.round(progOf(p)*100);
-function attHtml(c,m){const a=m.att;if(!a)return'';const k=a.kind;
+function attHtml(c,m){const a=m.att;if(!a)return'';const k=a.kind;if(isWidget(a))return widgetHTML(a,false,c,m);
  if(k==='note')return`<a class="att" href="#note:${a.id}">${noteGlyph()}<div><b>${esc(a.title)}</b><span>Note</span></div></a>`;
  if(k==='file')return`<a class="att" href="#project:${a.pid}:files">${ic('file')}<div><b>${esc(a.title)}</b><span>Project file</span></div></a>`;
  if(k==='photo')return`<button type="button" class="aph" onclick="viewAtt('${c.id}','${m.id}')" aria-label="Open photo"><img data-fid="${a.fid}" alt="${esc(a.title||'Photo')}" decoding="async"></button>`;
@@ -1056,7 +1159,7 @@ function attHtml(c,m){const a=m.att;if(!a)return'';const k=a.kind;
  if(k==='agenda')return`<a class="rc rag" href="#today"><div class="rch">${ic('calendar')}<span>Agenda · ${esc(a.label||'')}</span></div>${(a.items||[]).length?`<ul class="rcl">${a.items.map(x=>`<li class="${x.done?'done':''}"><span>${esc(x.t||'Anytime')}</span>${esc(x.title)}</li>`).join('')}</ul>`:'<p>Nothing planned yet.</p>'}</a>`;
  return''}
 function msgHtml(c,m,prev,i){const mine=m.from==='me',p=person(m.from),same=prev&&prev.from===m.from&&m.at-prev.at<5*60000&&!prev.att&&!m.att,rich=m.att&&!['note','file','doc'].includes(m.att.kind);
- return`<div class="msg ${mine?'me':''} ${same?'same':''} ${m.pin?'pinned':''}" data-i="${i}" data-id="${m.id}">${!mine&&c.kind==='group'&&!same?avatar(p,28):!mine&&c.kind==='group'?'<span class="avsp"></span>':''}<div class="bub ${rich?'rich':''} ${m.att?.kind==='photo'?'phb':''}">${!mine&&c.kind==='group'&&!same?`<div class="who">${esc(p?.name.split(' ')[0]||'')}</div>`:''}${attHtml(c,m)}${m.text?`<div class="mtx">${esc(m.text)}</div>`:''}<span class="mtime">${m.pin?`<span class="mpin">${ic('pin',2)}</span>`:''}${tHM(m.at)}${mine?'<svg class="seen" viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6.5L4.8 9.8L11 2.5M8.5 9.6L9 9.8L15.5 2.5"/></svg>':''}</span></div></div>`}
+ return`<div class="msg ${mine?'me':''} ${same?'same':''} ${m.pin?'pinned':''}" data-i="${i}" data-id="${m.id}">${!mine&&c.kind==='group'&&!same?avatar(p,28):!mine&&c.kind==='group'?'<span class="avsp"></span>':''}<div class="bub ${isWidget(m.att)?'wb':rich?'rich':''} ${m.att?.kind==='photo'&&!isWidget(m.att)?'phb':''}">${!mine&&c.kind==='group'&&!same?`<div class="who">${esc(p?.name.split(' ')[0]||'')}</div>`:''}${attHtml(c,m)}${m.text?`<div class="mtx">${esc(m.text)}</div>`:''}<span class="mtime">${m.pin?`<span class="mpin">${ic('pin',2)}</span>`:''}${tHM(m.at)}${mine?'<svg class="seen" viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6.5L4.8 9.8L11 2.5M8.5 9.6L9 9.8L15.5 2.5"/></svg>':''}</span></div></div>`}
 const pinsOf=c=>c.msgs.filter(m=>m.pin).sort((a,b)=>b.pin-a.pin);
 const infoHref=c=>c.kind==='group'?'group:'+c.with:'person:'+c.with;
 function pConvo(id){const c=S.chats.find(x=>x.id===id);if(!c){return redirect('chat')}c.read=Date.now();save();const g=c.kind==='group'?grp(c.with):null,p=c.kind==='dm'?person(c.with):null;if(c.kind==='group'&&!g||c.kind==='dm'&&!p)return redirect('chat');
@@ -1093,21 +1196,21 @@ async function viewAtt(cid,mid){const c=S.chats.find(x=>x.id===cid),m=c?.msgs.fi
  $('#vaPin').onclick=()=>{if(m.pin)delete m.pin;else{m.pin=Date.now();use('pin')}save();closeSheet();render()};
  $('#vaFwd').onclick=()=>{closeSheet();setTimeout(()=>pickConvo(t=>{sendMsg(t,'',{...a});go('c:'+t.id)},'Forward to'),220)}}
 /* the share sheet: device photos and files, plus everything Atelier knows about your work */
+/* the share sheet: Atelier widgets first, then plain photos, files and notes */
 function attachSheet(cid){const c=S.chats.find(x=>x.id===cid);if(!c)return;
- const O=[['photo','image','Photo'],['doc','file','File'],['note','notes','Note'],['project','projects','Project'],['focus','focus','Focus'],['day','sun','My day'],['agenda','calendar','Agenda']];
+ const F=[['photo','image','Photo'],['doc','file','File'],['note','notes','Note']];
  openModal(`<div class="sheet" role="dialog" aria-modal="true" aria-label="Share"><div class="sheet-h"><h2>Share</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div>
- <p class="sub" style="margin:0 2px 8px">With ${esc(convoName(c))}. Photos and files stay on this device and work offline.</p>
- <div class="actgrid shgrid">${O.map(([k,i,n])=>k==='photo'||k==='doc'?`<label class="shopt" data-k="${k}">${ic(i)}<span>${n}</span><input type="file" id="sh_${k}" ${k==='photo'?'accept="image/*" multiple':'multiple'} hidden></label>`:`<button type="button" class="shopt" data-k="${k}">${ic(i)}<span>${n}</span></button>`).join('')}</div></div>`);
+ <div class="wbrand">${wMark}<b>Widgets</b><span>Live cards you can style</span></div>
+ <div class="wgal">${WKINDS.map(([k,n,i])=>`<button type="button" class="shopt wtile" data-k="${k}">${ic(i)}<span>${n}</span></button>`).join('')}</div>
+ <div class="flabel">Files</div><div class="actgrid shgrid sh3">${F.map(([k,i,n])=>k==='photo'||k==='doc'?`<label class="shopt" data-k="${k}">${ic(i)}<span>${n}</span><input type="file" id="sh_${k}" ${k==='photo'?'accept="image/*" multiple':'multiple'} hidden></label>`:`<button type="button" class="shopt" data-k="${k}">${ic(i)}<span>${n}</span></button>`).join('')}</div>
+ <p class="sub sm" style="margin:10px 2px 0">With ${esc(convoName(c))}. Everything stays on this device and works offline.</p></div>`);
  const send=(att,text='')=>{closeSheet();sendMsg(c,text,att);if(route.k==='c'&&route.a[0]===c.id)appendMsgs(c);else go('c:'+c.id)};
  const files=async(list,kind)=>{const L=[...list];if(!L.length)return;closeSheet();let n=0;for(const f of L){if(f.size>25*1048576){toast(f.name+' is over 25 MB');continue}const fid='c'+uid();
    try{await IDB.put(fid,f)}catch(e){toast('Could not save '+f.name);continue}sendMsg(c,'',{kind:kind==='photo'&&f.type.startsWith('image/')?'photo':'doc',fid,title:f.name||'Photo',type:f.type,size:f.size});n++}
   if(n&&route.k==='c'&&route.a[0]===c.id)appendMsgs(c)};
  $('#sh_photo').onchange=e=>files(e.target.files,'photo');$('#sh_doc').onchange=e=>files(e.target.files,'doc');
- $$('button.shopt').forEach(b=>b.onclick=()=>{const k=b.dataset.k;
-  if(k==='focus')send(focusAtt());else if(k==='day')send(dayAtt(today()));
-  else if(k==='agenda'){const d=selDay||today();if(!agendaOf(d).length&&!agendaOf(today()).length){closeSheet();setTimeout(()=>{toast('Add something to your agenda first');go('today')},220);return}send(agendaAtt(agendaOf(d).length?d:today()))}
-  else if(k==='note')pickList('Share a note',S.notes.slice().reverse().map(n=>({id:n.id,html:`${noteGlyph(NCOL[n.col%NCOL.length])}<div class="grow t">${esc(noteTitle(n))}</div>`})),id=>{const n=note(id);c.msgs&&send({kind:'note',id:n.id,title:noteTitle(n)})},'Write a note first');
-  else if(k==='project')pickList('Share a project',S.projects.slice().reverse().map(p=>({id:p.id,html:`${ring(progOf(p),p.col,34,4)}<div class="grow"><div class="t">${esc(p.name)}</div><div class="sub sm">${pctOf(p)}% done</div></div>`})),id=>send(projAtt(proj(id))),'Start a project first')})}
+ $$('.wtile').forEach(b=>b.onclick=()=>{const k=b.dataset.k;closeSheet();setTimeout(()=>openWidget(c.id,k),230)});
+ const nb=$('button.shopt[data-k=note]');if(nb)nb.onclick=()=>pickList('Share a note',S.notes.slice().reverse().map(n=>({id:n.id,html:`${noteGlyph(NCOL[n.col%NCOL.length])}<div class="grow t">${esc(noteTitle(n))}</div>`})),id=>{const n=note(id);send({kind:'note',id:n.id,title:noteTitle(n)})},'Write a note first')}
 function pickList(title,items,cb,emptyMsg){if(!items.length){toast(emptyMsg||'Nothing here yet');return}openModal(`<div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-h"><h2>${esc(title)}</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div><div class="card list flat">${items.map(x=>`<button class="li" data-pk="${x.id}">${x.html}</button>`).join('')}</div></div>`);
  $$('[data-pk]').forEach(b=>b.onclick=()=>cb(b.dataset.pk))}
 /* snapshots of your work, as they are at the moment you share them */
@@ -1157,7 +1260,8 @@ function pGroup(id){const g=grp(id);if(!g){return redirect('groups')}const ps=S.
 function pPerson(pid){const p=person(pid);if(!p||pid==='me')return redirect('people');const c=S.chats.find(x=>x.kind==='dm'&&x.with===pid),gs=S.groups.filter(g=>g.members.includes(pid)),ps=S.projects.filter(x=>projMembers(x).includes(pid));
  const back=c&&window._fromHash==='c:'+c.id?'c:'+c.id:'people';
  return`<div class="page">${header(esc(p.name),{sub:p.bot?'Teammate bot':'Teammate',back,right:p.bot?`<button class="btn sm" onclick="botForm('${pid}')">${ic('edit')} Edit</button>`:''})}
- <div class="card pphero">${avatar(p,84)}<div class="grow"><h2>${esc(p.name)}</h2><div class="sub">${esc(p.role||'')}</div><div class="row wrap mt"><button class="btn primary sm" onclick="const c=ensureDM('${pid}');save();go('c:'+c.id)">${ic('chat')} Message</button><button class="btn sm" onclick="shareTo(dayAtt(today()),c=>go('c:'+c.id))">${ic('sun')} Share my day</button></div></div></div>
+ <div class="card pphero">${avatar(p,84)}<div class="grow"><h2>${esc(p.name)}</h2><div class="sub">${esc(p.role||'')}</div><div class="row wrap mt"><button class="btn primary sm" onclick="const c=ensureDM('${pid}');save();go('c:'+c.id)">${ic('chat')} Message</button><button class="btn sm" onclick="const c=ensureDM('${pid}');save();openWidget(c.id,'day',null,()=>go('c:'+c.id))">${ic('sun')} Share my day</button></div></div></div>
+ ${quoteOf(p)?`<div class="proq">${quoteCard(quoteOf(p),p.name)}</div>`:''}
  <section><div class="sh"><h2>Groups together</h2><span class="sub">${gs.length}</span></div>${gs.length?`<div class="card list">${gs.map(g=>`<a class="li" href="#group:${g.id}">${gAv(g)}<div class="grow"><div class="t">${esc(g.name)}</div><div class="sub sm">${gKind(g)} · ${plural(g.members.length,'member')}</div></div>${ic('chevr')}</a>`).join('')}</div>`:`<div class="card emptyrow sub">No groups together yet.</div>`}</section>
  <section><div class="sh"><h2>Projects together</h2></div>${activeProj(ps)}</section>
  ${c?infoMedia(c,window._mcap||9):''}</div>`}
@@ -1347,7 +1451,8 @@ function pStudy(){const g=S.study.goal||60,min=focusTodayMin(),ex=nextExams(),pa
  <div class="row wrap mt"><button class="btn primary sm" onclick="studyNow()">${ic('play',2)} Study now</button><button class="btn sm" onclick="goalSheet()">${ic('flag')} Goal</button></div></div></div>
  <section><div class="sh"><h2>Exams and deadlines</h2><button class="lnk" onclick="examForm()">New</button></div>${ex.length?`<div class="card list">${ex.map(e=>{const d=new Date(e.d+'T12:00');return`<div class="li exam" onclick="examForm('${e.id}')"><span class="edate" style="--ec:${e.col}"><b>${d.getDate()}</b><i>${d.toLocaleDateString('en-GB',{month:'short'})}</i></span><div class="grow"><div class="t">${esc(e.title)}</div><div class="sub sm">${esc(e.note||d.toLocaleDateString('en-GB',{weekday:'long'}))}</div></div><span class="cd ${cdCls(e.d)}">${cdText(e.d)}</span><button class="icon-btn sm" onclick="event.stopPropagation();planSheet('${e.id}')" aria-label="Plan study blocks">${ic('calendar')}</button></div>`}).join('')}</div>${past?`<p class="sub sm" style="margin:8px 4px 0">${plural(past,'past exam')}</p>`:''}`:`<div class="card emptyrow sub">Add an exam or a deadline to count down to it and plan study blocks.</div>`}</section>
  <section><div class="sh"><h2>Flashcards</h2><button class="lnk" onclick="deckForm()">New deck</button></div>${S.study.decks.length?`<div class="dgrid">${S.study.decks.map(d=>{const due=dueOf(d).length,ms=d.cards.length?Math.round(masteredOf(d)/d.cards.length*100):0;return`<a class="card dcard" href="#deck:${d.id}" style="--dc:${d.col}"><div class="dstack"><i></i><i></i><b>${ic('cap',1.9)}</b></div><b class="dn">${esc(d.name)}</b><span class="sub sm">${plural(d.cards.length,'card')}${due?` · <em>${due} due</em>`:''}</span><div class="pbar" style="--pc:${d.col}"><i style="width:${ms}%"></i></div><span class="sub sm">${ms}% mastered</span></a>`}).join('')}</div>`:empty('read','Remember more with less','Make a deck of flashcards. Atelier brings each card back just before you would forget it.',`<button class="btn primary" onclick="deckForm()">New deck</button>`)}</section>
- <section><div class="sh"><h2>Subjects this week</h2><span class="sub">focus minutes</span></div>${subs.length?`<div class="card subj">${subs.map(([n,v])=>`<button class="srow" onclick="studyNow('${esc(n==='Other'?'':n).replace(/'/g,'')}')"><span class="t">${esc(n)}</span><div class="pbar" style="--pc:var(--violet)"><i style="width:${Math.round(v/mx*100)}%"></i></div><b>${v}</b>${ic('play')}</button>`).join('')}</div>`:`<div class="card emptyrow sub">Name your focus sessions, for example Biology, to see time per subject here.</div>`}</section></div>`}
+ <section><div class="sh"><h2>Subjects this week</h2><span class="sub">focus minutes</span></div>${subs.length?`<div class="card subj">${subs.map(([n,v])=>`<button class="srow" onclick="studyNow('${esc(n==='Other'?'':n).replace(/'/g,'')}')"><span class="t">${esc(n)}</span><div class="pbar" style="--pc:var(--violet)"><i style="width:${Math.round(v/mx*100)}%"></i></div><b>${v}</b>${ic('play')}</button>`).join('')}</div>`:`<div class="card emptyrow sub">Name your focus sessions, for example Biology, to see time per subject here.</div>`}</section>
+ ${space()==='student'?`<section><div class="sh"><h2>Projects and assignments</h2><button class="lnk" onclick="projectForm()">New</button></div>${S.projects.length?`<div class="card list">${S.projects.slice().sort((a,b)=>(b.up||b.at)-(a.up||a.at)).map(projRow).join('')}</div>`:`<div class="card emptyrow sub">Group work and assignments live here, with tasks, files and progress.</div>`}</section>`:''}</div>`}
 function goalSheet(){const g=S.study.goal||60;sheet('Daily goal',`<div class="pgbig"><b id="sgV">${g}</b><span class="sub">minutes of focus a day</span></div><div class="slider pgsl"><input type="range" id="sgR" name="goal" min="15" max="240" step="15" value="${g}" aria-label="Daily goal"></div>`,
  fd=>{S.study.goal=clamp(+fd.goal||60,15,240);use('study_goal');toast(`Goal: ${S.study.goal} min a day`)});$('#sgR').oninput=e=>$('#sgV').textContent=e.target.value}
 /* exams and deadlines */
@@ -1419,17 +1524,180 @@ function revGrade(g){const R=REV,d=R&&deck(R.id);if(!d||!R.shown)return;const c=
 function studyStrip(){const due=allDue(),ex=nextExams().find(e=>dayDiff(e.d,today())<=14);if(!due&&!ex)return'';
  return`<a class="card studyrow" href="#study"><span class="sfi">${ic('cap')}</span><div class="grow"><b>${due?`${plural(due,'card')} to review`:'Study'}</b><div class="sub">${ex?`${esc(ex.title)} ${cdText(ex.d).toLowerCase()}`:'Keep the streak going'}</div></div>${ic('arrow')}</a>`}
 
+/* ============ WIDGETS: Atelier's branded way to show your work in a conversation ============
+   A widget is a live card with a size, a font and a surface you choose. Your style is remembered per widget. */
+const WKINDS=[['focus','Focus','focus'],['day','My day','sun'],['agenda','Agenda','calendar'],['project','Project','projects'],['deck','Flashcards','cap'],['countdown','Countdown','flag'],['quote','Quote','quote'],['photo','Photo','image']];
+const WK=new Set(WKINDS.map(w=>w[0]));
+const WFONTS=[['sans','Sans'],['serif','Serif'],['hand','Hand']],WLAYOUTS=[['small','Small'],['wide','Wide']],WTONES=[['glass','Glass'],['tint','Tint'],['ink','Ink']];
+const isWidget=a=>!!a&&WK.has(a.kind)&&(a.kind!=='photo'||!!a.w)&&a.kind!=='progress';
+const wStyle=k=>Object.assign({font:k==='quote'?'serif':'sans',layout:['photo','agenda','day','quote'].includes(k)?'wide':'small',tone:'glass'},(S.widgets||{})[k]||{});
+const wLabel=k=>(WKINDS.find(w=>w[0]===k)||WKINDS[0])[1];
+const wMark=`<svg class="wmk" viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${MARK_A}" stroke="currentColor" stroke-width="5"/><path d="${MARK_B}" stroke="var(--wc)" stroke-width="4.4"/></svg>`;
+function examAtt(e){return{kind:'countdown',id:e.id,title:e.title,d:e.d,col:e.col,note:e.note||''}}
+/* the card itself; live where it can be (a project shows its progress today), a snapshot otherwise */
+function widgetHTML(a,preview,c,m){const k=a.kind,w=Object.assign(wStyle(k),a.w||{}),wide=w.layout==='wide';let col='var(--accent)',body='',href='',tap='';
+ if(k==='focus'){col='var(--focus)';href='#focus';body=`<div class="wbig"><b>${a.mins||0}</b><span>min</span></div><div class="wsub">${a.date&&m&&a.date!==isoD(new Date(m.at))?'focused on '+fmtDay(new Date(a.date+'T12:00').getTime()):'focused today'}</div>${wide?`<div class="wfoot"><span>${plural(a.sessions||0,'session')}</span><span>${plural(a.streak||0,'day')} streak</span></div>`:`<div class="wfoot"><span>${a.streak||0}-day streak</span></div>`}${a.running?`<div class="wlive"><i class="livedot"></i>${esc(a.running)}</div>`:''}`}
+ else if(k==='day'){col='var(--yellow)';href='#ledger';const st=a.st||{};body=wide?`<div class="wtitle">${a.date&&m&&a.date!==isoD(new Date(m.at))?'My day · '+fmtDay(new Date(a.date+'T12:00').getTime()):'My day so far'}</div><div class="wstats">${[['focus',st.focus||0,'min'],['check',st.tasks||0,'tasks'],['notes',st.notes||0,'notes'],['calendar',st.agenda||'0/0','plan']].map(([i,v,l])=>`<span>${ic(i)}<b>${v}</b><i>${l}</i></span>`).join('')}</div>${(a.items||[]).length?`<ul class="wl">${a.items.slice(0,2).map(x=>`<li><span>${esc(x.h)}</span>${esc(x.t)}</li>`).join('')}</ul>`:''}${a.feel?`<span class="wfeel" style="--fc:${(FEELS.find(f=>f[0]===a.feel)||FEELS[0])[1]}">${esc(a.feel)}</span>`:''}`
+  :`<div class="wbig"><b>${st.focus||0}</b><span>min</span></div><div class="wsub">focus so far</div><div class="wfoot"><span>${ic('check')} ${st.tasks||0}</span><span>${ic('calendar')} ${st.agenda||'0/0'}</span></div>`}
+ else if(k==='agenda'){col='var(--blue)';href='#today';const L=(a.items||[]).slice(0,wide?5:3);body=`<div class="wtitle">${esc(a.label||'Today')}</div>${L.length?`<ul class="wl">${L.map(x=>`<li class="${x.done?'done':''}"><span>${esc(x.t||'Any')}</span>${esc(x.title)}</li>`).join('')}</ul>${(a.items||[]).length>L.length?`<div class="wsub">+${a.items.length-L.length} more</div>`:''}`:'<div class="wsub">Nothing planned yet</div>'}`}
+ else if(k==='project'){const p=proj(a.id),pct=p?pctOf(p):(a.pct||0),t=p?(p.tasks||[]):null,nx=p&&(p.miles||[]).find(x=>!x.done);col=p?.col||a.col||col;href='#project:'+a.id;
+  body=`<div class="wtitle">${esc(p?.name||a.title)}</div><div class="wbig"><b>${pct}</b><span>%</span></div><div class="pbar"><i style="width:${pct}%"></i></div>${wide?`<div class="wfoot"><span>${t?`${t.filter(x=>x.st==='done').length}/${t.length} tasks`:''}</span><span>${nx?'Next: '+esc(nx.t):''}</span></div>`:''}`}
+ else if(k==='deck'){const d=deck(a.id),n=d?d.cards.length:(a.count||0),ms=d&&d.cards.length?Math.round(masteredOf(d)/d.cards.length*100):(a.mastered||0);col=d?.col||a.col||'var(--violet)';href='#deck:'+a.id;
+  body=`<div class="wtitle">${esc(d?.name||a.title)}</div><div class="wbig"><b>${n}</b><span>cards</span></div><div class="pbar"><i style="width:${ms}%"></i></div><div class="wsub">${ms}% mastered${wide&&d?` · ${dueOf(d).length} due`:''}</div>`}
+ else if(k==='countdown'){const n=dayDiff(a.d,today());col=a.col||'var(--red)';href='#study';body=`<div class="wtitle">${esc(a.title)}</div><div class="wbig"><b>${n<=0?(n===0?'Today':'Done'):n}</b>${n>0?`<span>${n===1?'day':'days'}</span>`:''}</div><div class="wsub">${new Date(a.d+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}${wide&&a.note?' · '+esc(a.note):''}</div>`}
+ else if(k==='quote'){const q=a.q||{};col=(QCOLS.find(x=>x[0]===q.col)||QCOLS[0])[1];body=`<blockquote class="wq qf-${q.font||w.font}">${esc(q.t||'')}</blockquote><div class="wsub">${esc(a.by||'')}</div>`}
+ else if(k==='photo'){col='var(--violet)';tap=c&&m?`onclick="viewAtt('${c.id}','${m.id}')"`:'';body=`<div class="wph">${a.src?`<img src="${a.src}" alt="">`:a.fid?`<img data-fid="${a.fid}" alt="" decoding="async">`:`<span class="wphe">${ic('image',1.5)}</span>`}</div>${a.cap?`<div class="wcap">${esc(a.cap)}</div>`:''}`}
+ const lab=k==='quote'?'Quote':k==='photo'?(a.cap?'Photo':'Photo'):wLabel(k);
+ const inner=`<div class="wh">${ic((WKINDS.find(x=>x[0]===k)||WKINDS[0])[2])}<span>${lab}</span>${wMark}</div>${body}`;
+ const cls=`wdg w-${k} wl-${w.layout} wt-${w.tone} wf-${w.font}`,st=`--wc:${col}`;
+ if(preview)return`<div class="${cls}" style="${st}">${inner}</div>`;
+ if(tap)return`<button type="button" class="${cls}" style="${st}" ${tap} aria-label="Open photo">${inner}</button>`;
+ return`<a class="${cls}" style="${st}" href="${href||'#chat'}">${inner}</a>`}
+/* the editor: live preview, a few honest choices, then send */
+function openWidget(cid,kind,preset,after){const c=cid?S.chats.find(x=>x.id===cid):null;let a=preset?{...preset}:null,w=wStyle(kind),file=null,url=null;
+ const build=()=>{if(kind==='focus')return focusAtt();if(kind==='day')return dayAtt(today());if(kind==='agenda')return agendaAtt(agendaOf(selDay||today()).length?(selDay||today()):today());
+  if(kind==='quote')return S.me.quote&&S.me.quote.t?{kind:'quote',title:'Quote',q:{...S.me.quote},by:fullName()}:null;
+  if(kind==='project'){const p=S.projects[S.projects.length-1];return p?projAtt(p):null}if(kind==='deck'){const d=S.study.decks[S.study.decks.length-1];return d?deckAtt(d):null}
+  if(kind==='countdown'){const e=nextExams()[0];return e?examAtt(e):null}if(kind==='photo')return{kind:'photo',title:'Photo',cap:''};return null};
+ if(!a)a=build();
+ const pick=kind==='project'?S.projects.map(p=>[p.id,p.name]):kind==='deck'?S.study.decks.map(d=>[d.id,d.name]):kind==='countdown'?nextExams().map(e=>[e.id,e.title]):null;
+ const none={project:['No projects yet','Start a project','projectForm()'],deck:['No flashcard decks yet','Make a deck','deckForm()'],countdown:['No exams or deadlines yet','Add one','examForm()'],quote:['You have no quote yet','Write your quote','quoteSheet()']}[kind];
+ const seg=(id,L,v)=>`<div class="seg sm wseg" id="${id}">${L.map(([k,n])=>`<button type="button" data-v="${k}" class="${v===k?'on':''}">${n}</button>`).join('')}</div>`;
+ openModal(`<div class="sheet wsheet" role="dialog" aria-modal="true" aria-label="${esc(wLabel(kind))} widget"><div class="sheet-h"><h2>${esc(wLabel(kind))} widget</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div>
+ <div class="wstage" id="wSt"></div>
+ ${!a&&none?`<div class="card emptyrow"><p class="sub" style="margin:0 0 8px">${none[0]}</p><button class="btn sm primary" onclick="closeSheet();setTimeout(()=>{${none[2]}},230)">${none[1]}</button></div>`:''}
+ ${pick&&pick.length?`<label for="wPk">${kind==='project'?'Project':kind==='deck'?'Deck':'Exam or deadline'}</label><select id="wPk">${pick.map(([id,n])=>`<option value="${id}" ${a&&a.id===id?'selected':''}>${esc(n)}</option>`).join('')}</select>`:''}
+ ${kind==='photo'?`<label class="btn full" style="margin-top:4px">${ic('image')} Choose a photo<input type="file" id="wPh" accept="image/*" hidden></label><input id="wCap" maxlength="80" placeholder="Caption (optional)" style="margin-top:10px">`:''}
+ <div class="wopts"><div class="flabel">Size</div>${seg('wL',WLAYOUTS,w.layout)}<div class="flabel">Font</div>${seg('wF',WFONTS,w.font)}<div class="flabel">Surface</div>${seg('wT',WTONES,w.tone)}</div>
+ <button class="btn primary full" id="wSend" ${a&&(kind!=='photo'||a.fid)?'':'disabled'}>${ic('send')} ${c?'Send to '+esc(convoName(c)):'Choose who to send to'}</button><p class="sub sm center" style="margin:8px 0 0">Your style is remembered for this widget.</p></div>`,'wmodal');
+ const paint=()=>{const st=$('#wSt');if(!st)return;st.innerHTML=a?widgetHTML({...a,w,src:url||a.src},true):`<div class="wdg wl-small wt-glass wf-sans" style="--wc:var(--muted)"><div class="wh">${ic('sparkle')}<span>${esc(wLabel(kind))}</span>${wMark}</div><div class="wsub">Nothing to show yet</div></div>`;loadImgs(st)};paint();
+ [['wL','layout'],['wF','font'],['wT','tone']].forEach(([id,key])=>{const g=$('#'+id);if(g)g.onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;w={...w,[key]:b.dataset.v};g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));paint()}});
+ const pk=$('#wPk');if(pk)pk.onchange=()=>{const id=pk.value;a=kind==='project'?projAtt(proj(id)):kind==='deck'?deckAtt(deck(id)):examAtt(S.study.exams.find(e=>e.id===id));paint()};
+ const ph=$('#wPh');if(ph)ph.onchange=()=>{const f=ph.files[0];if(!f||!f.type.startsWith('image/'))return;if(f.size>25*1048576){toast('That photo is over 25 MB');return}file=f;if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(f);a={...a,title:f.name,type:f.type,size:f.size,fid:'pending'};$('#wSend').disabled=false;paint()};
+ const cap=$('#wCap');if(cap)cap.oninput=()=>{a={...a,cap:cap.value.trim()};paint()};
+ onSheetClose(()=>{if(url){const u=url;setTimeout(()=>URL.revokeObjectURL(u),3000)}});
+ $('#wSend').onclick=async()=>{if(!a)return;S.widgets=S.widgets||{};S.widgets[kind]=w;let att={...a,w};delete att.src;
+  if(kind==='photo'){if(!file)return;const fid='c'+uid();try{await IDB.put(fid,file)}catch(e){toast('Could not save the photo');return}att.fid=fid}
+  const send=t=>{sendMsg(t,'',att);use('widget');if(after)after(t);else if(route.k==='c'&&route.a[0]===t.id)appendMsgs(t);else go('c:'+t.id)};
+  closeSheet();if(c)send(c);else setTimeout(()=>pickConvo(t=>{send(t);toast('Widget sent to '+convoName(t))},'Send widget to'),230)}}
+
+/* ============ REWARDS: themes and profile frames unlocked by knots, profile quotes, profiles ============
+   Knots are never spent: reaching a mark unlocks the item for good. A normal full day is about 1,600 knots,
+   so the first theme takes a couple of weeks and the last one about two years of real use.
+   Themes only change design tokens, so every screen and every new feature picks them up automatically. */
+const mkT=(bg,bg2,card,card2,text,ink2,muted,accent,w1,w2,w3,wo)=>({bg,bg2,card,card2,text,ink2,muted,accent,w1,w2,w3,wo});
+const SKINS=[
+ {id:'clay',n:'Clay',d:'The original: warm paper, one clay accent.',at:0},
+ {id:'harbour',n:'Harbour',d:'Light sky over a deep harbour blue.',at:25000,
+  L:mkT('#eef3f8','#e0e9f3','rgba(255,255,255,.76)','#fbfdff','#142030','#3a4b5f','#6c7d92','#2f6db5','#5b9be0','#1f4f8f','#9cc8f0',2.6),
+  D:mkT('#0f1824','#162232','rgba(28,42,60,.66)','#182638','#e8f0f8','#b9c8d9','#8597ab','#6aa8ec','#2f6db5','#13355f','#6aa8ec',2.4)},
+ {id:'rosewood',n:'Rosewood',d:'Soft rose with a deep plum night.',at:50000,
+  L:mkT('#f8f1f0','#f0e3e1','rgba(255,255,255,.74)','#fffafa','#2a1f20','#57474a','#8c7a7c','#c65d6f','#e8909e','#c9a0d8','#f2c1a8',2.4),
+  D:mkT('#1d1617','#271d1f','rgba(52,38,41,.66)','#2c2224','#f5eaeb','#d6c5c7','#a8979a','#e58a9a','#b04a5c','#6d3f7a','#c26a52',2.2)},
+ {id:'sage',n:'Sage',d:'Herb green and quiet linen.',at:90000,
+  L:mkT('#f1f4ee','#e3eadf','rgba(255,255,255,.74)','#fbfdf9','#1e241c','#48523f','#7a8572','#5b8a52','#8cbf7f','#c9b77a','#7fb5a3',2.4),
+  D:mkT('#141a13','#1c241b','rgba(36,46,35,.66)','#212a20','#edf2ea','#c5cfbf','#94a08c','#8fc285','#3f6e37','#6b5d2a','#2f6656',2.2)},
+ {id:'lavender',n:'Lavender',d:'Lilac evenings and violet ink.',at:150000,
+  L:mkT('#f4f1f9','#e8e2f3','rgba(255,255,255,.74)','#fdfbff','#231e2e','#4f4660','#857c97','#7b5fc9','#a98cf0','#e8a0c8','#8fb0f0',2.6),
+  D:mkT('#18151f','#211d2b','rgba(44,38,58,.66)','#262131','#f0ecf8','#cbc3dc','#9d94b0','#ab95f0','#5b3fb0','#8a3f78','#3f5aa8',2.4)},
+ {id:'sunrise',n:'Sunrise',d:'Peach, coral and the first gold light.',at:220000,
+  L:mkT('#fbf2ea','#f5e3d4','rgba(255,252,248,.74)','#fffaf5','#2b1d14','#5c4535','#957a66','#e2724a','#f2a65a','#e86f8a','#f6d365',3.4),
+  D:mkT('#1e1612','#2a1e17','rgba(56,40,31,.66)','#2e221a','#f8ece2','#dcc6b6','#ab9585','#f39a6b','#c8642c','#a83a5a','#b58a2a',2.8)},
+ {id:'forest',n:'Forest night',d:'Pine shade, moss and a green glow.',at:320000,
+  L:mkT('#eef2ec','#dfe7db','rgba(255,255,255,.72)','#f9fcf7','#132018','#3b4d41','#6d8073','#2f7d5b','#4fae7f','#2b5d45','#a7cf8f',2.8),
+  D:mkT('#0b130f','#122019','rgba(22,40,31,.7)','#15251c','#e6f1ea','#b8cdbf','#82998a','#6fcf9a','#1f6b47','#0f4030','#5c8f2a',2.8)},
+ {id:'ocean',n:'Ocean depth',d:'Teal shallows falling into deep navy.',at:450000,
+  L:mkT('#edf5f6','#dbeaee','rgba(255,255,255,.72)','#fafeff','#10242a','#375159','#6b878e','#1f8a9e','#3fc1d0','#2a4f9e','#7fe0c8',3.2),
+  D:mkT('#07141a','#0d2029','rgba(16,40,50,.7)','#10262f','#e3f3f6','#b2ccd2','#7f9ca3','#4cc3d6','#0f7d8f','#14306e','#1f8f73',3)},
+ {id:'aurora',n:'Aurora',d:'Green, violet and ice blue drifting overhead.',at:620000,
+  L:mkT('#f2f3f8','#e4e6f1','rgba(255,255,255,.7)','#fcfcff','#1b1d2b','#474b66','#7d82a0','#5a63d8','#3fd0a0','#8a5cf0','#4aa3f0',4),
+  D:mkT('#0b0d18','#131627','rgba(26,30,52,.68)','#171a2d','#e9ebfa','#c3c7e3','#8e93b5','#8c95ff','#1fa37a','#6a3fd0','#2a7fd0',3.6)},
+ {id:'gold',n:'Midnight gold',d:'Ivory by day, black and gold by night.',at:820000,
+  L:mkT('#f6f2e8','#ebe3cf','rgba(255,253,247,.74)','#fffdf7','#1f1a10','#4d4430','#857a62','#b8892b','#e0b65a','#c79a3a','#f0d898',2.8),
+  D:mkT('#0a0908','#141210','rgba(32,29,24,.7)','#1a1813','#f3ead6','#d3c7ab','#a0957c','#d9b25a','#8a6a1f','#5a4510','#b8892b',2.4)},
+ {id:'prism',n:'Grand atelier',d:'The rarest: jewel light that slowly moves.',at:1100000,
+  L:mkT('#f7f4f0','#ece6df','rgba(255,255,255,.7)','#fffdfa','#1d1a1f','#4a4450','#837b88','#b0508a','#ff9a8b','#a18cd1','#6fc7e8',4.4),
+  D:mkT('#0e0c12','#17141d','rgba(34,29,42,.68)','#1c1823','#f1ecf4','#cdc4d4','#9a90a3','#e07ab8','#c4426a','#5b3fb0','#1f8fb0',4)}];
+const FRAMES=[
+ {id:'hairline',n:'Hairline',d:'One fine ring, left open at the top.',at:220000},
+ {id:'dotted',n:'Stitch',d:'A ring of small even stitches.',at:350000},
+ {id:'laurel',n:'Laurel',d:'Two light sprigs of leaves.',at:500000},
+ {id:'knot',n:'Knot',d:'A ring tied with the Atelier knot.',at:700000},
+ {id:'orbit',n:'Orbit',d:'A small moon that circles slowly.',at:950000},
+ {id:'gilded',n:'Gilded',d:'A double ring of soft gold with a spark.',at:1300000}];
+const skinOK=id=>{const s=SKINS.find(x=>x.id===id);return!!s&&S.usage.total>=s.at};
+const frameOK=id=>{const f=FRAMES.find(x=>x.id===id);return!!f&&S.usage.total>=f.at};
+const fmtK=n=>Math.round(n).toLocaleString('en-GB');
+/* all themes as CSS, generated once from the data above */
+(function skinCSS(){const mix=(c,p)=>`color-mix(in srgb,${c} ${p}%,transparent)`;const v=t=>`--bg:${t.bg};--bg2:${t.bg2};--card:${t.card};--card2:${t.card2};--text:${t.text};--ink2:${t.ink2};--muted:${t.muted};--accent:${t.accent};--focus:${t.accent};--line:${mix(t.text,9)};--line2:${mix(t.text,15)};--fill:${mix(t.text,5)};--fill2:${mix(t.text,9)};--track:${mix(t.text,8)};--w1:${t.w1};--w2:${t.w2};--w3:${t.w3};--wo:${t.wo}`;
+ const css=SKINS.filter(s=>s.L).map(s=>`:root[data-skin=${s.id}]{${v(s.L)}}:root[data-skin=${s.id}][data-theme=dark]{${v(s.D)}}`).join('\n');const st=document.createElement('style');st.id='skins';st.textContent=css;document.head.appendChild(st)})();
+function setSkin(id){if(!skinOK(id)){const s=SKINS.find(x=>x.id===id);toast(`${s.n} unlocks at ${fmtK(s.at)} knots`);return}S.settings.skin=id;use('skin');save();applyTheme();render();toast((SKINS.find(x=>x.id===id)||{}).n+' theme')}
+function setFrame(id){if(id&&!frameOK(id)){const f=FRAMES.find(x=>x.id===id);toast(`${f.n} unlocks at ${fmtK(f.at)} knots`);return}S.me.frame=id||'';use('frame');save();render();toast(id?(FRAMES.find(x=>x.id===id)||{}).n+' frame':'No frame')}
+/* a quiet note when a new theme or frame unlocks */
+function checkUnlocks(before,after){const hit=[...SKINS.map(s=>({...s,k:'theme'})),...FRAMES.map(f=>({...f,k:'frame'}))].filter(x=>x.at>0&&before<x.at&&after>=x.at);
+ if(!hit.length)return;const x=hit[hit.length-1];setTimeout(()=>{toast(`Unlocked: ${x.n} ${x.k}`);burst()},400);led('study',`Unlocked the ${x.n} ${x.k}`,{sub:`${fmtK(x.at)} knots`,ref:'rewards'})}
+const newUnlocks=()=>[...SKINS,...FRAMES].filter(x=>x.at>0&&x.at<=S.usage.total&&x.at>(S.settings.seenAt||0)).length;
+/* frames are drawn around your own avatar; subtle, one ink line in the accent colour */
+function frameSVG(id){const r=22.4,c='currentColor';let g='';
+ if(id==='hairline')g=`<circle cx="24" cy="24" r="${r}" stroke="${c}" stroke-width="1.1" pathLength="100" stroke-dasharray="90 10" stroke-dashoffset="-2" transform="rotate(-80 24 24)"/>`;
+ else if(id==='dotted')g=`<circle cx="24" cy="24" r="${r}" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="0 3.6"/>`;
+ else if(id==='laurel'){const lv=(a,s)=>{const t=a*Math.PI/180,x=24+Math.cos(t)*r,y=24+Math.sin(t)*r;return`<ellipse cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" rx="2.5" ry="1" transform="rotate(${(a+90+s*28).toFixed(1)} ${x.toFixed(2)} ${y.toFixed(2)})" stroke="${c}" stroke-width=".9"/>`};
+  g=`<circle cx="24" cy="24" r="${r}" stroke="${c}" stroke-width=".6" opacity=".35"/>`+[100,116,132,148,164].map(a=>lv(a,1)).join('')+[80,64,48,32,16].map(a=>lv(a,-1)).join('')}
+ else if(id==='knot')g=`<circle cx="24" cy="24" r="${r}" stroke="${c}" stroke-width="1" opacity=".7"/><circle cx="24" cy="46.4" r="3.9" fill="var(--card2)"/><g transform="translate(20.6 43.1) scale(.106)" stroke="${c}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="${KNOT}"/></g>`;
+ else if(id==='orbit')g=`<circle cx="24" cy="24" r="${r}" stroke="${c}" stroke-width=".8" opacity=".45"/><g class="orb"><circle cx="24" cy="${24-r}" r="1.9" fill="${c}"/></g>`;
+ else if(id==='gilded'){const k='g'+Math.random().toString(36).slice(2,7);g=`<defs><linearGradient id="${k}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b8892b"/><stop offset=".5" stop-color="#f3d27a"/><stop offset="1" stop-color="#a87a22"/></linearGradient></defs><circle cx="24" cy="24" r="${r}" stroke="url(#${k})" stroke-width="1.4"/><circle cx="24" cy="24" r="${r-1.9}" stroke="url(#${k})" stroke-width=".6" opacity=".8"/><path d="M40.5 5.2L41.2 7.3L43.3 8L41.2 8.7L40.5 10.8L39.8 8.7L37.7 8L39.8 7.3Z" fill="#e8c260"/>`}
+ return g?`<svg class="frm frm-${id}" viewBox="0 0 48 48" fill="none" aria-hidden="true">${g}</svg>`:''}
+/* profile quotes: one line, a font, a colour and a look, kept subtle */
+const QFONTS=[['serif','Serif'],['hand','Hand'],['sans','Sans']],QLOOKS=[['paper','Paper'],['glass','Glass'],['ink','Ink']],QCOLS=[['ink','var(--text)'],['clay','var(--accent)'],['blue','var(--blue)'],['green','var(--green)'],['violet','var(--violet)']];
+const BOT_QUOTES=['Make it simple, then make it good.','Small steps, every day.','Ask the question nobody asks.','Done is better than perfect.','Leave it better than you found it.','Curiosity first, coffee second.'];
+function quoteOf(p){if(!p)return null;if(p.id==='me')return S.me.quote&&S.me.quote.t?S.me.quote:null;if(p.quote)return p.quote;if(!p.bot)return null;
+ const h=[...String(p.name)].reduce((a,c)=>a+c.charCodeAt(0),0);return{t:BOT_QUOTES[h%BOT_QUOTES.length],font:QFONTS[h%3][0],col:QCOLS[h%QCOLS.length][0],look:'paper'}}
+function quoteCard(q,name,cls=''){const col=(QCOLS.find(c=>c[0]===q.col)||QCOLS[0])[1];
+ return`<figure class="qcard ql-${q.look||'paper'} qf-${q.font||'serif'} ${cls}" style="--qc:${col}"><svg class="qm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON.quote}"/></svg><blockquote>${esc(q.t)}</blockquote>${name?`<figcaption>${esc(name)}</figcaption>`:''}</figure>`}
+function quoteSheet(){const q=Object.assign({t:'',font:'serif',col:'ink',look:'paper'},S.me.quote||{});
+ sheet('Your quote',`<div class="qstage" id="qPv">${quoteCard(q.t?q:{...q,t:'A line that sounds like you.'},fullName())}</div>
+ <label for="qT">Quote</label><textarea id="qT" name="t" rows="2" maxlength="140" placeholder="A line that sounds like you">${esc(q.t)}</textarea>
+ <div class="flabel">Font</div><div class="seg" id="qF">${QFONTS.map(([k,n])=>`<label><input type="radio" name="font" value="${k}" ${q.font===k?'checked':''}><span class="qf-${k}">${n}</span></label>`).join('')}</div>
+ <div class="flabel">Look</div><div class="seg" id="qL">${QLOOKS.map(([k,n])=>`<label><input type="radio" name="look" value="${k}" ${q.look===k?'checked':''}><span>${n}</span></label>`).join('')}</div>
+ <div class="flabel">Colour</div><div class="opts">${QCOLS.map(([k,c])=>`<label class="swl"><input type="radio" name="col" value="${k}" ${q.col===k?'checked':''}><span class="sw" style="background:${c}"></span></label>`).join('')}</div>`,
+ fd=>{S.me.quote={t:(fd.t||'').trim().slice(0,140),font:fd.font||'serif',col:fd.col||'ink',look:fd.look||'paper'};use('quote');toast(S.me.quote.t?'Quote saved':'Quote removed')},
+ S.me.quote&&S.me.quote.t?`<button type="button" class="btn ghost full" onclick="closeSheet();setTimeout(()=>openWidget(null,'quote'),220)">${ic('share')} Share as a widget</button>`:'');
+ const f=$('#sf'),pv=()=>{const t=f.t.value.trim();$('#qPv').innerHTML=quoteCard({t:t||'A line that sounds like you.',font:f.font.value,col:f.col.value,look:f.look.value},fullName())};f.addEventListener('input',pv);f.addEventListener('change',pv)}
+/* your profile, as others would see it */
+function pProfile(){const q=quoteOf(S.me),gs=S.groups.filter(g=>g.members.includes('me')),fr=FRAMES.find(f=>f.id===S.me.frame);
+ return`<div class="page">${header('Profile',{sub:'How others see you',back:'you',right:`<button class="btn sm" onclick="profileForm()">${ic('edit')} Edit</button>`})}
+ <div class="card prohero"><div class="proav">${avatar(S.me,104)}</div><h2>${esc(fullName())}</h2><div class="sub">${esc(meRole()||'Member')} · @${esc(S.me.handle)}</div>${fr?`<span class="pill frpill">${ic('sparkle',2)} ${fr.n} frame</span>`:''}
+ ${q?`<div class="proq" onclick="quoteSheet()">${quoteCard(q,'')}</div>`:`<button class="qempty" onclick="quoteSheet()">${ic('quote')}<span>Add a quote to your profile</span></button>`}</div>
+ <div class="grid3 mt"><div class="card kpi"><div class="l">Knots</div><div class="v" data-n="${S.usage.total}">${fmtK(S.usage.total)}</div><div class="l">all time</div></div><div class="card kpi"><div class="l">Focus</div><div class="v">${(S.focus.sessions.reduce((a,s)=>a+s.mins,0)/60).toFixed(1)}</div><div class="l">hours</div></div><div class="card kpi"><div class="l">Groups</div><div class="v" data-n="${gs.length}">${gs.length}</div><div class="l">${space()==='student'?'classes':'teams'}</div></div></div>
+ <section><div class="sh"><h2>Look</h2><a class="lnk" href="#rewards">Collection</a></div><div class="card list"><button class="li" onclick="quoteSheet()">${ic('quote')}<div class="grow"><div class="t">Quote</div><div class="sub sm">${q?esc(q.t):'Add a line that sounds like you'}</div></div>${ic('chevr')}</button><a class="li" href="#rewards">${ic('sparkle')}<div class="grow"><div class="t">Themes and frames</div><div class="sub sm">${(SKINS.find(s=>s.id===S.settings.skin)||SKINS[0]).n} theme${fr?' · '+fr.n+' frame':''}</div></div>${ic('chevr')}</a></div></section>
+ ${gs.length?`<section><div class="sh"><h2>${space()==='student'?'Classes and groups':'Teams and groups'}</h2></div><div class="card list">${gs.map(g=>`<a class="li" href="#group:${g.id}">${gAv(g)}<div class="grow"><div class="t">${esc(g.name)}</div><div class="sub sm">${gKind(g)} · ${plural(g.members.length,'member')}</div></div>${ic('chevr')}</a>`).join('')}</div></section>`:''}</div>`}
+/* the collection: every theme and frame with what it takes to unlock it */
+function pRewards(){const tot=S.usage.total,dark=document.documentElement.dataset.theme==='dark',all=[...SKINS.map(s=>({...s,k:'theme'})),...FRAMES.map(f=>({...f,k:'frame'}))].filter(x=>x.at>tot).sort((a,b)=>a.at-b.at),nx=all[0];
+ const days=Object.keys(S.usage.days).sort().slice(-14),pace=Math.max(1,Math.round(days.reduce((a,d)=>a+(S.usage.days[d]._n||0),0)/Math.max(1,days.length)))||1600;
+ const eta=n=>{const d=Math.ceil(n/pace);return d<=1?'about a day':d<60?`about ${d} days`:d<730?`about ${Math.round(d/30)} months`:`about ${(d/365).toFixed(1)} years`};
+ S.settings.seenAt=tot;saveSoon();
+ const prev=s=>{const t=s.L?(dark?s.D:s.L):null,st=t?`--pb:${t.bg};--pc:${t.card2};--pa:${t.accent};--pt:${t.text};--pw1:${t.w1};--pw2:${t.w2}`:'--pb:var(--bg);--pc:var(--card2);--pa:var(--accent);--pt:var(--text);--pw1:var(--accent);--pw2:var(--blue)';return`<div class="skprev" style="${st}"><i class="w1"></i><i class="w2"></i><b class="h"></b><span class="c1"><em></em><em></em></span><span class="c2"><em></em></span><u></u></div>`};
+ return`<div class="page">${header('Collection',{sub:'Themes and frames',back:'you'})}
+ <div class="card rwhero">${knot('kn lg',3.6)}<div class="grow"><div class="l">All-time knots</div><div class="v" data-n="${tot}">${fmtK(tot)}</div><div class="sub sm">Knots are never spent. Reach a mark and it is yours for good.</div></div></div>
+ ${nx?`<div class="card rwnext"><div class="row between"><b>Next: ${esc(nx.n)} ${nx.k}</b><span class="sub sm">${fmtK(nx.at)}</span></div><div class="pbar"><i style="width:${Math.min(100,tot/nx.at*100).toFixed(1)}%"></i></div><div class="sub sm">${fmtK(nx.at-tot)} to go · ${eta(nx.at-tot)} at your pace (${fmtK(pace)} a day)</div></div>`:`<div class="card rwnext"><b>You have unlocked everything.</b><div class="sub sm">New themes arrive with updates.</div></div>`}
+ <section><div class="sh"><h2>Themes</h2><span class="sub">${SKINS.filter(s=>tot>=s.at).length} of ${SKINS.length}</span></div><div class="skgrid">${SKINS.map(s=>{const ok=tot>=s.at,on=(S.settings.skin||'clay')===s.id;return`<button class="card sk ${ok?'':'lock'} ${on?'on':''}" onclick="setSkin('${s.id}')" aria-label="${esc(s.n)}${ok?'':' locked'}">${prev(s)}<div class="skn"><b>${esc(s.n)}</b>${on?`<span class="pill st-done">In use</span>`:ok?'<span class="pill">Use</span>':`<span class="pill lockp">${ic('lock',2)} ${fmtK(s.at)}</span>`}</div><div class="sub sm">${esc(s.d)}</div>${ok?'':`<div class="pbar"><i style="width:${Math.min(100,tot/s.at*100).toFixed(1)}%"></i></div>`}</button>`}).join('')}</div></section>
+ <section><div class="sh"><h2>Profile frames</h2><span class="sub">${FRAMES.filter(f=>tot>=f.at).length} of ${FRAMES.length}</span></div><div class="frgrid">
+ <button class="card frc ${!S.me.frame?'on':''}" onclick="setFrame('')">${avatar({...S.me,frame:''},56)}<b>None</b><span class="sub sm">${!S.me.frame?'In use':'Plain'}</span></button>
+ ${FRAMES.map(f=>{const ok=tot>=f.at,on=S.me.frame===f.id;return`<button class="card frc ${ok?'':'lock'} ${on?'on':''}" onclick="setFrame('${f.id}')" aria-label="${esc(f.n)}${ok?'':' locked'}">${avatar({...S.me,frame:f.id},56)}<b>${esc(f.n)}</b><span class="sub sm">${on?'In use':ok?esc(f.d):`${ic('lock',2)} ${fmtK(f.at)}`}</span></button>`}).join('')}</div></section>
+ <p class="sub center sm">About ${fmtK(1600)} knots is a normal full day. The rarest themes take years of use.</p></div>`}
+
 /* ============ YOU: account, knots usage, posters, settings ============ */
 function pYou(){const u=S.usage,t=today(),td=u.days[t]||{},days=[],dates=Object.keys(u.days).sort();
  for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const iso=isoD(d);days.push({l:i%2?'':d.getDate()+'.',v:(u.days[iso]||{})._n||0,c:i===0?'var(--accent)':'var(--blue)'})}
  const active=dates.filter(d=>u.days[d]._n).length,avg=active?Math.round(u.total/active):0;
  const byAct={};Object.values(u.days).forEach(d=>Object.entries(d).forEach(([k,v])=>{if(k!=='_n'&&ACT[k])byAct[k]=(byAct[k]||0)+v}));
- const rows=Object.entries(byAct).map(([k,c])=>({k,c,n:c*ACT[k][2]})).sort((a,b)=>b.n-a.n),sumN=rows.reduce((a,r)=>a+r.n,0)||1;
+ const rows=Object.entries(byAct).map(([k,c])=>({k,c,n:c*ACT[k][2]*KSCALE})).sort((a,b)=>b.n-a.n),sumN=rows.reduce((a,r)=>a+r.n,0)||1;
  const area={};rows.forEach(r=>{const a=ACT[r.k][1];area[a]=(area[a]||0)+r.n});const AC={Notes:'var(--yellow)',Chat:'var(--blue)',Projects:'var(--accent)',Focus:'var(--focus)',Groups:'var(--green)',Today:'var(--violet)',Account:'var(--muted)',You:'var(--muted)',Study:'var(--violet)'};
- const todayRows=Object.entries(td).filter(([k])=>k!=='_n'&&ACT[k]).map(([k,c])=>({k,c,n:c*ACT[k][2]})).sort((a,b)=>b.n-a.n);
+ const todayRows=Object.entries(td).filter(([k])=>k!=='_n'&&ACT[k]).map(([k,c])=>({k,c,n:c*ACT[k][2]*KSCALE})).sort((a,b)=>b.n-a.n);
  return`<div class="page">${header('You',{sub:'Account and usage',right:`<a class="icon-btn" href="#settings" aria-label="Settings">${ic('gear')}</a>`})}
  <div class="card prof">${avatar(S.me,64)}<div class="grow"><h2>${esc(fullName())}</h2><div class="sub">${esc(meRole()||'Member')} · @${esc(S.me.handle)}</div>${PROFILE&&PROFILE.email?`<div class="sub sm pmail">${ic('mail')}<span>${esc(PROFILE.email)}</span></div>`:''}<div class="sub sm">Member since ${new Date(S.me.created).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</div></div><button class="btn sm" onclick="profileForm()">${ic('edit')} Edit</button>
- <div class="pfoot">${window._vaultErr?`<span class="sub sm">Your details could not be read on this device. <button class="lnk" onclick="profileForm()">Add them again</button></span>`:PROFILE&&(!PROFILE.email||!PROFILE.last||!PROFILE.status)?`<button class="lnk" onclick="profileForm()">Finish your profile</button>`:''}</div></div>
+ <div class="pfoot"><a class="lnk" href="#profile">View profile ›</a>${window._vaultErr?`<span class="sub sm">Your details could not be read on this device. <button class="lnk" onclick="profileForm()">Add them again</button></span>`:PROFILE&&(!PROFILE.email||!PROFILE.last||!PROFILE.status)?`<button class="lnk" onclick="profileForm()">Finish your profile</button>`:''}</div></div>
+ <div class="card spcard mt"><div class="l">Space</div><div class="seg spseg">${[['student','cap','Student'],['work','case','Work']].map(([k,i,n])=>`<button data-sp="${k}" class="${space()===k?'on':''}" onclick="setSpace('${k}')">${ic(i)} ${n}</button>`).join('')}</div><p class="sub sm" style="margin:8px 2px 0">${space()==='student'?'Study, exams and flashcards come first.':'Projects, tasks and teams come first.'}</p></div>
  <section><div class="sh"><h2>Knots</h2><span class="sub">every action uses knots, like tokens</span></div>
  <div class="card knotsum"><div class="kbig">${knot('kn lg',3.6)}<div><div class="l">Used today</div><div class="v" data-n="${td._n||0}">${td._n||0}</div></div></div><div class="kside"><div><span class="l">All time</span><b data-n="${u.total}">${u.total}</b></div><div><span class="l">Daily average</span><b>${avg}</b></div><div><span class="l">Active days</span><b>${active}</b></div></div></div></section>
  <section><div class="sh"><h2>Last 14 days</h2><span class="sub">knots per day</span></div><div class="card">${barChart(days)}</div></section>
@@ -1438,7 +1706,7 @@ function pYou(){const u=S.usage,t=today(),td=u.days[t]||{},days=[],dates=Object.
  <section><div class="sh"><h2>Today</h2><span class="sub">${todayRows.reduce((a,r)=>a+r.c,0)} actions</span></div><div class="card scrollx">${todayRows.length?usageTable(todayRows,td._n||1):'<p class="sub">Nothing yet today.</p>'}</div></section>
  <section><div class="sh"><h2>All time by action</h2></div><div class="card scrollx">${rows.length?usageTable(rows,sumN):'<p class="sub">No usage yet.</p>'}</div></section>
  <p class="sub center">Knots are only tracked for now and only visible to you here.</p>
- <section><div class="card list"><a class="li" href="#posters">${ic('image')}<div class="grow"><div class="t">Posters</div><div class="sub">Brand posters for sharing and marketing</div></div>${ic('arrow')}</a><a class="li" href="#people">${ic('people')}<div class="grow"><div class="t">Teammates</div><div class="sub">${plural(S.people.length,'teammate')}</div></div>${ic('arrow')}</a><a class="li" href="#settings">${ic('gear')}<div class="grow"><div class="t">Settings and data</div><div class="sub">Theme, sounds, backup</div></div>${ic('arrow')}</a></div></section></div>`}
+ <section><div class="card list"><a class="li" href="#rewards">${ic('sparkle')}<div class="grow"><div class="t">Collection</div><div class="sub">Themes and frames you unlock with knots</div></div>${newUnlocks()?`<b class="badge">${newUnlocks()}</b>`:''}${ic('arrow')}</a><a class="li" href="#posters">${ic('image')}<div class="grow"><div class="t">Posters</div><div class="sub">Brand posters for sharing and marketing</div></div>${ic('arrow')}</a><a class="li" href="#people">${ic('people')}<div class="grow"><div class="t">Teammates</div><div class="sub">${plural(S.people.length,'teammate')}</div></div>${ic('arrow')}</a><a class="li" href="#settings">${ic('gear')}<div class="grow"><div class="t">Settings and data</div><div class="sub">Theme, sounds, backup</div></div>${ic('arrow')}</a></div></section></div>`}
 /* how you work: efficiency and rhythm, all worked out from what is already tracked on this device */
 const MAKE_AREAS=['Focus','Projects','Notes','Today','Study'];
 function workStats(){const u=S.usage.days,d0=new Date(),iso=i=>{const d=new Date(d0);d.setDate(d.getDate()-i);return isoD(d)},kn=i=>(u[iso(i)]||{})._n||0;
@@ -1447,7 +1715,7 @@ function workStats(){const u=S.usage.days,d0=new Date(),iso=i=>{const d=new Date
  const last7=new Set([0,1,2,3,4,5,6].map(iso)),t7=Date.now()-7*864e5;
  const focusMin=S.focus.sessions.filter(s=>last7.has(isoD(new Date(s.at)))).reduce((a,s)=>a+s.mins,0)+(S.focus.run&&last7.has(isoD(new Date(S.focus.run.started)))?(S.focus.run.done||0):0);
  const L7=S.ledger.filter(x=>x.at>=t7),tasks=L7.filter(x=>x.k==='task'&&/^Done:/.test(x.t)).length;
- let shares=0,make=0,all=0;last7.forEach(d=>{const day=u[d]||{};for(const [k,c] of Object.entries(day)){if(k==='_n'||!ACT[k])continue;const n=c*ACT[k][2];all+=n;if(MAKE_AREAS.includes(ACT[k][1]))make+=n;if(['share','photo','file_share','note_share'].includes(k))shares+=c}});
+ let shares=0,make=0,all=0;last7.forEach(d=>{const day=u[d]||{};for(const [k,c] of Object.entries(day)){if(k==='_n'||!ACT[k])continue;const n=c*ACT[k][2]*KSCALE;all+=n;if(MAKE_AREAS.includes(ACT[k][1]))make+=n;if(['share','photo','file_share','note_share'].includes(k))shares+=c}});
  const ag=S.agenda.filter(a=>last7.has(a.d)),agDone=ag.filter(a=>a.done).length,active=[0,1,2,3,4,5,6].filter(i=>kn(i)).length;
  const hours=Array(24).fill(0),t30=Date.now()-30*864e5;S.ledger.forEach(x=>{if(x.at>=t30)hours[new Date(x.at).getHours()]++});const peak=hours.some(Boolean)?hours.indexOf(Math.max(...hours)):null;
  const wd=Array(7).fill(0),wc=Array(7).fill(0);for(let i=0;i<56;i++){const d=new Date(d0);d.setDate(d.getDate()-i);const k=(d.getDay()+6)%7;wd[k]+=kn(i);wc[k]++}
@@ -1475,9 +1743,10 @@ async function exportPoster(id){const po=POSTERS.find(p=>p.id===id);let svg=post
  const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('').match(/@font-face\{[^}]+\}/g)||[];svg=svg.replace('>',`><style>${css.join('')}</style>`);
  const img=new Image(),url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));img.onload=()=>{const c=document.createElement('canvas');c.width=1200;c.height=1600;const x=c.getContext('2d');x.drawImage(img,0,0,1200,1600);URL.revokeObjectURL(url);c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`atelier-${id}.png`;a.click();use('poster');toast('Poster downloaded')},'image/png')};img.onerror=()=>toast('Could not export');img.src=url}
 function pSettings(){const s=S.settings;after(()=>{$$('[data-th]').forEach(b=>b.onclick=()=>{s.theme=b.dataset.th;applyTheme();save();render()});$('#sSnd').onchange=e=>{s.sound=e.target.checked;save()};$('#sAuto').onchange=e=>{s.auto=e.target.checked;save()};
-  $('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let d;try{d=JSON.parse(r.result)}catch(x){toast('Not a valid backup');return}if(!d||!d.me||!Array.isArray(d.notes)){toast('Not an Atelier backup');return}ask('Replace everything with this backup?',async()=>{const blobs=d._blobs,pf=d._profile;delete d._blobs;delete d._profile;S=Object.assign(DEF(),d);if(pf)storeProfile(pf);else unlockProfile();if(blobs)for(const [k,v] of Object.entries(blobs)){if(String(k).startsWith('key:'))continue;try{if(v.json)await IDB.put(k,v.json);else{const bin=atob(v.data),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);await IDB.put(k,new Blob([u],{type:v.type}))}}catch(e){}}save();applyTheme();go('today');render();toast('Backup restored')},'Restore')};r.readAsText(f)}});
+  $('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let d;try{d=JSON.parse(r.result)}catch(x){toast('Not a valid backup');return}if(!d||!d.me||!Array.isArray(d.notes)){toast('Not an Atelier backup');return}ask('Replace everything with this backup?',async()=>{const blobs=d._blobs,pf=d._profile;delete d._blobs;delete d._profile;S=fixData(Object.assign(DEF(),d));if(pf)storeProfile(pf);else unlockProfile();if(blobs)for(const [k,v] of Object.entries(blobs)){if(String(k).startsWith('key:'))continue;try{if(v.json)await IDB.put(k,v.json);else{const bin=atob(v.data),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);await IDB.put(k,new Blob([u],{type:v.type}))}}catch(e){}}save();applyTheme();go('today');render();toast('Backup restored')},'Restore')};r.readAsText(f)}});
  return`<div class="page">${header('Settings',{sub:'Atelier',back:'you'})}
  <div class="card"><h3>Appearance</h3><div class="seg mt">${[['light','Light'],['dark','Dark'],['auto','Auto']].map(([k,n])=>`<button data-th="${k}" class="${s.theme===k?'on':''}">${ic(k==='dark'?'moon':'sun')} ${n}</button>`).join('')}</div></div>
+ <a class="card list setln" href="#rewards"><span class="li">${ic('sparkle')}<span class="grow"><span class="t">Themes and frames</span><span class="sub sm" style="display:block">${(SKINS.find(x=>x.id===S.settings.skin)||SKINS[0]).n} theme</span></span>${ic('chevr')}</span></a>
  <div class="card"><h3>Focus</h3><label class="chk"><input type="checkbox" id="sSnd" ${s.sound?'checked':''}> Soft chime between phases</label><label class="chk"><input type="checkbox" id="sAuto" ${s.auto?'checked':''}> Start the next phase automatically</label><button class="btn full" onclick="alertsSheet()">${ic('bell')} Alerts and notifications</button></div>
  <div class="card"><h3>Data</h3><p class="sub">Everything is saved on this device with a backup copy. Export to move it to another device.</p>
  <p class="sub sm">Backup files hold everything in this app, so keep them somewhere safe.</p><button class="btn full" onclick="exportAll()">${ic('download')} Export backup</button><label class="btn full">${ic('upload')} Import backup<input id="imp" type="file" accept="application/json,.json" hidden></label>
@@ -1485,6 +1754,8 @@ function pSettings(){const s=S.settings;after(()=>{$$('[data-th]').forEach(b=>b.
  <div class="brand">${markSVG(false,3.4)}Atelier</div></div>`}
 async function exportAll(){toast('Preparing backup…');const blobs={};try{for(const k of await IDB.keys()){if(String(k).startsWith('key:'))continue;const v=await IDB.get(k);if(v instanceof Blob){blobs[k]={type:v.type,data:await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(',')[1]);fr.readAsDataURL(v)})}}else blobs[k]={json:v}}}catch(e){}
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({...S,_blobs:blobs,...(PROFILE?{_profile:PROFILE}:{})})],{type:'application/json'}));a.download=`atelier-${today()}.json`;a.click();toast('Backup exported')}
+/* switch between the student and the work space */
+function setSpace(k){if(space()===k)return;S.settings.space=k;if(!S.focus.run)S.focus.mode=k==='student'?'study':'pomo';use('space');save();applyTheme();go('today');toast(k==='student'?'Student space':'Work space')}
 /* ============ BOOT ============ */
 function boot(){applyTheme();if(S.focus.run){tickOn();if(S.me)catchUp();if(S.focus.zen&&S.focus.run&&S.me)setTimeout(enterZen,60)}else S.focus.zen=false;
  render();unlockProfile();const sp=$('#splash');setTimeout(()=>{sp.classList.add('out');setTimeout(()=>sp.remove(),700)},matchMedia('(prefers-reduced-motion: reduce)').matches?0:1500);

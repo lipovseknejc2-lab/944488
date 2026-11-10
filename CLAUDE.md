@@ -17,7 +17,7 @@ The repository also contains other apps (the site root and the other folders). *
 4. **Test everything, publish, then give the link.** Every update ends with the live link.
 
 ## How Atelier is built
-- The modules in `src/atelier/` are joined in this order by `build.py`: `art.js` (icons, characters, avatars, posters, clock), `core.js` (state, storage, knots meter, router, UI kit), `people.js` (bot teammates, onboarding), `today.js` (Today, ledger, quick panel, voice), `focus.js`, `notes.js`, `chat.js` (chat, groups, people), `projects.js` (tasks, ideas, notes, files, drawing boards, inspiration, table and chart), `study.js` (flashcards, exams, study goal, subjects), `you.js` (You, posters, settings, boot). `shell.html` holds all CSS and the page shell.
+- The modules in `src/atelier/` are joined in this order by `build.py`: `art.js` (icons, characters, avatars, posters, clock), `core.js` (state, storage, knots meter, router, UI kit), `people.js` (bot teammates, onboarding), `today.js` (Today, ledger, quick panel, voice), `focus.js`, `notes.js`, `chat.js` (chat, groups, people), `projects.js` (tasks, ideas, notes, files, drawing boards, inspiration, table and chart), `study.js` (flashcards, exams, study goal, subjects), `widgets.js` (chat widgets and their editor), `rewards.js` (themes, frames, quotes, profile, collection), `you.js` (You, posters, settings, boot). `shell.html` holds all CSS and the page shell.
 - `python3 build.py` writes `dist/atelier.html` with the fonts (Newsreader, Instrument Sans, Caveat) embedded. Never edit `dist/` or `atelier/index.html` by hand.
 - Today, rebuilding from `src/atelier/` reproduces the live `atelier/index.html` byte for byte.
 
@@ -32,12 +32,18 @@ The repository also contains other apps (the site root and the other folders). *
 - **Focus timer** keeps real end times (`endAt`). After the phone was locked or the app closed, `catchUp()` replays every switch from the moment each phase really ended and credits only real focus time. Never reset an overdue timer to now.
 - **Deep mode** (`enterZen()`): true black, dim text, only timer and phase, screen kept on with the Wake Lock API, a small pixel shift each minute. `S.focus.zen` brings it back after a reload.
 - **Alerts:** `notifyFocus()` shows a system notification only when Atelier is in the background (needs permission; on iPhone the app must be on the Home Screen). For a locked phone, `calAlerts()` hands the phone's calendar an .ics file with an alert at every switch. A web app on GitHub Pages cannot schedule its own notifications or show a lock-screen live timer.
+- **Two spaces:** `S.settings.space` is `student` or `work` (switched on the You page). Each has its own tabs (`tabsNow()`), Today summary (`spaceHero()`), quick actions (`ACTS`) and wording. New features should fit both, or show only where they belong.
+- **Tab bar** is built once (`nav()`); afterwards only the active tab, the sliding highlight and the badge change. Never rebuild it on a new message, or it jumps.
+- **Themes:** every theme only sets design tokens (`SKINS` in `rewards.js` generates the CSS). Every new feature must use the tokens (`--bg`, `--card`, `--text`, `--accent`, `--line`, `--fill` and so on), never raw colours, so it looks right in every theme, light and dark; the tests open every screen in every theme. New themes can be added over time, always priced above the ones before.
+- **Knots** use `KSCALE` (8): a normal full day is about 1,600 knots. Themes and frames unlock at all-time totals and are never spent; the top theme is over a million (about two years). `fixData()` scales older saves once.
+- **Logo:** `MARK_A` (the symmetrical A) and `MARK_B` (the arched clay crossbar) in `art.js` are the only source; the splash, posters, widgets and `atelier/icon.svg` plus the PNG icons must always use the current mark.
+- **Widgets** (`widgets.js`): Atelier's branded live cards in chat, with size, font and surface the user picks and that are remembered per kind. Anything shared as a card should be a widget kind.
 - **Quick panel:** floats over pages and is never part of the layout. It is open by itself only on Today; elsewhere it is a handle.
 - **No emojis** anywhere in the text. Use line icons from `art.js`.
 - **Offline:** `atelier/sw.js` may only delete caches starting with `atelier-`.
 
 ## Testing before every publish
-`bash src/atelier/tests/run.sh` builds Atelier and runs everything: features (225 checks), phone taps in three setups (177 checks), stress and crash (heavy data plus 400 random taps), and offline (7 checks). It needs node with playwright (`npm i playwright`) and python3.
+`bash src/atelier/tests/run.sh` builds Atelier and runs everything: features (270 checks), phone taps in three setups (183 checks), stress and crash (heavy data plus 400 random taps), and offline (7 checks). It needs node with playwright (`npm i playwright`) and python3.
 - All tests must pass with zero errors. Add checks for every new feature to `tests/feat.js` and `tests/phone.js`.
 - Look at screenshots of every changed screen on an iPhone-sized viewport, in light and dark, and compare them with `DESIGN.md`. If it looks plainer or less finished than before, it is not done.
 - No screen slower than about 100 ms with normal data. Memory flat. Animations smooth.

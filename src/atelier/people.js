@@ -20,6 +20,8 @@ const LINES={
  day:{warm:['Sounds like a good day so far.','Thanks for sharing your day!'],brief:['Productive.','Nice day.'],curious:['What was the best part?','How are you feeling about it?']},
  agenda:{warm:['Nice plan for the day!','Good plan. Shout if I can take something.'],brief:['Plan noted.','Clear plan.'],curious:['Which one matters most?','Is there time for a break in there?']},
  deck:{warm:['Ooh, can I borrow these cards?','Great deck, let\'s quiz each other.'],brief:['Useful, thanks.','Got the deck.'],curious:['How many do you know already?','Which card is the hardest?']},
+ quote:{warm:['That is a lovely line.','I needed that today, thank you.'],brief:['Good one.','True.'],curious:['Where is that from?','What made you pick it?']},
+ countdown:{warm:['You have got this! Want to study together?','We can plan the last days together.'],brief:['Noted. Good luck.','Counting with you.'],curious:['How ready do you feel?','Which part worries you most?']},
  gen:{warm:['Sounds good!','Love it. Keep going.','I\'m with you on this.'],brief:['OK.','Noted.','Sure.'],curious:['Tell me more?','Why do you think so?','Interesting!']}};
 function topicOf(t){t=t.toLowerCase();if(/\b(hi|hey|hello|živjo|zdravo|good morning)\b/.test(t))return'greet';if(/thank|hvala|thx/.test(t))return'thanks';if(/idea|ideja|what if|maybe we/.test(t))return'idea';if(/deadline|due|tomorrow|today|friday|rok|jutri/.test(t))return'time';if(/meet|call|sestan|session/.test(t))return'meet';if(/\?$/.test(t.trim()))return'q';return'gen'}
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -56,7 +58,7 @@ function onboarding(){const slides=[['wave','Work better, together.','Notes, pro
  $('#obC').onclick=e=>{const b=e.target.closest('[data-c]');if(b){OB.c=+b.dataset.c;pick()}};
  F.onsubmit=e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(F));if(!showErrs(F,checkProfile(fd)))return;
   const p=cleanProfile(fd),name=p.first;
-  S.me={id:'me',name,handle:name.split(/\s+/)[0].toLowerCase(),fig:{h:OB.h,c:OB.c},created:Date.now()};storeProfile(p);use('signin');
+  S.me={id:'me',name,handle:name.split(/\s+/)[0].toLowerCase(),fig:{h:OB.h,c:OB.c},created:Date.now()};S.settings.space=p.status==='student'?'student':'work';S.focus.mode=p.status==='student'?'study':'pomo';storeProfile(p);use('signin');applyTheme();
   if(fd.team){seedBots();const ids=S.people.map(p=>p.id);const g={id:uid(),name:'Studio',col:GCOL[0],desc:'Your first working group.',members:['me',...ids],at:Date.now()};S.groups.push(g);
    const c={id:uid(),kind:'group',with:g.id,msgs:[],read:Date.now(),at:Date.now()};S.chats.push(c);c.msgs.push({id:uid(),from:ids[3],text:`Welcome to Studio, ${name.split(' ')[0]}! This is where we plan things.`,at:Date.now()});
    S.notes.push({id:uid(),title:'Welcome to Atelier',body:'# Start here\nNotes are yours until you share them.\n\n[ ] Make your first note\n[ ] Start a focus session\n[ ] Create a project with Studio\n\n- Share notes with a group from the note menu\n- Your activity shows up on Today',col:0,pin:true,share:{groups:[],projects:[]},at:Date.now(),up:Date.now()})}

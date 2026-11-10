@@ -3,8 +3,8 @@ const unreadOf=c=>c.msgs.filter(m=>m.from!=='me'&&m.at>(c.read||0)).length;
 const convoName=c=>c.kind==='dm'?(person(c.with)?.name||'Someone'):(grp(c.with)?.name||'Group');
 const lastMsg=c=>c.msgs[c.msgs.length-1];
 /* what can be shared in a conversation: [label, icon] */
-const ATT={note:['Note','notes'],project:['Project','projects'],file:['File','file'],photo:['Photo','image'],doc:['File','file'],focus:['Focus','focus'],day:['My day','sun'],agenda:['Agenda','calendar'],progress:['Progress','chart'],deck:['Flashcards','cap']};
-function msgPreview(m){if(!m)return'No messages yet';const who=m.from==='me'?'You: ':'';if(!m.att)return who+m.text;const a=m.att,L=(ATT[a.kind]||ATT.file)[0];
+const ATT={note:['Note','notes'],project:['Project','projects'],file:['File','file'],photo:['Photo','image'],doc:['File','file'],focus:['Focus','focus'],day:['My day','sun'],agenda:['Agenda','calendar'],progress:['Progress','chart'],deck:['Flashcards','cap'],countdown:['Countdown','flag'],quote:['Quote','quote']};
+function msgPreview(m){if(!m)return'No messages yet';const who=m.from==='me'?'You: ':'';if(!m.att)return who+m.text;if(isWidget(m.att))return`${who}${wLabel(m.att.kind)} widget${m.att.kind==='quote'||m.att.kind==='photo'?'':' · '+(m.att.title||'')}`;const a=m.att,L=(ATT[a.kind]||ATT.file)[0];
  return who+(a.kind==='photo'?'Photo'+(m.text?' · '+m.text:''):a.kind==='progress'?`Progress: ${a.title} ${a.pct}%`:`${L}: ${a.title}`)}
 /* group look: its own line icon in its colour */
 const GICONS=['group','cap','case','idea','draw','chart','coffee','star','flag','notes','focus','projects'];
@@ -29,9 +29,9 @@ const SHARE_USE={deck:'share',photo:'photo',doc:'file_share',focus:'share',day:'
 function sendMsg(c,text,att){if(!text.trim()&&!att)return;const m={id:uid(),from:'me',text:text.trim(),att,at:Date.now()};c.msgs.push(m);c.read=Date.now();use('msg');if(att&&SHARE_USE[att.kind])use(SHARE_USE[att.kind]);
  led(att?'share':'msg',`${att?'Shared '+(att.kind==='photo'?'a photo':att.title)+' with':'Message to'} ${convoName(c)}`,{ref:'c:'+c.id});save();botReply(c,text,att);return m}
 /* share something into a conversation, from anywhere in the app */
-function shareTo(att,after){pickConvo(c=>{sendMsg(c,'',att);toast('Shared with '+convoName(c));if(after)after(c);else go('c:'+c.id)},'Share with')}
+function shareTo(att,after){if(isWidget(att))return openWidget(null,att.kind,att,after);pickConvo(c=>{sendMsg(c,'',att);toast('Shared with '+convoName(c));if(after)after(c);else go('c:'+c.id)},'Share with')}
 const pctOf=p=>Math.round(progOf(p)*100);
-function attHtml(c,m){const a=m.att;if(!a)return'';const k=a.kind;
+function attHtml(c,m){const a=m.att;if(!a)return'';const k=a.kind;if(isWidget(a))return widgetHTML(a,false,c,m);
  if(k==='note')return`<a class="att" href="#note:${a.id}">${noteGlyph()}<div><b>${esc(a.title)}</b><span>Note</span></div></a>`;
  if(k==='file')return`<a class="att" href="#project:${a.pid}:files">${ic('file')}<div><b>${esc(a.title)}</b><span>Project file</span></div></a>`;
  if(k==='photo')return`<button type="button" class="aph" onclick="viewAtt('${c.id}','${m.id}')" aria-label="Open photo"><img data-fid="${a.fid}" alt="${esc(a.title||'Photo')}" decoding="async"></button>`;
@@ -48,7 +48,7 @@ function attHtml(c,m){const a=m.att;if(!a)return'';const k=a.kind;
  if(k==='agenda')return`<a class="rc rag" href="#today"><div class="rch">${ic('calendar')}<span>Agenda · ${esc(a.label||'')}</span></div>${(a.items||[]).length?`<ul class="rcl">${a.items.map(x=>`<li class="${x.done?'done':''}"><span>${esc(x.t||'Anytime')}</span>${esc(x.title)}</li>`).join('')}</ul>`:'<p>Nothing planned yet.</p>'}</a>`;
  return''}
 function msgHtml(c,m,prev,i){const mine=m.from==='me',p=person(m.from),same=prev&&prev.from===m.from&&m.at-prev.at<5*60000&&!prev.att&&!m.att,rich=m.att&&!['note','file','doc'].includes(m.att.kind);
- return`<div class="msg ${mine?'me':''} ${same?'same':''} ${m.pin?'pinned':''}" data-i="${i}" data-id="${m.id}">${!mine&&c.kind==='group'&&!same?avatar(p,28):!mine&&c.kind==='group'?'<span class="avsp"></span>':''}<div class="bub ${rich?'rich':''} ${m.att?.kind==='photo'?'phb':''}">${!mine&&c.kind==='group'&&!same?`<div class="who">${esc(p?.name.split(' ')[0]||'')}</div>`:''}${attHtml(c,m)}${m.text?`<div class="mtx">${esc(m.text)}</div>`:''}<span class="mtime">${m.pin?`<span class="mpin">${ic('pin',2)}</span>`:''}${tHM(m.at)}${mine?'<svg class="seen" viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6.5L4.8 9.8L11 2.5M8.5 9.6L9 9.8L15.5 2.5"/></svg>':''}</span></div></div>`}
+ return`<div class="msg ${mine?'me':''} ${same?'same':''} ${m.pin?'pinned':''}" data-i="${i}" data-id="${m.id}">${!mine&&c.kind==='group'&&!same?avatar(p,28):!mine&&c.kind==='group'?'<span class="avsp"></span>':''}<div class="bub ${isWidget(m.att)?'wb':rich?'rich':''} ${m.att?.kind==='photo'&&!isWidget(m.att)?'phb':''}">${!mine&&c.kind==='group'&&!same?`<div class="who">${esc(p?.name.split(' ')[0]||'')}</div>`:''}${attHtml(c,m)}${m.text?`<div class="mtx">${esc(m.text)}</div>`:''}<span class="mtime">${m.pin?`<span class="mpin">${ic('pin',2)}</span>`:''}${tHM(m.at)}${mine?'<svg class="seen" viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6.5L4.8 9.8L11 2.5M8.5 9.6L9 9.8L15.5 2.5"/></svg>':''}</span></div></div>`}
 const pinsOf=c=>c.msgs.filter(m=>m.pin).sort((a,b)=>b.pin-a.pin);
 const infoHref=c=>c.kind==='group'?'group:'+c.with:'person:'+c.with;
 function pConvo(id){const c=S.chats.find(x=>x.id===id);if(!c){return redirect('chat')}c.read=Date.now();save();const g=c.kind==='group'?grp(c.with):null,p=c.kind==='dm'?person(c.with):null;if(c.kind==='group'&&!g||c.kind==='dm'&&!p)return redirect('chat');
@@ -85,21 +85,21 @@ async function viewAtt(cid,mid){const c=S.chats.find(x=>x.id===cid),m=c?.msgs.fi
  $('#vaPin').onclick=()=>{if(m.pin)delete m.pin;else{m.pin=Date.now();use('pin')}save();closeSheet();render()};
  $('#vaFwd').onclick=()=>{closeSheet();setTimeout(()=>pickConvo(t=>{sendMsg(t,'',{...a});go('c:'+t.id)},'Forward to'),220)}}
 /* the share sheet: device photos and files, plus everything Atelier knows about your work */
+/* the share sheet: Atelier widgets first, then plain photos, files and notes */
 function attachSheet(cid){const c=S.chats.find(x=>x.id===cid);if(!c)return;
- const O=[['photo','image','Photo'],['doc','file','File'],['note','notes','Note'],['project','projects','Project'],['focus','focus','Focus'],['day','sun','My day'],['agenda','calendar','Agenda']];
+ const F=[['photo','image','Photo'],['doc','file','File'],['note','notes','Note']];
  openModal(`<div class="sheet" role="dialog" aria-modal="true" aria-label="Share"><div class="sheet-h"><h2>Share</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div>
- <p class="sub" style="margin:0 2px 8px">With ${esc(convoName(c))}. Photos and files stay on this device and work offline.</p>
- <div class="actgrid shgrid">${O.map(([k,i,n])=>k==='photo'||k==='doc'?`<label class="shopt" data-k="${k}">${ic(i)}<span>${n}</span><input type="file" id="sh_${k}" ${k==='photo'?'accept="image/*" multiple':'multiple'} hidden></label>`:`<button type="button" class="shopt" data-k="${k}">${ic(i)}<span>${n}</span></button>`).join('')}</div></div>`);
+ <div class="wbrand">${wMark}<b>Widgets</b><span>Live cards you can style</span></div>
+ <div class="wgal">${WKINDS.map(([k,n,i])=>`<button type="button" class="shopt wtile" data-k="${k}">${ic(i)}<span>${n}</span></button>`).join('')}</div>
+ <div class="flabel">Files</div><div class="actgrid shgrid sh3">${F.map(([k,i,n])=>k==='photo'||k==='doc'?`<label class="shopt" data-k="${k}">${ic(i)}<span>${n}</span><input type="file" id="sh_${k}" ${k==='photo'?'accept="image/*" multiple':'multiple'} hidden></label>`:`<button type="button" class="shopt" data-k="${k}">${ic(i)}<span>${n}</span></button>`).join('')}</div>
+ <p class="sub sm" style="margin:10px 2px 0">With ${esc(convoName(c))}. Everything stays on this device and works offline.</p></div>`);
  const send=(att,text='')=>{closeSheet();sendMsg(c,text,att);if(route.k==='c'&&route.a[0]===c.id)appendMsgs(c);else go('c:'+c.id)};
  const files=async(list,kind)=>{const L=[...list];if(!L.length)return;closeSheet();let n=0;for(const f of L){if(f.size>25*1048576){toast(f.name+' is over 25 MB');continue}const fid='c'+uid();
    try{await IDB.put(fid,f)}catch(e){toast('Could not save '+f.name);continue}sendMsg(c,'',{kind:kind==='photo'&&f.type.startsWith('image/')?'photo':'doc',fid,title:f.name||'Photo',type:f.type,size:f.size});n++}
   if(n&&route.k==='c'&&route.a[0]===c.id)appendMsgs(c)};
  $('#sh_photo').onchange=e=>files(e.target.files,'photo');$('#sh_doc').onchange=e=>files(e.target.files,'doc');
- $$('button.shopt').forEach(b=>b.onclick=()=>{const k=b.dataset.k;
-  if(k==='focus')send(focusAtt());else if(k==='day')send(dayAtt(today()));
-  else if(k==='agenda'){const d=selDay||today();if(!agendaOf(d).length&&!agendaOf(today()).length){closeSheet();setTimeout(()=>{toast('Add something to your agenda first');go('today')},220);return}send(agendaAtt(agendaOf(d).length?d:today()))}
-  else if(k==='note')pickList('Share a note',S.notes.slice().reverse().map(n=>({id:n.id,html:`${noteGlyph(NCOL[n.col%NCOL.length])}<div class="grow t">${esc(noteTitle(n))}</div>`})),id=>{const n=note(id);c.msgs&&send({kind:'note',id:n.id,title:noteTitle(n)})},'Write a note first');
-  else if(k==='project')pickList('Share a project',S.projects.slice().reverse().map(p=>({id:p.id,html:`${ring(progOf(p),p.col,34,4)}<div class="grow"><div class="t">${esc(p.name)}</div><div class="sub sm">${pctOf(p)}% done</div></div>`})),id=>send(projAtt(proj(id))),'Start a project first')})}
+ $$('.wtile').forEach(b=>b.onclick=()=>{const k=b.dataset.k;closeSheet();setTimeout(()=>openWidget(c.id,k),230)});
+ const nb=$('button.shopt[data-k=note]');if(nb)nb.onclick=()=>pickList('Share a note',S.notes.slice().reverse().map(n=>({id:n.id,html:`${noteGlyph(NCOL[n.col%NCOL.length])}<div class="grow t">${esc(noteTitle(n))}</div>`})),id=>{const n=note(id);send({kind:'note',id:n.id,title:noteTitle(n)})},'Write a note first')}
 function pickList(title,items,cb,emptyMsg){if(!items.length){toast(emptyMsg||'Nothing here yet');return}openModal(`<div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-h"><h2>${esc(title)}</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div><div class="card list flat">${items.map(x=>`<button class="li" data-pk="${x.id}">${x.html}</button>`).join('')}</div></div>`);
  $$('[data-pk]').forEach(b=>b.onclick=()=>cb(b.dataset.pk))}
 /* snapshots of your work, as they are at the moment you share them */
@@ -149,7 +149,8 @@ function pGroup(id){const g=grp(id);if(!g){return redirect('groups')}const ps=S.
 function pPerson(pid){const p=person(pid);if(!p||pid==='me')return redirect('people');const c=S.chats.find(x=>x.kind==='dm'&&x.with===pid),gs=S.groups.filter(g=>g.members.includes(pid)),ps=S.projects.filter(x=>projMembers(x).includes(pid));
  const back=c&&window._fromHash==='c:'+c.id?'c:'+c.id:'people';
  return`<div class="page">${header(esc(p.name),{sub:p.bot?'Teammate bot':'Teammate',back,right:p.bot?`<button class="btn sm" onclick="botForm('${pid}')">${ic('edit')} Edit</button>`:''})}
- <div class="card pphero">${avatar(p,84)}<div class="grow"><h2>${esc(p.name)}</h2><div class="sub">${esc(p.role||'')}</div><div class="row wrap mt"><button class="btn primary sm" onclick="const c=ensureDM('${pid}');save();go('c:'+c.id)">${ic('chat')} Message</button><button class="btn sm" onclick="shareTo(dayAtt(today()),c=>go('c:'+c.id))">${ic('sun')} Share my day</button></div></div></div>
+ <div class="card pphero">${avatar(p,84)}<div class="grow"><h2>${esc(p.name)}</h2><div class="sub">${esc(p.role||'')}</div><div class="row wrap mt"><button class="btn primary sm" onclick="const c=ensureDM('${pid}');save();go('c:'+c.id)">${ic('chat')} Message</button><button class="btn sm" onclick="const c=ensureDM('${pid}');save();openWidget(c.id,'day',null,()=>go('c:'+c.id))">${ic('sun')} Share my day</button></div></div></div>
+ ${quoteOf(p)?`<div class="proq">${quoteCard(quoteOf(p),p.name)}</div>`:''}
  <section><div class="sh"><h2>Groups together</h2><span class="sub">${gs.length}</span></div>${gs.length?`<div class="card list">${gs.map(g=>`<a class="li" href="#group:${g.id}">${gAv(g)}<div class="grow"><div class="t">${esc(g.name)}</div><div class="sub sm">${gKind(g)} · ${plural(g.members.length,'member')}</div></div>${ic('chevr')}</a>`).join('')}</div>`:`<div class="card emptyrow sub">No groups together yet.</div>`}</section>
  <section><div class="sh"><h2>Projects together</h2></div>${activeProj(ps)}</section>
  ${c?infoMedia(c,window._mcap||9):''}</div>`}

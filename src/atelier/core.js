@@ -16,13 +16,17 @@ const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
 const KEY='atelier-v1',BKEY='atelier-backup';
 /* If the browser blocks storage (some previews do), keep working in memory and say so once. */
 const LS=(()=>{try{const k='__a';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage}catch(e){const m={};window._noStore=true;return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
-const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],study:{goal:60,decks:[],exams:[]},
- focus:{mode:'pomo',custom:{w:30,b:5,r:3},label:'',run:null,sessions:[]},usage:{days:{},total:0},
- settings:{theme:'light',sound:true,auto:true},created:Date.now()});
+const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],widgets:{},study:{goal:60,decks:[],exams:[]},
+ focus:{mode:'pomo',custom:{w:30,b:5,r:3},label:'',run:null,sessions:[]},usage:{days:{},total:0,ks:8},
+ settings:{theme:'light',sound:true,auto:true,skin:'clay',space:''},created:Date.now()});
 function parseSave(r){if(!r)return null;const d=JSON.parse(r);if(!d||typeof d!=='object'||!Array.isArray(d.notes))throw 0;return d}
 function load(){let d=null;window._from='main';try{d=parseSave(LS.getItem(KEY))}catch(e){d=null;window._from='bad'}
  if(!d){try{d=parseSave(LS.getItem(BKEY));if(d&&window._from==='bad')window._from='restored'}catch(e){}}
- const s=Object.assign(DEF(),d||{});s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});return s}
+ return fixData(Object.assign(DEF(),d||{}))}
+/* knots: a normal full day of use is about 1,600 (checked against typical days); older saves are scaled once so everyone keeps their place */
+const KSCALE=8;
+function fixData(s){s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};
+ if(!s.usage.ks){Object.values(s.usage.days).forEach(d=>{if(d&&d._n)d._n*=KSCALE});s.usage.total=(s.usage.total||0)*KSCALE;s.usage.ks=KSCALE}return s}
 let S=load(),_bk=0;
 function save(){if(!S.me&&!S.notes.length)return false;let raw;try{raw=JSON.stringify(S)}catch(e){return false}
  try{LS.setItem(KEY,raw)}catch(e){toast('Storage is full. Export a backup in You, Settings.');return false}
@@ -31,7 +35,7 @@ let _st=0;const saveSoon=()=>{clearTimeout(_st);_st=setTimeout(save,350)};
 addEventListener('pagehide',()=>{try{if(S.me)save()}catch(e){}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&S.me)try{save()}catch(e){}});
 /* another tab changed the data: reload it here so tabs never overwrite each other */
-addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const d=parseSave(e.newValue);if(d){S=Object.assign(DEF(),d);S.study=Object.assign(DEF().study,S.study||{});if(!isOpen())render();if(S.me&&typeof unlockProfile==='function')unlockProfile()}}catch(x){}}});
+addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const d=parseSave(e.newValue);if(d){S=fixData(Object.assign(DEF(),d));if(!isOpen())render();if(S.me&&typeof unlockProfile==='function')unlockProfile()}}catch(x){}}});
 
 /* ---------- IndexedDB for files, images, drawings, voice ---------- */
 const IDB={db:null,open(){if(this.db)return Promise.resolve(this.db);return new Promise((res,rej)=>{if(!window.indexedDB)return rej(new Error('no idb'));const r=indexedDB.open('atelier',1);r.onupgradeneeded=()=>r.result.createObjectStore('b');r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>rej(r.error)})},
@@ -71,7 +75,7 @@ async function unlockProfile(){const m=S.me;if(!m)return;
   else if(m.profile){PROFILE=cleanProfile(m.profile);if(VAULT.ok())await storeProfile(m.profile)}
   else{const [first,...rest]=String(m.name||'').trim().split(/\s+/),r=String(m.role||'').trim(),stu=/stud|school|pupil|univ|dijak|šol/i.test(r);
    await storeProfile({first:first||m.name||'',last:rest.join(' '),email:'',status:stu?'student':r?'work':'',what:/^student$/i.test(r)?'':r})}
-  window._vaultErr=false}catch(e){PROFILE=null;window._vaultErr=true}
+  window._vaultErr=false;if(S.me&&!S.settings.space&&PROFILE){S.settings.space=PROFILE.status==='student'?'student':'work';save();applyTheme();nav()}}catch(e){PROFILE=null;window._vaultErr=true}
  if(S.me&&['you','settings','people','group'].includes(route.k)&&!isOpen())render()}
 const fullName=()=>PROFILE?[PROFILE.first,PROFILE.last].filter(Boolean).join(' '):(S.me?S.me.name:'');
 function meRole(){const p=PROFILE;if(!p)return S.me&&S.me.role||'';if(p.status==='student')return p.what?'Student · '+p.what:'Student';return p.what||(p.status==='work'?'Working':'')}
@@ -106,11 +110,11 @@ const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_e
  msg:['Message','Chat',1],chat_new:['New conversation','Chat',2],group_new:['New group','Groups',5],group_edit:['Group change','Groups',1],bot_new:['New teammate','Groups',3],
  project_new:['New project','Projects',6],task_new:['New task','Projects',2],task_move:['Task update','Projects',1],idea:['Idea','Projects',2],vote:['Vote','Projects',1],
  file:['File upload','Projects',4],board_save:['Drawing saved','Projects',3],inspo:['Inspiration','Projects',2],table_edit:['Table edit','Projects',1],
- focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1],
+ focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1],space:['Space switch','Account',1],skin:['Theme change','You',1],frame:['Frame change','You',1],quote:['Quote','You',1],widget:['Widget','Chat',2],
  photo:['Photo shared','Chat',3],file_share:['File shared','Chat',3],share:['Shared update','Chat',2],pin:['Pin','Chat',1],
  agenda_new:['Agenda item','Today',2],agenda_done:['Agenda done','Today',1],milestone:['Milestone','Projects',2],progress:['Progress update','Projects',1],
  zen:['Deep mode','Focus',1],cal_alerts:['Calendar alerts','Focus',1],deck_new:['New deck','Study',3],card_new:['New card','Study',1],card_review:['Card review','Study',1],exam_new:['Exam','Study',2],study_plan:['Study plan','Study',2],study_goal:['Study goal','Study',1]};
-function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times,d=today();const day=S.usage.days[d]||(S.usage.days[d]={});day[a]=(day[a]||0)+times;day._n=(day._n||0)+n;S.usage.total+=n;saveSoon()}
+function use(a,times=1){const c=ACT[a];if(!c||times<=0)return;const n=c[2]*times*KSCALE,d=today(),before=S.usage.total;const day=S.usage.days[d]||(S.usage.days[d]={});day[a]=(day[a]||0)+times;day._n=(day._n||0)+n;S.usage.total+=n;saveSoon();if(typeof checkUnlocks==='function')checkUnlocks(before,S.usage.total)}
 const usedToday=()=>(S.usage.days[today()]||{})._n||0;
 
 /* ---------- ledger: the day's timeline ---------- */
@@ -155,7 +159,11 @@ function ring(frac,col,size=56,sw=6,txt=''){const r=(size-sw)/2,c=2*Math.PI*r;re
 
 /* ---------- router ---------- */
 const TABS=[['today','Today','home'],['focus','Focus','focus'],['notes','Notes','notes'],['projects','Projects','projects'],['chat','Chat','chat'],['you','You','you']];
-const TAB_OF={today:'today',ledger:'today',focus:'focus',study:'focus',deck:'focus',review:'focus',notes:'notes',note:'notes',projects:'projects',project:'projects',board:'projects',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
+const TABS_STUDENT=[['today','Today','home'],['focus','Focus','focus'],['study','Study','cap'],['notes','Notes','notes'],['chat','Chat','chat'],['you','You','you']];
+const space=()=>S.settings.space==='student'?'student':'work';
+const tabsNow=()=>space()==='student'?TABS_STUDENT:TABS;
+function tabOf(k){const t=TAB_OF[k]||'today';if(space()==='student'&&['study','deck','review','projects','project','board'].includes(k))return'study';return t}
+const TAB_OF={rewards:'you',profile:'you',today:'today',ledger:'today',focus:'focus',study:'focus',deck:'focus',review:'focus',notes:'notes',note:'notes',projects:'projects',project:'projects',board:'projects',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
 let route={k:'today',a:[]},_prevRoute='';
 /* Pages change in memory, so navigation works everywhere, also in previews that block address changes. */
 let _hash=(()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return''}})()||'today';
@@ -165,18 +173,23 @@ function redirect(h){_hash=h;try{history.replaceState(null,'','#'+h)}catch(e){}q
 /* every in-app link navigates here, even if the browser or preview cancels the tap's default action */
 document.addEventListener('click',e=>{if(e.button>0||e.metaKey||e.ctrlKey)return;const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;const inner=e.target.closest('button,input,select,textarea,label');if(inner&&inner!==a&&a.contains(inner))return;e.preventDefault();go(a.getAttribute('href'))},true);
 addEventListener('popstate',()=>{let h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}_hash=h||'today';render()});
-function nav(){const cur=TAB_OF[route.k]||'today',unread=S.chats.reduce((a,c)=>a+unreadOf(c),0);
- $('#tabs').innerHTML=TABS.map(([k,n,i])=>`<a href="#${k}" class="${cur===k?'on':''}" ${cur===k?'aria-current="page"':''}>${ic(i)}<span>${n}</span>${k==='chat'&&unread?`<b class="badge">${unread>9?'9+':unread}</b>`:''}</a>`).join('')+'<i class="tabglow"></i>';
- const on=$('#tabs a.on'),g=$('#tabs .tabglow');if(on&&g){g.style.cssText=`--x:${on.offsetLeft}px;--y:${on.offsetTop}px;--w:${on.offsetWidth}px;--h:${on.offsetHeight}px`}}
+function nav(){const el=$('#tabs');if(!el)return;const T=tabsNow(),cur=tabOf(route.k),unread=S.chats.reduce((a,c)=>a+unreadOf(c),0),sig=T.map(t=>t[0]).join();
+ let fresh=false;if(el._sig!==sig){fresh=true;el.innerHTML=T.map(([k,n,i])=>`<a href="#${k}" data-tab="${k}">${ic(i)}<span>${n}</span>${k==='chat'?'<b class="badge" hidden></b>':''}</a>`).join('')+'<i class="tabglow"></i>';if(el._sig){el.classList.remove('swap');void el.offsetWidth;el.classList.add('swap')}el._sig=sig;el._unr=0}
+ el.querySelectorAll('a[data-tab]').forEach(a=>{const on=a.dataset.tab===cur;a.classList.toggle('on',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+ const b=el.querySelector('a[data-tab=chat] .badge');if(b){const txt=unread?(unread>9?'9+':String(unread)):'';if(b.textContent!==txt||fresh){b.textContent=txt;b.hidden=!unread;if(unread>(el._unr||0)&&!fresh){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop')}}el._unr=unread}
+ const on=el.querySelector('a.on'),g=el.querySelector('.tabglow');if(on&&g){const css=`--x:${on.offsetLeft}px;--y:${on.offsetTop}px;--w:${on.offsetWidth}px;--h:${on.offsetHeight}px`;if(g._css!==css){if(fresh)g.classList.add('still');g.style.cssText=css;g._css=css;if(fresh)requestAnimationFrame(()=>requestAnimationFrame(()=>g.classList.remove('still')))}}}
+/* only the unread badge, for messages that arrive while you are elsewhere */
+const navBadge=()=>nav();
 function render(){if(!S.me){$('#shell').classList.add('nologin');onboarding();return}$('#shell').classList.remove('nologin');
  route=parseHash();const key=_hash;const fresh=key!==_prevRoute;_prevRoute=key;
  const V=$('#view'),y=fresh?0:scrollY;
- const P={study:pStudy,deck:pDeck,review:pReview,person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
+ const P={rewards:pRewards,profile:pProfile,study:pStudy,deck:pDeck,review:pReview,person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
  try{V.innerHTML=P(...route.a)||''}catch(e){console.error(e);V.innerHTML=`<div class="page">${empty('think','Something went wrong','This view could not be shown. Your work is safe.',`<a class="btn primary" href="#today">Back to Today</a>`)}</div>`}
  if(fresh){V.classList.remove('enter');void V.offsetWidth;V.classList.add('enter');scrollTo(0,0)}else scrollTo(0,y);
  nav();paintRail();countUp(V);if(V._after){const f=V._after;V._after=null;f()}miniTimer();loadImgs(V)}
 const after=f=>{$('#view')._after=f};
 addEventListener('hashchange',()=>{let h='';try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}if(h&&h!==_hash){_hash=h;render()}});
 addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(nav,120)});
-function applyTheme(){const d=S.settings.theme==='dark'||(S.settings.theme==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';const m=$('meta[name=theme-color]');if(m)m.content=d?'#1b1a18':'#f6f3ee'}
+function applyTheme(){const d=S.settings.theme==='dark'||(S.settings.theme==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches),R=document.documentElement;R.dataset.theme=d?'dark':'light';R.dataset.skin=(typeof skinOK==='function'&&skinOK(S.settings.skin))?S.settings.skin:'clay';R.dataset.space=space();
+ const m=$('meta[name=theme-color]');if(m){let bg=d?'#1b1a18':'#f6f3ee';try{bg=getComputedStyle(R).getPropertyValue('--bg').trim()||bg}catch(e){}m.content=bg}}
 function header(title,{sub='',back='',right=''}={}){return`<header class="ph">${back?`<a class="icon-btn" href="#${back}" aria-label="Back">${ic('back')}</a>`:''}<div class="grow"><div class="eyebrow">${sub}</div><h1>${title}</h1></div>${right}</header>`}
