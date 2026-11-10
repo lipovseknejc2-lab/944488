@@ -3,7 +3,7 @@ const unreadOf=c=>c.msgs.filter(m=>m.from!=='me'&&m.at>(c.read||0)).length;
 const convoName=c=>c.kind==='dm'?(person(c.with)?.name||'Someone'):(grp(c.with)?.name||'Group');
 const lastMsg=c=>c.msgs[c.msgs.length-1];
 /* what can be shared in a conversation: [label, icon] */
-const ATT={note:['Note','notes'],project:['Project','projects'],file:['File','file'],photo:['Photo','image'],doc:['File','file'],focus:['Focus','focus'],day:['My day','sun'],agenda:['Agenda','calendar'],progress:['Progress','chart']};
+const ATT={note:['Note','notes'],project:['Project','projects'],file:['File','file'],photo:['Photo','image'],doc:['File','file'],focus:['Focus','focus'],day:['My day','sun'],agenda:['Agenda','calendar'],progress:['Progress','chart'],deck:['Flashcards','cap']};
 function msgPreview(m){if(!m)return'No messages yet';const who=m.from==='me'?'You: ':'';if(!m.att)return who+m.text;const a=m.att,L=(ATT[a.kind]||ATT.file)[0];
  return who+(a.kind==='photo'?'Photo'+(m.text?' · '+m.text:''):a.kind==='progress'?`Progress: ${a.title} ${a.pct}%`:`${L}: ${a.title}`)}
 /* group look: its own line icon in its colour */
@@ -25,7 +25,7 @@ function newChat(){if(!S.people.length){toast('Add a teammate first');go('people
 function pickConvo(cb,title='Send to'){const L=S.chats.filter(c=>c.kind==='group'?grp(c.with):person(c.with));const opts=[...L.map(c=>({c,n:convoName(c)})),...S.people.filter(p=>!S.chats.some(c=>c.kind==='dm'&&c.with===p.id)).map(p=>({p,n:p.name}))];
  if(!opts.length){toast('No one to send to yet');return}openModal(`<div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-h"><h2>${esc(title)}</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div><div class="card list flat">${opts.map((o,i)=>`<button class="li" data-i="${i}">${o.p?avatar(o.p,36):o.c.kind==='dm'?avatar(person(o.c.with),36):gAv(grp(o.c.with),'sm')}<div class="grow t">${esc(o.n)}</div></button>`).join('')}</div></div>`);
  $$('[data-i]').forEach(b=>b.onclick=()=>{const o=opts[+b.dataset.i];const c=o.c||ensureDM(o.p.id);closeSheet();cb(c)})}
-const SHARE_USE={photo:'photo',doc:'file_share',focus:'share',day:'share',agenda:'share',project:'share',progress:'share'};
+const SHARE_USE={deck:'share',photo:'photo',doc:'file_share',focus:'share',day:'share',agenda:'share',project:'share',progress:'share'};
 function sendMsg(c,text,att){if(!text.trim()&&!att)return;const m={id:uid(),from:'me',text:text.trim(),att,at:Date.now()};c.msgs.push(m);c.read=Date.now();use('msg');if(att&&SHARE_USE[att.kind])use(SHARE_USE[att.kind]);
  led(att?'share':'msg',`${att?'Shared '+(att.kind==='photo'?'a photo':att.title)+' with':'Message to'} ${convoName(c)}`,{ref:'c:'+c.id});save();botReply(c,text,att);return m}
 /* share something into a conversation, from anywhere in the app */
@@ -43,6 +43,8 @@ function attHtml(c,m){const a=m.att;if(!a)return'';const k=a.kind;
  if(k==='day'){const st=a.st||{};return`<a class="rc rday" href="#ledger"><div class="rch">${ic('sun')}<span>${a.date===isoD(new Date(m.at))?'My day so far':'My day · '+fmtDay(new Date(a.date+'T12:00').getTime())}</span></div>
   <div class="rcstats">${[['focus',st.focus||0,'min'],['check',st.tasks||0,'tasks'],['notes',st.notes||0,'notes'],['calendar',st.agenda||'0/0','plan']].map(([i,v,l])=>`<span>${ic(i)}<b>${v}</b><i>${l}</i></span>`).join('')}</div>
   ${a.feel?`<div class="rcfeel"><span class="feelchip" style="--fc:${(FEELS.find(f=>f[0]===a.feel)||FEELS[0])[1]}">${esc(a.feel)}</span></div>`:''}${(a.items||[]).length?`<ul class="rcl">${a.items.map(x=>`<li><span>${esc(x.h)}</span>${esc(x.t)}</li>`).join('')}</ul>`:''}</a>`}
+
+ if(k==='deck'){const d=deck(a.id),n=d?d.cards.length:a.count,ms=d&&d.cards.length?Math.round(masteredOf(d)/d.cards.length*100):a.mastered||0;return`<a class="rc rdeck" href="#deck:${a.id}" style="--pc:${d?.col||a.col||'var(--violet)'}"><div class="rch">${ic('cap')}<span>Flashcards</span></div><b>${esc(d?.name||a.title)}</b><div class="pbar"><i style="width:${ms}%"></i></div><div class="rcf"><span>${plural(n||0,'card')}</span><span><b>${ms}%</b> mastered</span></div></a>`}
  if(k==='agenda')return`<a class="rc rag" href="#today"><div class="rch">${ic('calendar')}<span>Agenda · ${esc(a.label||'')}</span></div>${(a.items||[]).length?`<ul class="rcl">${a.items.map(x=>`<li class="${x.done?'done':''}"><span>${esc(x.t||'Anytime')}</span>${esc(x.title)}</li>`).join('')}</ul>`:'<p>Nothing planned yet.</p>'}</a>`;
  return''}
 function msgHtml(c,m,prev,i){const mine=m.from==='me',p=person(m.from),same=prev&&prev.from===m.from&&m.at-prev.at<5*60000&&!prev.att&&!m.att,rich=m.att&&!['note','file','doc'].includes(m.att.kind);

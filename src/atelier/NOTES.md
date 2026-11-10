@@ -9,6 +9,8 @@ Light, professional team-work app: Today (week, message of the day, ledger, feel
 - **Today agenda:** `S.agenda` items `{id, d, t, title, note, pid, done}`; any day of the week can be planned (dots in the week row); shareable.
 - **Project progress:** automatic from tasks and milestones (a milestone weighs two tasks) or set by hand (`p.pmode`, `p.pct`); milestones in `p.miles`; daily history in `p.hist` for the chart; updates can be posted to the project's groups.
 - **You:** "How you work" shows an efficiency score (making share, plans done, active days), streak, weekly change, focus hours, tasks, shares, peak hour and two rhythm charts, all from data already tracked.
+- **Focus:** exact catch-up after time away (`catchUp()`), Deep mode (`enterZen()`), alerts while open and calendar alerts for a locked phone (`alertsSheet()`).
+- **Study** (`study.js`, `S.study`): daily focus goal and streak; exams and deadlines with countdowns and "Plan study blocks" into the agenda; flashcard decks with spaced repetition (boxes 0 to 6, back after 0, 1, 2, 4, 8, 16, 32 days; Again, Hard, Good, Easy); cards from note lines like `term - meaning`; subjects this week from focus labels; decks can be shared in chat.
 - **Account and encryption:** the account screen asks for first name, surname, student or working, school or work, and email. The profile is sealed with AES-GCM 256 (fresh IV each save) into `S.me.vault`; the key is a non-extractable CryptoKey in IndexedDB `key:profile`, or localStorage `atelier-key` if IndexedDB is blocked. The decrypted profile lives only in memory (`PROFILE`). Older saves move their name and role into the vault on first start. Backups carry the profile as `_profile` so they can be restored on another device, where it is sealed again with that device's key.
 - **Offline cache prefix:** `atelier-`. This app's worker may only delete caches that start with it.
 
@@ -22,7 +24,7 @@ Publish: copy `dist/atelier.html` to `atelier/index.html`. `sw.js`, the manifest
 After publishing, raise the version in this app's `sw.js` (for example `atelier-v3` to `atelier-v4`) so phones download the update.
 
 ## Files
-JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `notes.js`, `chat.js`, `projects.js`, `you.js`
+JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `notes.js`, `chat.js`, `projects.js`, `study.js`, `you.js`
 
 | File | Role | Notes |
 |---|---|---|

@@ -17,7 +17,7 @@ The repository also contains other apps (the site root and the other folders). *
 4. **Test everything, publish, then give the link.** Every update ends with the live link.
 
 ## How Atelier is built
-- The modules in `src/atelier/` are joined in this order by `build.py`: `art.js` (icons, characters, avatars, posters, clock), `core.js` (state, storage, knots meter, router, UI kit), `people.js` (bot teammates, onboarding), `today.js` (Today, ledger, quick panel, voice), `focus.js`, `notes.js`, `chat.js` (chat, groups, people), `projects.js` (tasks, ideas, notes, files, drawing boards, inspiration, table and chart), `you.js` (You, posters, settings, boot). `shell.html` holds all CSS and the page shell.
+- The modules in `src/atelier/` are joined in this order by `build.py`: `art.js` (icons, characters, avatars, posters, clock), `core.js` (state, storage, knots meter, router, UI kit), `people.js` (bot teammates, onboarding), `today.js` (Today, ledger, quick panel, voice), `focus.js`, `notes.js`, `chat.js` (chat, groups, people), `projects.js` (tasks, ideas, notes, files, drawing boards, inspiration, table and chart), `study.js` (flashcards, exams, study goal, subjects), `you.js` (You, posters, settings, boot). `shell.html` holds all CSS and the page shell.
 - `python3 build.py` writes `dist/atelier.html` with the fonts (Newsreader, Instrument Sans, Caveat) embedded. Never edit `dist/` or `atelier/index.html` by hand.
 - Today, rebuilding from `src/atelier/` reproduces the live `atelier/index.html` byte for byte.
 
@@ -29,12 +29,15 @@ The repository also contains other apps (the site root and the other folders). *
 - **Bots:** teammates reply in chat, vote on ideas and pick up tasks (`people.js`). New collaborative features should let bots react too (add lines to `LINES` for new shared kinds).
 - **Sharing:** anything can be shared into any conversation with `shareTo(att)` or `sendMsg(c, text, att)`. Shared kinds live in `ATT` (`chat.js`): note, project, file, photo, doc, focus, day, agenda, progress. Photos and files are blobs in IndexedDB under `c…` keys; `dropBlob()` frees them when the last message using them is deleted.
 - **Sheets** that start something (recording, timers) register `onSheetClose(fn)` so closing the sheet in any way stops it.
+- **Focus timer** keeps real end times (`endAt`). After the phone was locked or the app closed, `catchUp()` replays every switch from the moment each phase really ended and credits only real focus time. Never reset an overdue timer to now.
+- **Deep mode** (`enterZen()`): true black, dim text, only timer and phase, screen kept on with the Wake Lock API, a small pixel shift each minute. `S.focus.zen` brings it back after a reload.
+- **Alerts:** `notifyFocus()` shows a system notification only when Atelier is in the background (needs permission; on iPhone the app must be on the Home Screen). For a locked phone, `calAlerts()` hands the phone's calendar an .ics file with an alert at every switch. A web app on GitHub Pages cannot schedule its own notifications or show a lock-screen live timer.
 - **Quick panel:** floats over pages and is never part of the layout. It is open by itself only on Today; elsewhere it is a handle.
 - **No emojis** anywhere in the text. Use line icons from `art.js`.
 - **Offline:** `atelier/sw.js` may only delete caches starting with `atelier-`.
 
 ## Testing before every publish
-`bash src/atelier/tests/run.sh` builds Atelier and runs everything: features (169 checks), phone taps in three setups (156 checks), stress and crash (heavy data plus 400 random taps), and offline (7 checks). It needs node with playwright (`npm i playwright`) and python3.
+`bash src/atelier/tests/run.sh` builds Atelier and runs everything: features (225 checks), phone taps in three setups (177 checks), stress and crash (heavy data plus 400 random taps), and offline (7 checks). It needs node with playwright (`npm i playwright`) and python3.
 - All tests must pass with zero errors. Add checks for every new feature to `tests/feat.js` and `tests/phone.js`.
 - Look at screenshots of every changed screen on an iPhone-sized viewport, in light and dark, and compare them with `DESIGN.md`. If it looks plainer or less finished than before, it is not done.
 - No screen slower than about 100 ms with normal data. Memory flat. Animations smooth.

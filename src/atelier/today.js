@@ -41,6 +41,7 @@ function pToday(){const g=greet(),nm=S.me.name.split(' ')[0],d=selDay||today(),L
  <div class="lhead"><span class="sub">${d===today()?'Your day so far':fmtDay(new Date(d+'T12:00').getTime())}</span><span class="row" style="gap:14px">${d<=today()&&L.length?`<button class="lnk" onclick="shareTo(dayAtt('${d}'),c=>go('c:'+c.id))">${ic('share')} Share</button>`:''}<a href="#ledger" class="lnk">Ledger ›</a></span></div>
  <div class="timeline ${L.length?'':'none'}">${L.length?L.slice(0,10).map(ledgerItem).join(''):`<div class="tlempty">${figure('think',{draw:true})}<p class="sub">${d===today()?'Nothing yet. Start a focus session, write a note or check in how you feel.':d>today()?'This day is still ahead. Plan it in the agenda above.':'Nothing happened that day.'}</p></div>`}</div>
  ${agendaHTML(d)}
+ ${d===today()?studyStrip():''}
  ${ups.length&&d===today()?`<section><div class="sh"><h2>Unread</h2><a class="lnk" href="#chat">Chat</a></div><div class="card list">${ups.slice(0,3).map(convoRow).join('')}</div></section>`:''}
  ${open.length&&d===today()?`<section><div class="sh"><h2>Your open tasks</h2><a class="lnk" href="#projects">Projects</a></div><div class="card list">${open.map(({t,p})=>`<div class="li" onclick="go('project:${p.id}:tasks')"><span class="tdot" style="--tc:${p.col}"></span><div class="grow"><div class="t">${esc(t.t)}</div><div class="sub">${esc(p.name)}${t.due?' · due '+fmtDay(new Date(t.due).getTime()):''}</div></div><span class="pill st-${t.st}">${t.st==='doing'?'doing':'to do'}</span></div>`).join('')}</div></section>`:''}
  </div>
@@ -48,7 +49,7 @@ function pToday(){const g=greet(),nm=S.me.name.split(' ')[0],d=selDay||today(),L
 /* quick panel: floats over every page, can be tucked away to a small handle */
 const railOpen=()=>route.k==='today'?S.settings.rail!==false:!!window._railOpen;
 function railHTML(on){return`<div class="rbtns"><button onclick="railAct(quickNote)">${noteGlyph()}<span>Note</span></button><button onclick="railAct(feelSheet)">${ic('sparkle')}<span>Feeling</span></button><button onclick="railAct(actionSheet)">${ic('plus')}<span>Action</span></button><button onclick="railAct(voiceSheet)" class="rv">${ic('mic')}<span>Voice</span></button></div><button class="rtog" onclick="toggleRail()" aria-label="${on?'Hide quick panel':'Show quick panel'}" aria-expanded="${on}">${ic(on?'chevr':'chevl',2.2)}</button>`}
-function paintRail(){const r=$('#rail');if(!r)return;const show=S.me&&!['c','board','note'].includes(route.k);r.hidden=!show;if(!show)return;const on=railOpen();r.classList.toggle('off',!on);if(r._on!==on){r.innerHTML=railHTML(on);r._on=on}}
+function paintRail(){const r=$('#rail');if(!r)return;const show=S.me&&!['c','board','note','review'].includes(route.k);r.hidden=!show;if(!show)return;const on=railOpen();r.classList.toggle('off',!on);if(r._on!==on){r.innerHTML=railHTML(on);r._on=on}}
 function toggleRail(){if(route.k==='today'){S.settings.rail=S.settings.rail===false;save()}else window._railOpen=!window._railOpen;paintRail()}
 function railAct(f){if(route.k!=='today')window._railOpen=false;f();paintRail()}
 function pLedger(){const by={};S.ledger.slice().reverse().forEach(x=>{const d=isoD(new Date(x.at));(by[d]=by[d]||[]).push(x)});const all=Object.keys(by),days=all.slice(0,window._ldays||7);

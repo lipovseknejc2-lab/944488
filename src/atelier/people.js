@@ -19,6 +19,7 @@ const LINES={
  focus:{warm:['That is a solid focus streak!','Proud of you, keep it going.'],brief:['Nice focus.','Good session.'],curious:['What did you work on?','How do you keep the streak?']},
  day:{warm:['Sounds like a good day so far.','Thanks for sharing your day!'],brief:['Productive.','Nice day.'],curious:['What was the best part?','How are you feeling about it?']},
  agenda:{warm:['Nice plan for the day!','Good plan. Shout if I can take something.'],brief:['Plan noted.','Clear plan.'],curious:['Which one matters most?','Is there time for a break in there?']},
+ deck:{warm:['Ooh, can I borrow these cards?','Great deck, let\'s quiz each other.'],brief:['Useful, thanks.','Got the deck.'],curious:['How many do you know already?','Which card is the hardest?']},
  gen:{warm:['Sounds good!','Love it. Keep going.','I\'m with you on this.'],brief:['OK.','Noted.','Sure.'],curious:['Tell me more?','Why do you think so?','Interesting!']}};
 function topicOf(t){t=t.toLowerCase();if(/\b(hi|hey|hello|živjo|zdravo|good morning)\b/.test(t))return'greet';if(/thank|hvala|thx/.test(t))return'thanks';if(/idea|ideja|what if|maybe we/.test(t))return'idea';if(/deadline|due|tomorrow|today|friday|rok|jutri/.test(t))return'time';if(/meet|call|sestan|session/.test(t))return'meet';if(/\?$/.test(t.trim()))return'q';return'gen'}
 const pick=a=>a[Math.floor(Math.random()*a.length)];

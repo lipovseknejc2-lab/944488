@@ -46,6 +46,15 @@ async function run(name,url,frameSel,block){const b=await chromium.launch();cons
  await F.locator('#nB').fill('Hello from the phone');await W(400);await F.locator('.ph a[aria-label=Back]').tap();await W(500);ok(await F.locator('.ncard b:has-text("Hello from the phone")').isVisible(),name+': note saved and listed');
  await F.locator('#tabs a:has-text("Projects")').tap();await W(400);await F.locator('.ph .btn:has-text("New")').tap();await W(500);await F.locator('#pN').fill('Phone project');await F.locator('#sf button[type=submit]').tap();await W(900);
  ok(await F.locator('.ptabs').isVisible(),name+': project created and opened');await F.locator('.ptabs a:has-text("Tasks")').tap();await W(500);ok(await F.locator('.kanban').isVisible(),name+': project tab opens');
+ await F.locator('#tabs a:has-text("Focus")').tap();await W(500);await F.locator('.ftabs a:has-text("Study")').tap();await W(500);ok(await F.locator('.sgoal').isVisible(),name+': Study opens from Focus');
+ await F.locator('.sh .lnk:has-text("New deck")').tap();await W(450);await F.locator('#dkN').fill('Phone deck');await F.locator('#sf button[type=submit]').tap();await W(800);ok(await F.locator('#cfF').isVisible(),name+': new deck with taps');
+ await F.locator('#cfA').fill('Front side');await F.locator('#cfB').fill('Back side');await F.locator('#cfF button').tap();await W(500);ok(await F.locator('.fcd:has-text("Front side")').isVisible(),name+': card added');
+ await F.locator('.dhero .btn.primary').tap();await W(600);await F.locator('#flp').tap();await W(800);ok(await F.locator('#flp.on').count()===1,name+': card flips with a tap');
+ await F.locator('.grade button:has-text("Good")').tap();await W(700);ok(await F.locator('.rdone').isVisible(),name+': review done');
+ await F.locator('.rdone .btn').first().tap();await W(500);await F.locator('#tabs a:has-text("Focus")').tap();await W(500);
+ await F.locator('.fbtns .zbtn').tap();await W(900);ok(await F.locator('#zen').isVisible()&&!(await F.locator('#tabs').isVisible()),name+': deep mode hides everything else');
+ await F.locator('#zen').tap({position:{x:180,y:300}});await W(400);await F.locator('#zX').tap();await W(700);ok(!(await F.locator('#zen').count())&&await F.locator('#tabs').isVisible(),name+': leave deep mode with a tap');
+ await F.locator('[aria-label=Stop]').tap();await W(400);
  await F.locator('#tabs a:has-text("Chat")').tap();await W(400);await F.locator('.convo').first().tap();await W(600);ok(await F.locator('#ci').isVisible(),name+': conversation opens');
  await F.locator('#ci').fill('Hi team');await F.locator('.sendb').tap();await W(400);ok(await F.locator('.msg.me >> text=Hi team').isVisible(),name+': message sends');
  await F.locator('.composer [aria-label=Share]').tap();await W(450);ok(await F.locator('.shopt').count()===7,name+': share sheet opens');

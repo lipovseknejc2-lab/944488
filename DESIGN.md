@@ -73,6 +73,8 @@ No emojis. Short, warm, plain sentences. Empty states get a drawing, one serif l
   - a handwritten greeting;
   - a ledger timeline with icon nodes and times in blue;
   - the floating quick panel (Note, Feeling, Action, Voice) with a tuck-away handle.
+- **Deep mode:** pure black (#000) for OLED, dim warm ink, the phase in Caveat in its colour, a big sans timer, a 2px progress line and round dashes. Controls appear on tap and fade after four seconds. No blur, no glow, no motion except the numbers.
+- **Study:** decks are stacked cards with the cap icon in the deck colour; exams have a date tile and a countdown pill (red within three days, yellow within a week); flashcards flip in 3D with a serif question and a sans answer; grades are four tinted pills (Again red, Hard yellow, Good green, Easy blue).
 - **Focus clock:** hand-placed ticks, a thick arc in the phase colour, a knob, a big sans timer, and the drawn figure for the phase (write, rest, walk). The background glow follows the phase.
 - **Notes:** cards with a colour top border and the note glyph (a folded page with a loop line).
 - **Ideas:** sticky notes in Caveat, slightly rotated, with vote pills.

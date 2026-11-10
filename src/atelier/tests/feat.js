@@ -267,5 +267,93 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  for(const h of ['today','projects','project:'+pid,'groups','group:'+gid,'c:'+gc,'you']){await G(h);ok(await E(()=>!/Something went wrong/.test(document.querySelector('#view').textContent)),'older save opens '+h.split(':')[0])}
  await c3.close()}
 
+{// ===== timer catch-up, alerts, calendar alerts, deep mode, study =====
+ const c4=await b.newContext({...devices['iPhone 13'],acceptDownloads:true}),r=await c4.newPage();r.on('pageerror',e=>errs.push('study: '+e.message));r.on('console',m=>{if(m.type()==='error'&&!/manifest|icon|404/.test(m.text()))errs.push('study: '+m.text())});
+ c4.on('page',pg=>pg.close().catch(()=>{}));
+ const E=(f,a)=>r.evaluate(f,a),Z=t=>r.waitForTimeout(t),G=async h=>{await E(h=>go(h),h);await Z(450)};
+ await r.goto(U);await Z(1800);await r.click('#obS');await Z(300);await r.fill('#obName','Ana');await r.fill('#obSur','Zorman');await r.click('#obSt label:has-text("Student")');await r.fill('#obMail','ana@uni.si');await r.click('#obF button[type=submit]');await Z(1500);
+ // the timer counts time away exactly
+ let x=await E(()=>{S.focus.mode='pomo';S.focus.label='Maths';S.settings.auto=true;startFocus();const r=S.focus.run,t0=Date.now()-31*60000;r.started=t0;r.ws=t0;r.endAt=t0+25*60000;window._t0=t0;catchUp();const q=S.focus.run;return{ph:q.phase,round:q.round,end:q.endAt-(t0+55*60000),done:q.done,brk:S.ledger.some(l=>l.k==='break')}});
+ ok(x.ph==='work'&&x.round===2&&Math.abs(x.end)<1500&&x.done===25&&x.brk,'away 31 min: break passed, round 2 runs on the real clock, 25 min counted ('+JSON.stringify(x)+')');
+ ok(await E(()=>/While you were away/.test(document.querySelector('#toast').textContent)),'a note says what happened while you were away');
+ x=await E(()=>{const r=S.focus.run,t0=window._t0;r.endAt=t0-3*3600e3+25*60000;r.ws=t0-3*3600e3;r.started=t0-3*3600e3;r.round=1;r.phase='work';r.done=0;catchUp();const s=S.focus.sessions[S.focus.sessions.length-1];return{run:!!S.focus.run,mins:s&&s.mins}});
+ ok(!x.run&&x.mins===100,'away 3 hours: the whole session finished with exactly 100 minutes ('+JSON.stringify(x)+')');
+ x=await E(()=>{S.settings.auto=false;startFocus();const r=S.focus.run,t0=Date.now()-40*60000;r.started=t0;r.ws=t0;r.endAt=t0+25*60000;catchUp();const q=S.focus.run;return{ph:q.phase,paused:q.paused,left:q.left,done:q.done}});
+ ok(x.ph==='break'&&x.paused&&x.left===5*60000&&x.done===25,'with auto start off, the break waits for you ('+JSON.stringify(x)+')');
+ await E(()=>{stopFocus(true);S.settings.auto=true;startFocus();S.focus.run.endAt=Date.now()-1000;document.dispatchEvent(new Event('visibilitychange'))});await Z(200);
+ ok(await E(()=>S.focus.run&&S.focus.run.phase==='break'),'coming back to the app catches up at once');
+ // alerts
+ await E(()=>{window._notes=[];Object.defineProperty(Notification,'permission',{get:()=>'granted',configurable:true});Notification.requestPermission=async()=>'granted';
+  navigator.serviceWorker.getRegistration=async()=>({showNotification:async(t,o)=>window._notes.push([t,o])});S.settings.notify=true});
+ await G('focus');ok(await r.isVisible('.ph .icon-btn.on[aria-label=Alerts]'),'alerts show as on');
+ await E(()=>{Object.defineProperty(document,'visibilityState',{get:()=>'hidden',configurable:true});nextPhase(false)});await Z(300);
+ ok(await E(()=>window._notes.length===1&&window._notes[0][0]==='Back to focus'&&/round 2 of 4/.test(window._notes[0][1].body)),'a notification when the phase switches in the background');
+ await E(()=>{nextPhase(false)});await Z(200);ok(await E(()=>window._notes[1]&&window._notes[1][0]==='Break time'),'a notification for the break too');
+ await E(()=>{delete document.visibilityState;window._notes=[];nextPhase(false)});await Z(200);ok(await E(()=>window._notes.length===0),'no system notification while you are looking at the app');
+ await E(()=>{S.settings.notify=false});await G('focus');await r.click('.fbtns .btn:has-text("Alerts")');await Z(400);
+ ok(await r.isVisible('#alAsk')&&await r.isVisible('#alCal'),'alerts sheet: while open and when locked');
+ const plan=await E(()=>phasePlan().length);ok(await E(()=>document.querySelectorAll('.alplan .li').length)===plan&&plan>0,'alerts sheet lists every switch of this session ('+plan+')');
+ await r.click('#alAsk');await Z(400);ok(await E(()=>S.settings.notify===true),'allow turns alerts on');
+ ok(await E(()=>{const t=icsFor(S.focus.run),P=phasePlan();return(t.match(/BEGIN:VEVENT/g)||[]).length===P.length&&(t.match(/BEGIN:VALARM/g)||[]).length===P.length&&t.includes('DTSTART:'+icsT(P[0].at))&&/^BEGIN:VCALENDAR/.test(t)&&t.includes('TRIGGER:PT0S')}),'calendar file has an alert at every switch');
+ await E(()=>alertsSheet());await Z(300);await r.click('#alCal');await Z(500);ok(await E(()=>S.usage.days[today()].cal_alerts===1),'calendar alerts handed to the phone');
+ // deep mode
+ await E(()=>stopFocus(true));await G('focus');await r.click('.fbtns .zbtn');await Z(900);
+ ok(await E(()=>!!S.focus.run&&S.focus.zen===true&&document.body.classList.contains('zenon')&&!!document.querySelector('#zen')),'start in deep mode');
+ ok(await E(()=>getComputedStyle(document.querySelector('#shell')).visibility==='hidden'&&getComputedStyle(document.querySelector('#zen')).backgroundColor==='rgb(0, 0, 0)'&&document.querySelector('meta[name=theme-color]').content==='#000000'),'everything else goes away, true black');
+ ok(await E(()=>/^\d\d:\d\d$/.test(document.querySelector('#zT').textContent)&&document.querySelector('#zPh').textContent==='Focus'),'only the timer and the phase show');
+ ok(await E(()=>S.usage.days[today()].zen===1),'deep mode uses a knot');
+ await r.mouse.click(195,300);await Z(300);ok(await E(()=>document.querySelector('#zen').classList.contains('ctl')),'tap shows the controls');
+ await r.click('#zP');await Z(300);ok(await E(()=>S.focus.run.paused&&/paused/.test(document.querySelector('#zPh').textContent)),'pause in deep mode');await r.click('#zP');await Z(200);
+ await r.click('#zS');await Z(400);ok(await E(()=>S.focus.run.phase==='break'&&document.querySelector('#zPh').textContent==='Break'),'the phase shows when it changes');
+ await r.reload();await Z(2200);ok(await E(()=>!!document.querySelector('#zen')&&document.body.classList.contains('zenon')),'deep mode comes back after closing the app');
+ await E(()=>{const q=S.focus.run;q.phase='long';q.round=4;q.endAt=Date.now()-5});await Z(700);
+ ok(await E(()=>document.querySelector('#zen').classList.contains('done')&&/Session complete/.test(document.querySelector('#zen').textContent)),'deep mode shows the session is complete');
+ await r.click('#zC .zx');await Z(600);ok(await E(()=>!document.querySelector('#zen')&&!document.body.classList.contains('zenon')&&S.focus.zen===false),'leave deep mode');
+ // study: goal, exams, plan
+ await r.click('.ftabs a:has-text("Study")');await Z(500);ok(await E(()=>route.k==='study'&&!!document.querySelector('.sgoal')),'Study opens from the Focus tabs');
+ await r.click('.sgoal .btn:has-text("Goal")');await Z(300);await E(()=>{const x=document.querySelector('#sgR');x.value=90;x.dispatchEvent(new Event('input'))});await r.click('#sf button[type=submit]');await Z(400);
+ ok(await E(()=>S.study.goal===90&&/Goal 90 min/.test(document.querySelector('.sgoal').textContent)),'daily study goal');
+ const exd=await E(()=>{const d=new Date();d.setDate(d.getDate()+3);return isoD(d)});
+ await r.click('.sh .lnk:has-text("New") >> nth=0');await Z(300);await r.fill('#exT','Chemistry exam');await r.fill('#exD',exd);await r.click('#sf button[type=submit]');await Z(400);
+ ok(await E(()=>S.study.exams.length===1&&/in 3 days/.test(document.querySelector('.exam').textContent)&&!!document.querySelector('.exam .cd.urgent')),'exam counts down, close ones in red');
+ await r.click('.exam [aria-label="Plan study blocks"]');await Z(300);await r.fill('#plT','23:59');await r.fill('#plN','2');await r.click('#sf button[type=submit]');await Z(400);
+ x=await E(e=>({blocks:S.agenda.filter(a=>a.title==='Study: Chemistry exam').map(a=>a.d),exam:S.agenda.some(a=>a.title==='Exam: Chemistry exam'&&a.d===e)}),exd);
+ ok(x.blocks.length===2&&x.blocks.every(d=>d<exd)&&x.exam,'plan adds study blocks before the exam, and the exam ('+JSON.stringify(x)+')');
+ await E(e=>planSheet(S.study.exams[0].id));await Z(300);await r.fill('#plT','23:59');await r.fill('#plN','2');await r.click('#sf button[type=submit]');await Z(300);ok(await E(()=>S.agenda.filter(a=>a.title==='Study: Chemistry exam').length===2),'planning again adds no doubles');
+ // flashcards
+ await E(()=>{newNote({title:'Chem terms',body:'# Terms\ncation - a positive ion\nanion :: a negative ion\n[ ] revise\nmole: amount of substance'})});
+ await G('study');await r.click('.sh .lnk:has-text("New deck")');await Z(300);await r.fill('#dkN','Chemistry');await r.click('#sf button[type=submit]');await Z(700);
+ const did=await E(()=>route.k==='deck'&&route.a[0]);ok(!!did,'new deck opens');
+ await r.fill('#cfA','Atom');await r.fill('#cfB','The smallest unit of an element');await r.click('#cfF button');await Z(400);ok(await E(i=>deck(i).cards.length===1&&deck(i).cards[0].due===today(),did),'add a card, due today');
+ ok(await E(()=>JSON.stringify(parseCards('# T\na - b\nc :: d\n[ ] x\ne: f\nno separator'))===JSON.stringify([['a','b'],['c','d'],['e','f']])),'card lines are understood: dash, double colon and colon');
+ await r.click('.sh .lnk:has-text("From a note")');await Z(300);await r.click('[data-pk]:has-text("Chem terms")');await Z(400);ok(await E(i=>deck(i).cards.length===4,did),'cards made from a note');
+ await r.click('.sh .lnk:has-text("From a note")');await Z(300);await r.click('[data-pk]:has-text("Chem terms")');await Z(400);ok(await E(i=>deck(i).cards.length===4,did),'the same note adds no doubles');
+ let k0=await E(()=>S.usage.days[today()].card_review||0);
+ await r.click('.dhero .btn.primary');await Z(600);ok(await E(()=>route.k==='review'&&document.querySelectorAll('#flp .fface').length===2&&document.querySelector('#rail').hidden),'review opens, quiet without the quick panel');
+ ok(await E(()=>document.querySelector('#grd').hidden),'grades wait until the answer shows');
+ await r.click('#flp');await Z(700);ok(await E(()=>document.querySelector('#flp').classList.contains('on')&&!document.querySelector('#grd').hidden),'tap flips the card');
+ const first=await E(()=>REV.q[0]);await r.click('.grade button:has-text("Good")');await Z(500);
+ ok(await E(([i,c])=>{const x=deck(i).cards.find(y=>y.id===c);return x.box===1&&x.due===addDays(today(),1)},[did,first]),'good: back tomorrow');
+ const sec=await E(()=>REV.q[1]);await r.click('#flp');await Z(500);await r.click('.grade button:has-text("Again")');await Z(500);ok(await E(c=>REV.q.length===5&&REV.q[4]===c,sec),'again: the card comes back in this round');
+ const third=await E(()=>REV.q[REV.i]);await r.click('#flp');await Z(500);await r.click('.grade button:has-text("Easy")');await Z(500);ok(await E(([i,c])=>{const x=deck(i).cards.find(y=>y.id===c);return x.box===2&&x.due===addDays(today(),2)},[did,third]),'easy: skips ahead');
+ await r.click('#flp');await Z(500);await r.click('.grade button:has-text("Hard")');await Z(500);await r.click('#flp');await Z(500);await r.click('.grade button:has-text("Good")');await Z(800);
+ ok(await r.isVisible('.rdone')&&await E(()=>/5 cards reviewed/.test(document.querySelector('.rdone').textContent)&&/3 right the first time/.test(document.querySelector('.rdone').textContent)),'summary after the round');
+ ok(await E(k=>S.usage.days[today()].card_review===k+5&&S.ledger.some(l=>l.k==='study'&&/Reviewed 5 cards/.test(l.t)),k0),'reviews use knots and show in the ledger');
+ ok(await E(i=>dueOf(deck(i)).length===0,did),'nothing is due after the review');
+ await r.click('.rdone .btn:has-text("Back to the deck")');await Z(500);ok(await E(()=>/Nothing is due/.test(document.querySelector('.dhero').textContent)),'deck says when the next card comes back');
+ await r.click('.dhero .btn.primary');await Z(500);ok(await E(()=>REV.practise&&REV.q.length===4&&REV.i===0),'practise all when nothing is due');await G('deck:'+did);
+ // share, Today, subjects, You
+ await r.click('.ph [aria-label="Share deck"]');await Z(300);await r.click('.sheet [data-i] >> nth=0');await Z(700);ok(await E(()=>S.chats.some(c=>c.msgs.some(m=>m.att&&m.att.kind==='deck'&&m.att.count===4))&&!!document.querySelector('.msg .rdeck')),'share a deck in chat');
+ await E(i=>{deck(i).cards[0].due=today()},did);await G('today');ok(await E(()=>{const s=document.querySelector('.studyrow');return s&&/1 card to review/.test(s.textContent)&&/Chemistry exam in 3 days/.test(s.textContent)}),'Today shows cards to review and the next exam');
+ await E(()=>{S.focus.sessions.push({at:Date.now()-3600e3,end:Date.now(),mins:35,mode:'study',label:'Chemistry'});save()});await G('study');
+ ok(await E(()=>[...document.querySelectorAll('.srow')].some(s=>/Chemistry/.test(s.textContent)&&/35/.test(s.textContent))),'time per subject this week');
+ await r.click('.srow:has-text("Chemistry")');await Z(400);ok(await E(()=>route.k==='focus'&&S.focus.mode==='study'&&S.focus.label==='Chemistry'),'tap a subject to study it');
+ await G('you');ok(await E(()=>/Study/.test(document.querySelector('.legend').textContent)),'Study shows in knots by area');
+ ok(await E(()=>{let s=0;Object.values(S.usage.days).forEach(d=>s+=d._n);return s===S.usage.total}),'daily totals still add up');
+ // older saves without study data
+ await E(()=>{delete S.study;S.focus.zen=undefined;save()});await r.reload();await Z(1900);ok(await E(()=>S.study&&S.study.goal===60&&Array.isArray(S.study.decks)&&Array.isArray(S.study.exams)),'older saves get the study space');
+ for(const h of ['study','focus','today','you']){await G(h);ok(await E(()=>!/Something went wrong/.test(document.querySelector('#view').textContent)),'older save opens '+h)}
+ await c4.close()}
+
 ok(errs.length===0,'no script errors'+(errs.length?': '+[...new Set(errs)].slice(0,5).join(' | '):''));
 console.log(`\n${pass} passed, ${fail} failed`);await b.close()})();
