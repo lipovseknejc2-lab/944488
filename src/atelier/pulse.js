@@ -43,8 +43,10 @@ function wheelSVG(sel){const cx=150,cy=150,R=[46,82,116,148],seg=(r0,r1,a0,a1)=>
   return`M${x0.toFixed(1)} ${y0.toFixed(1)}A${r1} ${r1} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}A${r0} ${r0} 0 0 0 ${x3.toFixed(1)} ${y3.toFixed(1)}Z`};
  let g='';PWHEEL.forEach(([n,,,c],i)=>{const a0=(i-.5)*Math.PI/4+.012,a1=(i+.5)*Math.PI/4-.012;for(let r=0;r<3;r++){const on=sel&&sel.sec===i&&sel.ring===r;
   g+=`<path class="wc ${on?'on':''}" data-s="${i}" data-r="${r}" d="${seg(R[r]+1.5,R[r+1]-1.5,a0,a1)}" style="--c:${c};--o:${[.22,.42,.7][r]}"><title>${PRINGS[r]} ${n.toLowerCase()}</title></path>`}
-  const am=i*Math.PI/4,tx=cx+133*Math.sin(am),ty=cy-133*Math.cos(am);g+=`<text x="${tx.toFixed(1)}" y="${(ty+4).toFixed(1)}" text-anchor="middle" class="wl">${n}</text>`});
- const f=sel&&PWHEEL[sel.sec];return`<svg class="pwheel" viewBox="0 0 300 300" role="group" aria-label="How do you feel">${g}<circle cx="150" cy="150" r="43" class="wcen"/><text x="150" y="${f?146:154}" text-anchor="middle" class="wct">${f?f[0]:'Tap how'}</text><text x="150" y="${f?163:170}" text-anchor="middle" class="wcs">${f?PRINGS[sel.ring].toLowerCase():'you feel'}</text></svg>`}
+  /* the name sits inside its outer segment, turned along the circle, never upside down */
+  const deg=i*45,am=deg*Math.PI/180,tx=cx+132*Math.sin(am),ty=cy-132*Math.cos(am),rot=deg>90&&deg<270?deg+180:deg;
+  g+=`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" transform="rotate(${rot} ${tx.toFixed(1)} ${ty.toFixed(1)})" text-anchor="middle" dominant-baseline="central" class="wl">${n}</text>`});
+ const f=sel&&PWHEEL[sel.sec];return`<svg class="pwheel" viewBox="0 0 300 300" role="group" aria-label="How do you feel">${g}<circle cx="150" cy="150" r="43" class="wcen"/><text x="150" y="143" text-anchor="middle" dominant-baseline="central" class="wct ${f?(f[0].length>8?'wctl':''):'wct0'}">${f?f[0]:'Tap a'}</text><text x="150" y="161" text-anchor="middle" dominant-baseline="central" class="wcs">${f?PRINGS[sel.ring]:'feeling'}</text></svg>`}
 const batt=v=>`<svg class="pbatt" viewBox="0 0 40 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="31" height="16" rx="4"/><path d="M36.5 9V13"/>${v>0?`<rect x="5" y="6" width="${Math.max(3,25*v).toFixed(1)}" height="10" rx="2" fill="currentColor" stroke="none"/>`:''}</svg>`;
 /* the check itself: wheel, energy, eight statements, then the diagnosis */
 let PS=null;

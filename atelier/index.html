@@ -515,8 +515,8 @@ html.skinfx,html.skinfx body,html.skinfx .card,html.skinfx #tabs,html.skinfx .bg
 .pwheel{width:min(86vw,340px);height:auto;display:block;overflow:visible;touch-action:manipulation}
 .pwheel .wc{fill:color-mix(in srgb,var(--c) calc(var(--o)*100%),var(--card2));stroke:var(--card2);stroke-width:1;cursor:pointer;transform-origin:150px 150px;transition:transform .35s var(--spring),fill .2s,filter .2s}
 .pwheel .wc:hover{filter:brightness(1.05)}.pwheel .wc.on{fill:var(--c);transform:scale(1.035);filter:drop-shadow(0 4px 10px color-mix(in srgb,var(--c) 45%,transparent))}
-.pwheel .wl{font-size:10.5px;font-weight:700;fill:var(--ink2);pointer-events:none;letter-spacing:.02em}
-.pwheel .wcen{fill:var(--card2);stroke:var(--line);filter:drop-shadow(0 2px 6px rgba(0,0,0,.06))}.pwheel .wct{font-family:var(--hand);font-weight:600;font-size:21px;fill:var(--text)}.pwheel .wcs{font-size:10.5px;font-weight:650;fill:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.pwheel .wl{font-size:10.5px;font-weight:700;fill:#fff;pointer-events:none;letter-spacing:.04em;text-transform:uppercase;paint-order:stroke;stroke:rgba(0,0,0,.12);stroke-width:1.6px}
+.pwheel .wcen{fill:var(--card2);stroke:var(--line);filter:drop-shadow(0 2px 6px rgba(0,0,0,.06))}.pwheel .wct{font-family:var(--sans);font-weight:650;font-size:16px;letter-spacing:-.01em;fill:var(--text)}.pwheel .wct.wct0{font-size:15px;fill:var(--ink2)}.pwheel .wct.wctl{font-size:13.5px}.pwheel .wcs{font-family:var(--sans);font-size:9.5px;font-weight:700;fill:var(--muted);letter-spacing:.1em;text-transform:uppercase}
 .pjust,.pback{display:flex;align-items:center;gap:4px;margin:10px auto 0}.pback .ic{width:16px;height:16px}
 .pen{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.pen>.card{margin:0}
 .pent{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 8px;font:inherit;color:var(--text);cursor:pointer;animation:rise .4s var(--ease) both;animation-delay:calc(var(--i)*50ms)}
@@ -1654,8 +1654,10 @@ function wheelSVG(sel){const cx=150,cy=150,R=[46,82,116,148],seg=(r0,r1,a0,a1)=>
   return`M${x0.toFixed(1)} ${y0.toFixed(1)}A${r1} ${r1} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}A${r0} ${r0} 0 0 0 ${x3.toFixed(1)} ${y3.toFixed(1)}Z`};
  let g='';PWHEEL.forEach(([n,,,c],i)=>{const a0=(i-.5)*Math.PI/4+.012,a1=(i+.5)*Math.PI/4-.012;for(let r=0;r<3;r++){const on=sel&&sel.sec===i&&sel.ring===r;
   g+=`<path class="wc ${on?'on':''}" data-s="${i}" data-r="${r}" d="${seg(R[r]+1.5,R[r+1]-1.5,a0,a1)}" style="--c:${c};--o:${[.22,.42,.7][r]}"><title>${PRINGS[r]} ${n.toLowerCase()}</title></path>`}
-  const am=i*Math.PI/4,tx=cx+133*Math.sin(am),ty=cy-133*Math.cos(am);g+=`<text x="${tx.toFixed(1)}" y="${(ty+4).toFixed(1)}" text-anchor="middle" class="wl">${n}</text>`});
- const f=sel&&PWHEEL[sel.sec];return`<svg class="pwheel" viewBox="0 0 300 300" role="group" aria-label="How do you feel">${g}<circle cx="150" cy="150" r="43" class="wcen"/><text x="150" y="${f?146:154}" text-anchor="middle" class="wct">${f?f[0]:'Tap how'}</text><text x="150" y="${f?163:170}" text-anchor="middle" class="wcs">${f?PRINGS[sel.ring].toLowerCase():'you feel'}</text></svg>`}
+  /* the name sits inside its outer segment, turned along the circle, never upside down */
+  const deg=i*45,am=deg*Math.PI/180,tx=cx+132*Math.sin(am),ty=cy-132*Math.cos(am),rot=deg>90&&deg<270?deg+180:deg;
+  g+=`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" transform="rotate(${rot} ${tx.toFixed(1)} ${ty.toFixed(1)})" text-anchor="middle" dominant-baseline="central" class="wl">${n}</text>`});
+ const f=sel&&PWHEEL[sel.sec];return`<svg class="pwheel" viewBox="0 0 300 300" role="group" aria-label="How do you feel">${g}<circle cx="150" cy="150" r="43" class="wcen"/><text x="150" y="143" text-anchor="middle" dominant-baseline="central" class="wct ${f?(f[0].length>8?'wctl':''):'wct0'}">${f?f[0]:'Tap a'}</text><text x="150" y="161" text-anchor="middle" dominant-baseline="central" class="wcs">${f?PRINGS[sel.ring]:'feeling'}</text></svg>`}
 const batt=v=>`<svg class="pbatt" viewBox="0 0 40 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="31" height="16" rx="4"/><path d="M36.5 9V13"/>${v>0?`<rect x="5" y="6" width="${Math.max(3,25*v).toFixed(1)}" height="10" rx="2" fill="currentColor" stroke="none"/>`:''}</svg>`;
 /* the check itself: wheel, energy, eight statements, then the diagnosis */
 let PS=null;
