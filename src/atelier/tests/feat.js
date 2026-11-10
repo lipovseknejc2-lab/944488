@@ -305,6 +305,18 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await r.mouse.click(195,300);await Z(300);ok(await E(()=>document.querySelector('#zen').classList.contains('ctl')),'tap shows the controls');
  await r.click('#zP');await Z(300);ok(await E(()=>S.focus.run.paused&&/paused/.test(document.querySelector('#zPh').textContent)),'pause in deep mode');await r.click('#zP');await Z(200);
  await r.click('#zS');await Z(400);ok(await E(()=>S.focus.run.phase==='break'&&document.querySelector('#zPh').textContent==='Break'),'the phase shows when it changes');
+ // guided reset: the quiet pill in deep mode, a breathing step, stretches with a breath between, the far look, the end
+ await Z(1200);ok(await E(()=>!!document.querySelector('#zRs.in')),'deep mode offers a guided reset on a break');
+ await r.click('#zRs');await Z(900);ok(await E(()=>!!document.querySelector('#rst')&&!!document.querySelector('#zen')&&RS.steps[0].k==='breath'),'the reset opens over deep mode with a breathing step');
+ ok(await E(()=>{const k=RS.steps.map(s=>s.k);return k.includes('calm')&&k[k.indexOf('calm')-1]==='stretch'&&k[k.indexOf('calm')+1]==='stretch'&&k.at(-2)==='eyes'}),'an easy breath sits between the stretches');
+ ok(await E(()=>/Breathe|In a little|breath out|Hold/.test(document.querySelector('#rPh').textContent)&&+document.querySelector('#rPh').dataset.n>0),'it says when to breathe in and out, with a countdown');
+ await r.click('#rSk');await Z(1300);const fA=await E(()=>['#rfA','#rfL','#rfT','#rfAf'].map(s=>document.querySelector(s).getAttribute('d')).join());await Z(900);ok(await E(a=>['#rfA','#rfL','#rfT','#rfAf'].map(s=>document.querySelector(s).getAttribute('d')).join()!==a,fA),'the figure shows the stretch');
+ ok(await E(()=>Object.values(RSTRETCH).every(T=>T.k.every(k=>Object.keys(k[1]).every(x=>x in RB)))&&Object.keys(RSTRETCH).length>=10),'ten stretches, every pose valid');
+ ok(await E(()=>{for(const id in RSTRETCH)for(const k of RSTRETCH[id].k){const P=rigPaths({...RB,...k[1]});if(/NaN/.test(P.arms+P.legs+P.torso+P.armF+P.legF))return false}return true}),'every pose draws cleanly');
+ await r.click('#rSnd');ok(await E(()=>S.settings.resetSound===false&&document.querySelector('#rSnd').classList.contains('off')),'tones can be muted');await r.click('#rSnd');
+ for(let i=0;i<8&&await E(()=>RS&&RS.steps[RS.i].k!=='eyes');i++){await r.click('#rSk');await Z(250)}ok(await E(()=>RS.steps[RS.i].k==='eyes'),'the far look');
+ await E(()=>{RS.t=REYES.secs-.05});await Z(600);ok(await E(()=>/You are reset/.test(document.querySelector('#rPh').textContent)&&S.resets.length===1&&S.ledger.some(l=>/Guided reset/.test(JSON.stringify(l)))&&S.usage.days[today()].reset===1),'the end is saved, logged and counted');
+ await r.click('#rBk');await Z(600);ok(await E(()=>!document.querySelector('#rst')&&!!document.querySelector('#zen')&&document.body.classList.contains('zenon')),'back to deep mode');
  await r.reload();await Z(2200);ok(await E(()=>!!document.querySelector('#zen')&&document.body.classList.contains('zenon')),'deep mode comes back after closing the app');
  await E(()=>{const q=S.focus.run;q.phase='long';q.round=4;q.endAt=Date.now()-5});await Z(700);
  ok(await E(()=>document.querySelector('#zen').classList.contains('done')&&/Session complete/.test(document.querySelector('#zen').textContent)),'deep mode shows the session is complete');

@@ -31,7 +31,7 @@ Publish: copy `dist/atelier.html` to `atelier/index.html`. `sw.js`, the manifest
 After publishing, raise the version in this app's `sw.js` (for example `atelier-v3` to `atelier-v4`) so phones download the update.
 
 ## Guided reset
-`reset.js` comes after `focus.js`. Research basis: cyclic sighing (Balban 2023), slow breathing near 6 a minute (Lehrer and Gevirtz 2014), micro-breaks with movement (Albulescu 2022), 20-20-20 and green views (Lee 2015), phone-free breaks. RBREATH and RSTRETCH are data: add a technique by adding an entry (stretch keyframes are [time, pose, cue]). The animation loop only changes attributes and transforms.
+`reset.js` comes after `focus.js`. Research basis: cyclic sighing (Balban 2023), slow breathing near 6 a minute (Lehrer and Gevirtz 2014), micro-breaks with movement (Albulescu 2022), 20-20-20 and green views (Lee 2015), phone-free breaks. RBREATH and RSTRETCH are data: add a technique by adding an entry (stretch keyframes are [time, pose, cue]). The animation loop only changes attributes and transforms. Ten stretches: neck, shoulder rolls (side view), reach up, side bend (diamond arms), chest opener, calf raises, forward fold, chair squats, arm circles and chin tucks (all side view). Stretch keyframes carry `o`, the breathing circle size, so the circle breathes with the movement.
 
 ## Files
 JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `notes.js`, `chat.js`, `projects.js`, `study.js`, `pulse.js`, `school.js`, `widgets.js`, `rewards.js`, `you.js`

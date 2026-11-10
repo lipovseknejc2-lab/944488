@@ -353,6 +353,12 @@ body.rston{background:#000}body.rston #shell,body.rston .bgwash,body.rston #toas
 .rtop{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:440px;gap:12px}
 .rlab{display:flex;align-items:center;gap:7px;font-family:var(--hand);font-size:24px;font-weight:600;color:var(--rc);opacity:.85}.rlab .ic{width:19px;height:19px}
 .rdots{display:flex;gap:5px}.rdots i{width:16px;height:3px;border-radius:2px;background:#1d1c1a;transition:background .6s,opacity .6s}.rdots i.d{background:var(--rc);opacity:.55}.rdots i.n{background:#5a554e}
+.rtb{display:flex;gap:8px}.rx.off{color:#3d3a36}.rx.off .ic{opacity:.5}.rx:not(.off)#rSnd .ic{color:var(--rc);opacity:.8}
+.rdots i.c{width:6px}
+.rffar{transition:opacity .4s}.rfig .rfn{stroke-width:2}
+#rst[data-k=calm] .rfig{opacity:0;transform:scale(.9)}
+#rst[data-k=calm] .rorb{transform:scale(1.04);transition:transform 1s var(--ease)}.rorb{transition:transform 1s var(--ease)}
+#rst[data-k=calm] .rph{font-size:clamp(36px,11vw,48px)}
 .rx{width:40px;height:40px;border-radius:50%;border:1px solid #232120;background:#0b0b0a;color:#8a857d;display:grid;place-items:center;cursor:pointer;padding:0;transition:transform .3s var(--spring)}.rx:active{transform:scale(.9)}.rx .ic{width:18px;height:18px}
 .rstage{position:relative;flex:1;width:100%;max-width:340px;min-height:220px;display:grid;place-items:center}
 .rorb{position:absolute;width:min(78vw,300px);height:min(78vw,300px);overflow:visible}
@@ -361,7 +367,7 @@ body.rston{background:#000}body.rston #shell,body.rston .bgwash,body.rston #toas
 .rfill.bloom{animation:rbloom 1.2s var(--ease)}@keyframes rbloom{50%{opacity:.4}}
 .rprog{fill:none;stroke:var(--rc);stroke-width:1.6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.5;transform:rotate(-90deg);transform-origin:100px 100px;transition:stroke-dashoffset .25s linear}
 #rst[data-k=done] .rprog{stroke-dashoffset:0!important;transition:stroke-dashoffset .8s var(--ease)}
-.rfig{position:relative;width:min(52vw,200px);height:min(52vw,200px);stroke:#d6d0c6;stroke-width:2.5;opacity:.85;transition:opacity .6s,transform .8s var(--ease)}
+.rfig{position:relative;width:min(56vw,216px);height:min(56vw,216px);stroke:#d6d0c6;stroke-width:2.3;opacity:.85;transition:opacity .6s,transform .8s var(--ease)}
 .rfig #rfHd{fill:none}.rfig .rfloor{stroke:#2a2826;stroke-width:1.5}
 #rst[data-k=breath] .rfig{opacity:.6;transform:scale(.86)}
 #rst[data-k=eyes] .rfig,#rst[data-k=done] .rfig{opacity:0;transform:scale(.9)}

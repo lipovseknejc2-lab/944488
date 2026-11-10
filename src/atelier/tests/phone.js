@@ -56,10 +56,12 @@ async function run(name,url,frameSel,block){const b=await chromium.launch();cons
  await F.locator('.rdone .btn').first().tap();await W(500);await F.locator('#tabs a:has-text("Focus")').tap();await W(500);
  await F.locator('.fbtns .zbtn').tap();await W(900);ok(await F.locator('#zen').isVisible()&&!(await F.locator('#tabs').isVisible()),name+': deep mode hides everything else');
  await F.locator('#zen').tap({position:{x:180,y:300}});await W(400);await F.locator('#zX').tap();await W(700);ok(!(await F.locator('#zen').count())&&await F.locator('#tabs').isVisible(),name+': leave deep mode with a tap');
+ await F.locator('[aria-label="Skip to next phase"]').tap();await W(600);await F.locator('.rcta').tap();await W(900);ok(await F.locator('#rst').isVisible()&&!(await F.locator('#tabs').isVisible()),name+': guided reset opens with a tap on a break');
+ for(let i=0;i<3;i++){await F.locator('#rSk').tap();await W(350)}await F.locator('#rPa').tap();await W(200);await F.locator('#rPa').tap();await F.locator('#rX').tap();await W(700);ok(!(await F.locator('#rst').count())&&await F.locator('#tabs').isVisible(),name+': skip, pause and close the reset with taps');
  await F.locator('[aria-label=Stop]').tap();await W(400);
  await F.locator('#tabs a:has-text("Chat")').tap();await W(400);await F.locator('.convo').first().tap();await W(600);ok(await F.locator('#ci').isVisible(),name+': conversation opens');
  await F.locator('#ci').fill('Hi team');await F.locator('.sendb').tap();await W(400);ok(await F.locator('.msg.me >> text=Hi team').isVisible(),name+': message sends');
- await F.locator('.composer [aria-label=Share]').tap();await W(450);ok(await F.locator('.wtile').count()===8,name+': share sheet opens with widgets');
+ await F.locator('.composer [aria-label=Share]').tap();await W(450);ok(await F.locator('.wtile').count()===9,name+': share sheet opens with widgets');
  await F.locator('.wtile[data-k=day]').tap();await W(600);await F.locator('#wT [data-v=tint]').tap();await W(200);await F.locator('#wSend').tap();await W(700);ok(await F.locator('.msg.me .w-day.wt-tint').first().isVisible(),name+': my day widget, styled with a tap');
  await F.locator('.composer [aria-label=Share]').tap();await W(400);await F.locator('.wtile[data-k=agenda]').tap();await W(600);await F.locator('#wSend').tap();await W(700);ok(await F.locator('.msg.me .w-agenda').first().isVisible(),name+': agenda widget with a tap');
  await F.locator('.chinfo').tap();await W(700);ok(await F.locator('.mstrip').isVisible(),name+': tap the chat header for group info');
