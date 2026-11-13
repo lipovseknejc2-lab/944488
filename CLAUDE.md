@@ -9,6 +9,8 @@ We work on **one app only: Atelier**, the team-work app (notes, projects, groups
 
 The repository also contains other apps (the site root and the other folders). **Do not touch them**, unless Nejc explicitly asks.
 
+**Mintora** (`src/mintora/`, published at `mintora/`) is a second app Nejc asked for: a desktop web app for digital products, with Mintora Blueprint for plugins and designs. Read `src/mintora/NOTES.md` before working on it, test it with `bash src/mintora/tests/run.sh`, and keep it separate from Atelier.
+
 ## The four rules that matter most
 1. **Never simplify, remove or downgrade.** Keep every feature, screen, animation, drawing and detail. Changes add or improve. A rewrite must do everything the old version did.
 2. **Never make the design worse.** Follow `DESIGN.md` exactly. New screens must look like they were always part of Atelier: same tokens, glass, line icons, gesture characters, handwriting accents and motion. When unsure, copy an existing Atelier component.
