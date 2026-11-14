@@ -18,6 +18,7 @@ const LINES={
  progress:{warm:['Look at that progress! Well done.','We are getting there, nice work everyone.'],brief:['Good pace.','Noted, thanks.'],curious:['What moved it forward this time?','What is blocking the rest?']},
  focus:{warm:['That is a solid focus streak!','Proud of you, keep it going.'],brief:['Nice focus.','Good session.'],curious:['What did you work on?','How do you keep the streak?']},
  day:{warm:['Sounds like a good day so far.','Thanks for sharing your day!'],brief:['Productive.','Nice day.'],curious:['What was the best part?','How are you feeling about it?']},
+ note:{warm:['Love how you laid this out, the arrows make it click.','Thanks for the note! I ticked off what I can help with.'],brief:['Read it. Clear.','Got the note.'],curious:['Which part should we start with?','Nice map. What comes after the last step?']},
  agenda:{warm:['Nice plan for the day!','Good plan. Shout if I can take something.'],brief:['Plan noted.','Clear plan.'],curious:['Which one matters most?','Is there time for a break in there?']},
  deck:{warm:['Ooh, can I borrow these cards?','Great deck, let\'s quiz each other.'],brief:['Useful, thanks.','Got the deck.'],curious:['How many do you know already?','Which card is the hardest?']},
  quote:{warm:['That is a lovely line.','I needed that today, thank you.'],brief:['Good one.','True.'],curious:['Where is that from?','What made you pick it?']},

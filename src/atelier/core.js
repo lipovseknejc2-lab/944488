@@ -16,7 +16,7 @@ const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
 const KEY='atelier-v1',BKEY='atelier-backup';
 /* If the browser blocks storage (some previews do), keep working in memory and say so once. */
 const LS=(()=>{try{const k='__a';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage}catch(e){const m={};window._noStore=true;return{getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}}})();
-const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],projects:[],ledger:[],voice:[],agenda:[],widgets:{},pulse:[],resets:[],study:{goal:60,decks:[],exams:[],classes:[],grades:[],goals:{},scale:'5',plans:[]},nudges:[],
+const DEF=()=>({v:1,me:null,people:[],groups:[],chats:[],notes:[],materials:[],projects:[],ledger:[],voice:[],agenda:[],widgets:{},pulse:[],resets:[],study:{goal:60,decks:[],exams:[],classes:[],grades:[],goals:{},scale:'5',plans:[]},nudges:[],
  focus:{mode:'pomo',custom:{w:30,b:5,r:3},label:'',run:null,sessions:[]},usage:{days:{},total:0,ks:8},
  settings:{theme:'light',sound:true,auto:true,skin:'clay',space:''},created:Date.now()});
 function parseSave(r){if(!r)return null;const d=JSON.parse(r);if(!d||typeof d!=='object'||!Array.isArray(d.notes))throw 0;return d}
@@ -25,7 +25,7 @@ function load(){let d=null;window._from='main';try{d=parseSave(LS.getItem(KEY))}
  return fixData(Object.assign(DEF(),d||{}))}
 /* knots: a normal full day of use is about 1,600 (checked against typical days); older saves are scaled once so everyone keeps their place */
 const KSCALE=8;
-function fixData(s){s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};if(!Array.isArray(s.pulse))s.pulse=[];if(!Array.isArray(s.nudges))s.nudges=[];if(!Array.isArray(s.resets))s.resets=[];
+function fixData(s){if(!Array.isArray(s.materials))s.materials=[];s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};if(!Array.isArray(s.pulse))s.pulse=[];if(!Array.isArray(s.nudges))s.nudges=[];if(!Array.isArray(s.resets))s.resets=[];
  if(!s.usage.ks){Object.values(s.usage.days).forEach(d=>{if(d&&d._n)d._n*=KSCALE});s.usage.total=(s.usage.total||0)*KSCALE;s.usage.ks=KSCALE}return s}
 let S=load(),_bk=0;
 function save(){if(!S.me&&!S.notes.length)return false;let raw;try{raw=JSON.stringify(S)}catch(e){return false}
@@ -106,7 +106,7 @@ async function blobURL(fid){if(BURL.has(fid))return BURL.get(fid);let b=null;try
 async function loadImgs(root){for(const im of (root||document).querySelectorAll('img[data-fid]:not([src])')){const box=im.closest('.aph,.mthumb');const u=await blobURL(im.dataset.fid);
  if(u){im.onload=()=>box&&box.classList.add('ld');im.src=u}else if(box)box.classList.add('miss')}}
 /* ---------- knots: every action is metered (tracking only, shown on the You page) ---------- */
-const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_edit:['Note edit','Notes',1],note_share:['Share','Notes',2],
+const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_edit:['Note edit','Notes',1],note_share:['Share','Notes',2],note_block:['Note part','Notes',1],note_view:['Open in chat','Notes',0],note_link:['Arrow','Notes',1],note_sketch:['Sketch','Notes',2],material:['Material','Flow',2],flow_open:['Flow','Flow',0],
  msg:['Message','Chat',1],chat_new:['New conversation','Chat',2],group_new:['New group','Groups',5],group_edit:['Group change','Groups',1],bot_new:['New teammate','Groups',3],
  project_new:['New project','Projects',6],task_new:['New task','Projects',2],task_move:['Task update','Projects',1],idea:['Idea','Projects',2],vote:['Vote','Projects',1],
  file:['File upload','Projects',4],board_save:['Drawing saved','Projects',3],inspo:['Inspiration','Projects',2],table_edit:['Table edit','Projects',1],
@@ -158,12 +158,12 @@ function lineChart(series,{h=150,labels=[]}={}){const w=320,all=series.flatMap(s
 function ring(frac,col,size=56,sw=6,txt=''){const r=(size-sw)/2,c=2*Math.PI*r;return`<svg class="ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--track)" stroke-width="${sw}"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-clamp(frac,0,1))).toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})" style="--c:${c.toFixed(1)}" class="rarc"/>${txt?`<text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-size="${size*.24}" font-weight="650" fill="var(--text)">${txt}</text>`:''}</svg>`}
 
 /* ---------- router ---------- */
-const TABS=[['today','Today','home'],['focus','Focus','focus'],['notes','Notes','notes'],['projects','Projects','projects'],['chat','Chat','chat'],['you','You','you']];
-const TABS_STUDENT=[['today','Today','home'],['focus','Focus','focus'],['study','Study','cap'],['notes','Notes','notes'],['chat','Chat','chat'],['you','You','you']];
+const TABS=[['today','Today','home'],['focus','Focus','focus'],['flow','Flow','flow'],['chat','Chat','chat'],['you','You','you']];
+const TABS_STUDENT=TABS;
 const space=()=>S.settings.space==='student'?'student':'work';
 const tabsNow=()=>space()==='student'?TABS_STUDENT:TABS;
-function tabOf(k){const t=TAB_OF[k]||'today';if(space()==='student'&&['study','deck','review','projects','project','board','timetable','grades','quiz'].includes(k))return'study';return t}
-const TAB_OF={timetable:'focus',grades:'focus',quiz:'focus',pulse:'today',rewards:'you',profile:'you',today:'today',ledger:'today',focus:'focus',study:'focus',deck:'focus',review:'focus',notes:'notes',note:'notes',projects:'projects',project:'projects',board:'projects',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
+function tabOf(k){const t=TAB_OF[k]||'today';if(space()==='student'&&['study','deck','review','timetable','grades','quiz'].includes(k))return'flow';return t}
+const TAB_OF={timetable:'focus',grades:'focus',quiz:'focus',pulse:'today',rewards:'you',profile:'you',today:'today',ledger:'today',focus:'focus',study:'focus',deck:'focus',review:'focus',flow:'flow',materials:'flow',notes:'flow',note:'flow',projects:'flow',project:'flow',board:'flow',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
 let route={k:'today',a:[]},_prevRoute='';
 /* Pages change in memory, so navigation works everywhere, also in previews that block address changes. */
 let _hash=(()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return''}})()||'today';
@@ -183,7 +183,7 @@ const navBadge=()=>nav();
 function render(){if(!S.me){$('#shell').classList.add('nologin');onboarding();return}$('#shell').classList.remove('nologin');
  route=parseHash();const key=_hash;const fresh=key!==_prevRoute;_prevRoute=key;
  const V=$('#view'),y=fresh?0:scrollY;
- const P={timetable:pTimetable,grades:pGrades,quiz:pQuiz,pulse:pPulse,rewards:pRewards,profile:pProfile,study:pStudy,deck:pDeck,review:pReview,person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
+ const P={flow:pFlow,materials:pMaterials,timetable:pTimetable,grades:pGrades,quiz:pQuiz,pulse:pPulse,rewards:pRewards,profile:pProfile,study:pStudy,deck:pDeck,review:pReview,person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
  try{V.innerHTML=P(...route.a)||''}catch(e){console.error(e);V.innerHTML=`<div class="page">${empty('think','Something went wrong','This view could not be shown. Your work is safe.',`<a class="btn primary" href="#today">Back to Today</a>`)}</div>`}
  if(fresh){V.classList.remove('enter');void V.offsetWidth;V.classList.add('enter');scrollTo(0,0)}else scrollTo(0,y);
  nav();paintRail();countUp(V);if(V._after){const f=V._after;V._after=null;f()}miniTimer();loadImgs(V)}

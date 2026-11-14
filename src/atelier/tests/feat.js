@@ -41,10 +41,10 @@ ok(await p.isVisible('.timeline .feelchip >> text=thankful'),'feeling check-in s
 ok(await p.isVisible('.wday.today b.has'),'today circle gets a colour after activity');
 // notes
 await p.click('.rail .rbtns button:has-text("Note")');await W(500);ok(await ev(()=>route.k==='note'),'quick note opens editor');
-await p.fill('#nT','Sprint plan');await p.fill('#nB','# Goals\n[ ] Draft layout\n[ ] Test flows\n- keep it simple');await W(500);
+await p.fill('#nT','Sprint plan');await ev(()=>nAdd('text',{s:'h'}));await W(300);await p.keyboard.type('Goals');await ev(()=>nDeselect());await ev(()=>nAdd('check'));await W(300);await p.keyboard.type('Draft layout');await p.keyboard.press('Enter');await W(150);await p.keyboard.type('Test flows');await W(500);await ev(()=>nDeselect());
 const nid=await ev(()=>route.a[0]);ok(await ev(id=>note(id).title==='Sprint plan'&&note(id).body.includes('Draft'),nid),'note autosaves');
-await p.click('text=Done');await W(300);ok(await p.isVisible('.prose h3 >> text=Goals'),'preview renders heading');
-await p.click('.todo >> nth=0');await W(400);ok(await ev(id=>note(id).body.includes('[x] Draft'),nid),'checklist toggles in preview');
+ok(await p.isVisible('.nb-text .s-h >> text=Goals'),'heading part renders on the page');
+await p.click('.nb-check .ckb >> nth=0');await W(400);ok(await ev(id=>note(id).body.includes('[x] Draft'),nid),'checklist ticks on the page');
 await p.click('[aria-label=Pin]');await W(300);ok(await ev(id=>note(id).pin,nid),'pin works');
 // project first (for sharing)
 await go('projects');await p.click('text=New project >> nth=0');await W(400);await p.fill('#pN','Spring launch');await p.fill('#pD','Ship the beta');await p.click('#pSz label:nth-child(2)');await W(100);
@@ -53,7 +53,7 @@ await p.check('#sf input[name^="g_"]');await p.click('#sf button[type=submit]');
 const pid=await ev(()=>S.projects[0].id);ok(await ev(()=>S.projects[0].groups.length===1&&S.projects[0].tools.length===7),'project shared with group');
 ok(await p.isVisible('.ptabs >> text=Inspiration'),'project tabs shown');
 // share note
-await go('note:'+nid);await p.click('[aria-label=Share]');await W(400);await p.check('[data-g]');await p.check('[data-p]');await p.click('#shOK');await W(400);
+await go('note:'+nid);await ev(id=>shareSheet(id),nid);await W(400);await p.check('[data-g]');await p.check('[data-p]');await p.click('#shOK');await W(400);
 ok(await ev(id=>note(id).share.groups.length===1&&note(id).share.projects.length===1,nid),'note shared to group and project');
 await go('group:'+await ev(()=>S.groups[0].id));ok(await p.isVisible('.ncard >> text=Sprint plan'),'shared note appears in group');
 await go('notes');await p.fill('#nq','sprint');await W(500);ok(await ev(()=>document.querySelectorAll('.ncard').length===1),'note search');
@@ -94,7 +94,7 @@ await go('chat');ok(await ev(()=>document.querySelectorAll('.convo').length>=1),
 await ev(id=>{const c=ensureDM(id);save();go('c:'+c.id)},bot);await W(500);await p.fill('#ci','Hi Luka, any idea for the cover?');await p.press('#ci','Enter');await W(300);
 ok(await p.isVisible('.msg.me >> text=any idea'),'message sent');await W(1800);ok(await p.isVisible('#typ:not([hidden])')||await ev(()=>S.chats.find(c=>c.with===S.people[1].id).msgs.length>1),'typing indicator');
 await W(3500);ok(await ev(id=>S.chats.find(c=>c.kind==='dm'&&c.with===id).msgs.length===2,bot),'bot replies');
-await p.click('.composer [aria-label=Share]');await W(400);await p.click('.shopt[data-k=note]');await W(400);await p.click('.sheet [data-pk]');await W(500);ok(await p.isVisible('.att'),'note shared in chat');
+await p.click('.composer [aria-label=Share]');await W(400);await p.click('.shopt[data-k=note]');await W(400);await p.click('.sheet [data-pk]');await W(500);ok(await p.isVisible('.msg .w-note'),'note shared in chat as a widget');
 const gc=await ev(()=>S.chats.find(c=>c.kind==='group').id);await go('c:'+gc);await p.fill('#ci','Deadline is Friday, ok?');await p.press('#ci','Enter');await go('today');await W(6000);
 ok(await ev(id=>S.chats.find(c=>c.id===id).msgs.filter(m=>m.from!=='me').length>=2,gc),'group members reply');
 ok(await p.isVisible('#tabs .badge'),'unread badge on Chat tab');
@@ -214,7 +214,7 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await G('projects');ok(await E(()=>/90%/.test(document.querySelector('.card.list').textContent)),'project list shows the percentage');
  // group chat: header opens info, share everything
  await G('c:'+gc);await Z(2500);ok(await E(c=>S.chats.find(x=>x.id===c).msgs.some(m=>m.from!=='me'),gc),'bots react to the progress update');
- await r.click('.composer [aria-label="Share"]');await Z(400);ok(await E(()=>document.querySelectorAll('.wtile').length===9&&document.querySelectorAll('.shopt:not(.wtile)').length===3),'share sheet: eight widgets, then photo, file and note');
+ await r.click('.composer [aria-label="Share"]');await Z(400);ok(await E(()=>document.querySelectorAll('.wtile').length===10&&document.querySelectorAll('.shopt:not(.wtile)').length===3),'share sheet: ten widgets with the note, then photo, file and note');
  await r.setInputFiles('#sh_photo',D+'/t.gif');await Z(900);
  const ph=await E(c=>{const m=S.chats.find(x=>x.id===c).msgs.filter(m=>m.att&&m.att.kind==='photo').pop();return m&&{fid:m.att.fid,id:m.id}},gc);
  ok(ph&&await E(f=>IDB.get(f).then(b=>b instanceof Blob),ph.fid),'photo shared and kept on the device');
@@ -375,9 +375,9 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await r.goto(U);await Z(1800);await r.click('#obS');await Z(300);await r.fill('#obName','Iva');await r.fill('#obSur','Kos');await r.click('#obSt label:has-text("Student")');await r.fill('#obMail','iva@uni.si');await r.click('#obF button[type=submit]');await Z(1500);
  // spaces
  ok(await E(()=>S.settings.space==='student'&&document.documentElement.dataset.space==='student'&&S.focus.mode==='study'),'a student account opens in the student space');
- ok(await E(()=>{const t=[...document.querySelectorAll('#tabs a span')].map(s=>s.textContent);return t.join()==='Today,Focus,Study,Notes,Chat,You'}),'student tabs: Today, Focus, Study, Notes, Chat, You');
+ ok(await E(()=>{const t=[...document.querySelectorAll('#tabs a span')].map(s=>s.textContent);return t.join()==='Today,Focus,Flow,Chat,You'}),'student tabs: Today, Focus, Flow, Chat, You');
  ok(await E(()=>/Study/.test(document.querySelector('.shero').textContent)),'student Today opens with study');
- await G('project:x');await G('study');ok(await E(()=>document.querySelector('#tabs a.on').dataset.tab==='study'&&/Projects and assignments/.test(document.querySelector('#view').textContent)),'study tab holds projects and assignments');
+ await G('project:x');await G('study');ok(await E(()=>document.querySelector('#tabs a.on').dataset.tab==='flow'&&/Projects and assignments/.test(document.querySelector('#view').textContent)),'study, under Flow, holds projects and assignments');
  await E(()=>actionSheet());await Z(300);ok(await E(()=>/Flashcards/.test(document.querySelector('.actgrid').textContent)&&/Exam/.test(document.querySelector('.actgrid').textContent)),'student quick actions');await E(()=>closeSheet());await Z(300);
  // the tab bar stays put when a reply comes in elsewhere; only the badge pops
  const gc=await E(()=>S.chats.find(c=>c.kind==='group').id);await G('today');
@@ -385,7 +385,7 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  ok(await E(()=>window._tg===document.querySelector('#tabs .tabglow')&&window._ta===document.querySelector('#tabs a')),'the tab bar is not rebuilt when a reply arrives');
  ok(await E(()=>{const b=document.querySelector('#tabs a[data-tab=chat] .badge');return!b.hidden&&+b.textContent>=1&&b.classList.contains('pop')}),'the unread badge pops in');
  await G('you');await r.click('.spseg [data-sp=work]');await Z(900);
- ok(await E(()=>S.settings.space==='work'&&[...document.querySelectorAll('#tabs a span')].map(s=>s.textContent).join()==='Today,Focus,Notes,Projects,Chat,You'&&route.k==='today'&&/Work/.test(document.querySelector('.shero').textContent)),'switch to the work space: work tabs and a work Today');
+ ok(await E(()=>S.settings.space==='work'&&[...document.querySelectorAll('#tabs a span')].map(s=>s.textContent).join()==='Today,Focus,Flow,Chat,You'&&route.k==='today'&&/Work/.test(document.querySelector('.shero').textContent)),'switch to the work space: work tabs and a work Today');
  ok(await E(()=>S.usage.days[today()].space===1),'switching space uses a knot');
  await G('you');await r.click('.spseg [data-sp=student]');await Z(700);
  // logo
@@ -408,7 +408,7 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await G('today');ok(await E(()=>!!document.querySelector('.thav .frm-dotted')),'the frame shows on your avatar');
  ok(await E(()=>SKINS.every((s,i)=>i===0||s.at>SKINS[i-1].at)&&SKINS[SKINS.length-1].at>=1000000&&FRAMES[0].at>=SKINS[5].at&&FRAMES[FRAMES.length-1].at>SKINS[SKINS.length-1].at),'prices rise to over a million; frames start at mid-theme prices and end above the top theme');
  // every screen in every theme, light and dark
- const scr=['today','focus','study','notes','projects','chat','groups','you','rewards','profile','settings','posters','timetable','grades','pulse',...(await E(()=>S.groups.slice(0,1).map(g=>'group:'+g.id)))];let bad=[];
+ const scr=['today','focus','flow','materials','study','notes','projects','chat','groups','you','rewards','profile','settings','posters','timetable','grades','pulse',...(await E(()=>S.groups.slice(0,1).map(g=>'group:'+g.id)))];let bad=[];
  for(const sk of await E(()=>SKINS.map(s=>s.id)))for(const th of ['light','dark']){const x=await E(([sk,th,scr])=>{S.usage.total=2e6;S.settings.skin=sk;S.settings.theme=th;applyTheme();const out=[];for(const h of scr){go(h);if(/Something went wrong/.test(document.querySelector('#view').textContent))out.push(h);else if(document.documentElement.scrollWidth>innerWidth+1)out.push(h+' too wide')}try{openReset();if(!document.querySelector('#rst .rfig'))out.push('reset');closeReset()}catch(e){out.push('reset '+e.message)}return out},[sk,th,scr]);if(x.length)bad.push(sk+'/'+th+': '+x.join())}
  ok(!bad.length,'every screen opens in every theme, light and dark'+(bad.length?' '+bad.join(' | '):''));
  await E(()=>{S.settings.skin='clay';S.settings.theme='light';S.usage.total=400000;applyTheme()});

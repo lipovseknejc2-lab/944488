@@ -39,7 +39,20 @@ lock:'M6.5 10.5H17.5V19.5H6.5ZM8.8 10.5V8A3.2 3.2 0 0 1 15.2 8V10.5',stop:'M7 7H
 pulse:'M3 12.6H7.4L9.6 7.4L13.4 17.4L15.8 10.6L17.4 12.6H21',
 cap:'M3.2 9.6L12 5.2L20.8 9.6L12 14ZM7 11.6V15.8C8.6 17.4 10.2 18 12 18S15.4 17.4 17 15.8V11.6M20.8 9.6V14.6',
 case:'M4 8.6H20V19H4ZM9.2 8.6V6.4C9.2 5.7 9.7 5.2 10.4 5.2H13.6C14.3 5.2 14.8 5.7 14.8 6.4V8.6M4.2 13.2C9.2 14.6 14.8 14.6 19.8 13.2M11 13.9V15.4H13V13.9',
-mail:'M4 6.4H20V17.6H4ZM4.6 7C8 9.8 9.8 11.4 12 12.9C14.2 11.4 16 9.8 19.4 7'};
+mail:'M4 6.4H20V17.6H4ZM4.6 7C8 9.8 9.8 11.4 12 12.9C14.2 11.4 16 9.8 19.4 7',
+flow:'M3.5 16.5C6.5 16.5 7.4 7.5 11 7.5S14.6 16.5 17.6 16.5C19 16.5 19.9 15.2 20.5 13.6M18.4 12.6L20.6 13.4L21.4 11.2',
+unfold:'M5.5 3.8H13.2L16.8 7.4V11M5.5 3.8V20.2H11M13 4V7.6H16.6M13.2 14.2H19.8V20.8M19.6 14.4L12.6 21.4',
+redo:'M15.6 8.6H9.4A4.6 4.6 0 0 0 9.4 17.8H16M15.6 8.6L12.4 5.4M15.6 8.6L12.4 11.8',
+textT:'M5.5 6.8V5H18.5V6.8M12 5V19M9.4 19H14.6',
+sticky:'M5 5H19V13.6L13.6 19H5ZM13.4 19V13.4H19',
+thought:'M6.5 5.5A2 2 0 1 0 6.51 5.5M6.5 9.5V12.5C6.5 14 7.5 15 9 15H12M14.5 13A2 2 0 1 0 14.51 13M16.5 15H18.5M17.5 17V19.5',
+motion:'M4 12C6.5 6 9 6 12 12S17.5 18 20 12M4.5 18.5H8M16 5.5H19.5',
+arrowtool:'M4.5 18.5C6 11 11.5 7 18.8 6.6M14.6 4L19 6.4L16.4 10.6',
+bgpat:'M4.5 4.5H19.5V19.5H4.5ZM8.5 8.5H8.51M12 8.5H12.01M15.5 8.5H15.51M8.5 12H8.51M12 12H12.01M15.5 12H15.51M8.5 15.5H8.51M12 15.5H12.01M15.5 15.5H15.51',
+grip:'M9 6.5H9.01M15 6.5H15.01M9 12H9.01M15 12H15.01M9 17.5H9.01M15 17.5H15.01',
+copy:'M8.5 8.5H18.5V18.5H8.5ZM15.5 8.5V5.5H5.5V15.5H8.5',
+eye:'M2.8 12C5 7.6 8.2 5.6 12 5.6S19 7.6 21.2 12C19 16.4 15.8 18.4 12 18.4S5 16.4 2.8 12ZM9.4 12a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0 -5.2 0',
+folderup:'M4 6.5H10L11.8 8.4H20V18.6H4ZM12 16.2V11M9.8 13.2L12 11L14.2 13.2'};
 const ic=(k,sw=1.7)=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[k]||''}"/></svg>`;
 /* the note icon: a folded page whose line turns into a little loop and pen stroke */
 const noteGlyph=(col='var(--accent)')=>`<svg class="ng" viewBox="0 0 48 48" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5H29.5L37.5 14.5V41.5H12Z" stroke="currentColor" stroke-width="2.2"/><path d="M29 7V15H37" stroke="currentColor" stroke-width="2.2"/><path d="M17 23.5C20 21 22 26 25 23.5C27 21.8 26 19.6 24.4 20.4C22.6 21.4 25.8 26.4 32 22.4" stroke="${col}" stroke-width="2.4"/><path d="M17 30.5H29M17 35.5H24" stroke="currentColor" stroke-width="2.2" opacity=".55"/></svg>`;

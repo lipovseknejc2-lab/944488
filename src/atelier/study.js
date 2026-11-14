@@ -17,7 +17,7 @@ function subjectsWeek(){const t7=new Set([0,1,2,3,4,5,6].map(i=>{const d=new Dat
  return Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,6)}
 function studyNow(label){S.focus.mode='study';if(label!=null)S.focus.label=label;save();go('focus')}
 function pStudy(){const g=S.study.goal||60,min=focusTodayMin(),ex=nextExams(),past=S.study.exams.length-ex.length,subs=subjectsWeek(),mx=Math.max(1,...subs.map(s=>s[1]));
- return`<div class="page study">${header('Study',{sub:'Cards, exams and goals'})}${focusTabs('study')}
+ return`<div class="page study">${header('Study',{sub:'Cards, exams and goals',back:space()==='student'?'flow':''})}${focusTabs('study')}
  <div class="card sgoal mt">${ring(Math.min(1,min/g),'var(--violet)',96,10,String(min))}<div class="grow"><div class="l">Today · minutes</div><p class="sgw">${min>=g?'Goal reached. Well done.':`${g-min} min to your goal`}</p><div class="sub sm">Goal ${g} min a day · ${plural(goalStreak(),'day')} in a row</div>
  <div class="row wrap mt"><button class="btn primary sm" onclick="studyNow()">${ic('play',2)} Study now</button><button class="btn sm" onclick="goalSheet()">${ic('flag')} Goal</button></div></div></div>
  ${studyTiles()}

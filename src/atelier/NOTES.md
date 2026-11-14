@@ -15,7 +15,7 @@ Light, professional team-work app: Today (week, message of the day, ledger, feel
 - **Study tools:** timetable (Today shows the next class; classes appear in the agenda), grades and goals (weighted averages, the mark you need next), practice quizzes (choose or type, forgiving small slips), study plan builder (topics, spaced reviews, final review into the agenda).
 - **Pulse extras:** insights after 5 days of checks, a smart nudge on Today after a low check with a "did it help" follow-up, and a Pulse widget.
 - **Design:** glass material and the widget grammar on every surface; notes are tinted tiles; the quick panel is called the Palette; the logo is Thread (an A with a clay thread crossbar ending in a dot).
-- **Spaces:** Student (tabs Today, Focus, Study, Notes, Chat, You; Study also holds projects) and Work (Today, Focus, Notes, Projects, Chat, You). Set from the account at sign-up, switched on the You page.
+- **Spaces:** both spaces have the tabs Today, Focus, Flow, Chat, You. Flow is called Study flow or Work flow: notes, the agenda with a week strip, materials (uploaded files) and, by space, study (timetable, grades, exams, flashcards) or projects. Set from the account at sign-up, switched on the You page.
 - **Collection** (`rewards.js`): 11 themes from Clay (free) to Grand atelier (1,100,000 knots) and 6 profile frames from 220,000 to 1,300,000, unlocked by all-time knots, never spent. Profiles (`#profile`, `person:`) show a styled quote (font, look, colour).
 - **Widgets** (`widgets.js`): Focus, My day, Agenda, Project, Flashcards, Countdown, Quote and Photo, each with Small or Wide, Sans, Serif or Hand, and Glass, Tint or Ink. Styles live in `S.widgets`.
 - **Account and encryption:** the account screen asks for first name, surname, student or working, school or work, and email. The profile is sealed with AES-GCM 256 (fresh IV each save) into `S.me.vault`; the key is a non-extractable CryptoKey in IndexedDB `key:profile`, or localStorage `atelier-key` if IndexedDB is blocked. The decrypted profile lives only in memory (`PROFILE`). Older saves move their name and role into the vault on first start. Backups carry the profile as `_profile` so they can be restored on another device, where it is sealed again with that device's key.
@@ -34,7 +34,7 @@ After publishing, raise the version in this app's `sw.js` (for example `atelier-
 `reset.js` comes after `focus.js`. Research basis: cyclic sighing (Balban 2023), slow breathing near 6 a minute (Lehrer and Gevirtz 2014), micro-breaks with movement (Albulescu 2022), 20-20-20 and green views (Lee 2015), phone-free breaks. RBREATH and RSTRETCH are data: add a technique by adding an entry (stretch keyframes are [time, pose, cue]). The animation loop only changes attributes and transforms. Ten stretches: neck, shoulder rolls (side view), reach up, side bend (diamond arms), chest opener, calf raises, forward fold, chair squats, arm circles and chin tucks (all side view). Stretch keyframes carry `o`, the breathing circle size, so the circle breathes with the movement.
 
 ## Files
-JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `notes.js`, `chat.js`, `projects.js`, `study.js`, `pulse.js`, `school.js`, `widgets.js`, `rewards.js`, `you.js`
+JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `reset.js`, `notes.js`, `flow.js`, `chat.js`, `projects.js`, `study.js`, `pulse.js`, `school.js`, `widgets.js`, `rewards.js`, `you.js`
 
 | File | Role | Notes |
 |---|---|---|
@@ -54,3 +54,15 @@ JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `notes
 `bash tests/run.sh` builds Atelier and runs every check: features, phone taps, stress and crash, offline. Screenshots from `tests/look.js` go to `tests/shots/`.
 
 `fonts/` (and `f/`) hold only the font files this build embeds. `dist/` is generated; do not edit it.
+
+## Notes as boards (notes.js)
+- A note is a page you arrange with your fingers: `note.board={v:1,bg,blocks,links}` on a 360-unit stage (`BW`) scaled to the screen.
+- Parts (`blocks`): text (body, heading, quote, hand), checklist, thought chain (Thought, Because, So, Next), sticky, pinned sketch (strokes in the part's own units) and motion (pulse, flow, cycle, grow, spark, orbit; only transform and opacity animate).
+- Arrows (`links`) join two parts: curve, straight or elbow; solid, dashed or hand drawn; arrow, both ends, dot or line; six colours. Drag the clay knob from a selected part, or use Arrow and tap two parts.
+- Move with the grip or by pressing and holding a part; resize from the corner; undo and redo keep 50 steps. Backgrounds: plain, dots, grid, lines, paper.
+- `n.body` is always rewritten from the board (`syncBody`), so search, previews and older code keep working. Old notes become boards when first opened (`ensureBoard`, `boardFrom`, stacked by real height).
+- `miniBoard(n,h,cls)` draws a still preview that scales itself (used by note cards and the note widget). The note widget in chat opens up in place on a tap, its checklists can be ticked there, and the unfold mark opens the note.
+
+## Flow (flow.js)
+- `pFlow()`: counts, a create strip (Note, Agenda, Upload, plus Exam and Flashcards or Project and Task), recent notes, a week strip with the agenda, materials and the study or projects section.
+- Materials: `S.materials=[{id,name,type,size,fid,tag,at}]`, blobs in IndexedDB under `m…` (never `c…`, so chat clean-up never touches them). Sending one to chat copies the blob to a new `c…` key. `pMaterials()` lists, searches and filters by tag.
