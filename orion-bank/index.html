@@ -426,6 +426,29 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 
 .paycards .bcard .brand span{display:none}
 .kv b.mono{font-size:14px;white-space:nowrap}
+
+/* ---- Card Plus, skins, Lucky Orbit, floating points ---- */
+.sk-aurora{--c1:#2fd1bd;--c2:#4b3bd6}
+.sk-sunset{--c1:#ff9a5a;--c2:#c2346f}
+.sk-emerald{--c1:#2bb673;--c2:#0b4d3a}
+.sk-rose{--c1:#f2b9a6;--c2:#b4627a}
+.sk-carbon{--c1:#2a2c33;--c2:#0c0d10;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 6px),linear-gradient(135deg,var(--c1),var(--c2))!important}
+.sk-nebula{--c1:#7b4bd6;--c2:#142a6b;background-image:radial-gradient(circle at 25% 30%,rgba(255,140,200,.45),transparent 45%),radial-gradient(circle at 80% 75%,rgba(90,200,255,.35),transparent 50%),linear-gradient(135deg,var(--c1),var(--c2))!important}
+.sk-holo{--c1:#7de3ff;--c2:#d58bff;background:linear-gradient(115deg,#7de3ff,#d58bff,#ffd48a,#9bffc4,#7de3ff)!important;background-size:300% 300%!important;animation:holo 6s linear infinite}
+.sk-midnight{--c1:#15161d;--c2:#05050a;color:#e6c27a;box-shadow:inset 0 0 0 1px rgba(230,194,122,.45)}
+@keyframes holo{0%{background-position:0 50%}100%{background-position:300% 50%}}
+.plusrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.plusc{position:relative;padding:16px;text-align:left;border-radius:24px;display:flex;flex-direction:column;gap:4px;transition:transform .4s var(--spring)}
+.plusc:active{transform:scale(.96)}
+.plusc .pi{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;color:var(--ink);margin-bottom:8px}
+.plusc b{font-size:16px}.plusc small{font-size:12.5px;color:var(--ink2)}
+.plusc .dot{position:absolute;right:16px;top:16px;width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(95,227,161,.2);animation:pulse 1.8s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(95,227,161,0)}}
+.fpts{position:absolute;left:50%;top:38%;z-index:90;display:flex;align-items:center;gap:6px;padding:10px 18px;border-radius:999px;font-weight:700;font-size:20px;color:var(--gold);background:rgba(30,22,50,.7);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(230,194,122,.35);pointer-events:none;animation:fpts 1.6s var(--ease) forwards}
+@keyframes fpts{0%{opacity:0;transform:translate(-50%,20px) scale(.8)}20%{opacity:1;transform:translate(-50%,0) scale(1.08)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-70px) scale(1)}}
+.bump{animation:bump .5s var(--spring)}
+@keyframes bump{40%{transform:scale(1.12)}}
+.reward.cant{opacity:.55}
 </style>
 </head>
 <body>
@@ -564,6 +587,45 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 </div>
 <script>(()=>{
 "use strict";
+/* ============ Orion Bank · sound + haptics (synthesized, no files) ============ */
+let AC=null,MG=null;
+function audio(){
+  if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();MG=AC.createGain();MG.gain.value=.55;
+    const comp=AC.createDynamicsCompressor();MG.connect(comp);comp.connect(AC.destination)}catch(e){AC=null}}
+  if(AC&&AC.state==='suspended')try{AC.resume()}catch(e){}
+  return AC;
+}
+function tone(f,t0,dur,o={}){
+  const {type='sine',vol=.12,slide=0,att=.004,parts=[1]}=o;const now=AC.currentTime+t0;
+  parts.forEach((m,i)=>{const osc=AC.createOscillator(),g=AC.createGain();osc.type=type;osc.frequency.setValueAtTime(f*m,now);
+    if(slide)osc.frequency.exponentialRampToValueAtTime(Math.max(30,(f+slide)*m),now+dur);
+    const v=vol/(i+1);g.gain.setValueAtTime(0.0001,now);g.gain.exponentialRampToValueAtTime(v,now+att);g.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+    osc.connect(g);g.connect(MG);osc.start(now);osc.stop(now+dur+.05)});
+}
+const BELL=[1,2.76,5.4];
+const SFX={
+  tap:()=>tone(1500,0,.05,{type:'triangle',vol:.05}),
+  key:()=>tone(1100,0,.04,{type:'triangle',vol:.05}),
+  toggle:()=>{tone(700,0,.06,{vol:.07});tone(1050,.045,.08,{vol:.06})},
+  tab:()=>{tone(540,0,.08,{vol:.07});tone(810,.05,.1,{vol:.05})},
+  open:()=>tone(260,0,.3,{type:'sine',vol:.06,slide:520}),
+  close:()=>tone(520,0,.22,{type:'sine',vol:.04,slide:-260}),
+  ping:()=>tone(1320,0,.22,{vol:.08,parts:BELL}),
+  warn:()=>{tone(300,0,.14,{type:'triangle',vol:.08});tone(230,.12,.2,{type:'triangle',vol:.08})},
+  error:()=>{tone(260,0,.12,{type:'sawtooth',vol:.04});tone(190,.11,.22,{type:'sawtooth',vol:.04})},
+  coin:()=>{tone(1568,0,.3,{vol:.09,parts:BELL});tone(2093,.07,.4,{vol:.08,parts:BELL})},
+  nfc:()=>{tone(1318,0,.09,{type:'square',vol:.035});tone(1318,.13,.09,{type:'square',vol:.035})},
+  success:()=>{[523,659,784,1046].forEach((f,i)=>tone(f,i*.075,.5,{vol:.09,parts:BELL}))},
+  level:()=>{[392,523,659,784,1046,1318].forEach((f,i)=>tone(f,i*.09,.7,{vol:.09,parts:BELL}))},
+  tick:()=>tone(900,0,.03,{type:'triangle',vol:.07}),
+  win:()=>{[659,784,988,1318].forEach((f,i)=>tone(f,i*.08,.6,{vol:.1,parts:BELL}));tone(196,0,.8,{vol:.05})},
+  unlock:()=>{tone(440,0,.14,{vol:.07});tone(660,.09,.14,{vol:.07});tone(880,.18,.35,{vol:.07,parts:BELL})}
+};
+function sfx(n){
+  try{if(S&&S.pref&&S.pref.sound===false)return;if(!audio())return;SFX[n]&&SFX[n]()}catch(e){}
+}
+function hap(p){try{if(S&&S.pref&&S.pref.haptic===false)return;navigator.vibrate&&(!navigator.userActivation||navigator.userActivation.hasBeenActive)&&navigator.vibrate(p)}catch(e){}}
+
 /* ============ Orion Bank · core ============ */
 const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>[...e.querySelectorAll(s)];
 const ic=(n,c='')=>`<svg class="ic ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
@@ -646,11 +708,11 @@ function fresh(){
     dispo:[],rail:{on:true,asset:'BTC',perTx:500,daily:1500,spent:0,services:{lumen:true,novamart:true,chainbridge:false,pixelfund:true},token:null},
     ctl:{faceid:true,online:true,contactless:true,atm:true,abroad:true,notif:true,dailyLimit:5000},
     mis:{},misDone:{},rewards:[],read:false,
-    paidCount:0
+    paidCount:0,plus:{act:{},skins:{},skin:{}},pref:{sound:true,haptic:true},wheelDay:''
   };
 }
 let S;
-function load(){try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&j.v===1)return Object.assign(fresh(),j)}catch(e){}return fresh()}
+function load(){try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&j.v===1){const f=Object.assign(fresh(),j);f.plus=Object.assign({act:{},skins:{},skin:{}},j.plus||{});f.pref=Object.assign({sound:true,haptic:true},j.pref||{});return f}}catch(e){}return fresh()}
 let _sv;function save(){clearTimeout(_sv);_sv=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 function addTx(t){const x={id:uid('t'),ts:Date.now(),status:'Completed',pts:0,...t};S.txs.unshift(x);if(S.txs.length>200)S.txs.length=200;return x}
@@ -658,7 +720,7 @@ const fxRate={USD:1.087,GBP:.842,CHF:.936};
 const fxSym={USD:'$',GBP:'£',CHF:'Fr'};
 const fxValue=()=>Object.entries(S.fx).reduce((a,[k,v])=>a+v/fxRate[k],0);
 const totalBal=()=>S.spending+S.vault+fxValue();
-function earnPts(n,why){n=Math.round(n);if(n<=0)return 0;S.points+=n;S.lifetime+=n;S.ptsLog.unshift({ts:Date.now(),n,why});if(S.ptsLog.length>40)S.ptsLog.length=40;return n}
+function earnPts(n,why){n=Math.round(n);if(n<=0)return 0;const t0=pointsTier().name;S.points+=n;S.lifetime+=n;S.ptsLog.unshift({ts:Date.now(),n,why});if(S.ptsLog.length>40)S.ptsLog.length=40;sfx('coin');floatPts(n);const t1=pointsTier();if(t1.name!==t0)setTimeout(()=>rankUp(t1),1300);return n}
 const R={};const refresh=(...n)=>{(n.length?n:Object.keys(R)).forEach(k=>R[k]&&R[k]())};
 
 /* ---- shared helpers ---- */
@@ -668,7 +730,7 @@ function confetti(host,colors=['#ffb08c','#8b7bff','#3dd6c3','#e6c27a','#fff']){
   for(let i=0;i<26;i++){const e=document.createElement('i');const a=Math.random()*6.283,d=70+Math.random()*130;
     e.style.setProperty('--x',Math.cos(a)*d+'px');e.style.setProperty('--y',Math.sin(a)*d*.9-30+'px');e.style.setProperty('--c',colors[i%colors.length]);
     e.style.animationDelay=Math.random()*.12+'s';b.append(e)}
-  host.append(b);setTimeout(()=>b.remove(),1500);
+  host.append(b);setTimeout(()=>b.remove(),1500);sfx('success');hap([12,40,12]);
 }
 function animateNum(el,from,to,render,dur=1400){
   const t0=performance.now();const ease=t=>1-Math.pow(1-t,4);
@@ -758,9 +820,9 @@ function sheet(o){
   const el=document.createElement('div');el.className='sheet '+(o.full?'full ':'')+(o.cls||'');
   el.innerHTML=`<div class="grab"></div><div class="dragzone" style="position:absolute;left:0;right:0;top:0;height:60px;z-index:4;touch-action:none"></div>${o.noX?'':`<button class="xbtn" aria-label="Close">${ic('close','sm')}</button>`}
   <div class="sc">${o.hero?`<div class="shero" ${o.heroH?`style="height:${o.heroH}px"`:''}>${o.hero}</div>`:'<div style="height:34px"></div>'}<div class="body">${o.title?`<div class="sh1">${o.title}</div>`:''}${o.sub?`<div class="sh2">${o.sub}</div>`:''}${o.html||''}</div></div>`;
-  layer.append(scrim,el);
+  layer.append(scrim,el);if(!o.quiet)sfx('open');
   const api={el,scrim,body:$('.body',el),sc:$('.sc',el),closed:false,
-    close(){if(api.closed)return;api.closed=true;const i=SHEETS.indexOf(api);if(i>=0)SHEETS.splice(i,1);scrim.classList.remove('in');el.classList.remove('in');el.style.transform='';
+    close(){if(api.closed)return;api.closed=true;const i=SHEETS.indexOf(api);if(i>=0)SHEETS.splice(i,1);scrim.classList.remove('in');el.classList.remove('in');el.style.transform='';if(!o.quiet)sfx('close');
       setTimeout(()=>{scrim.remove();el.remove()},650);o.onClose&&o.onClose();syncDock()}};
   SHEETS.push(api);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{scrim.classList.add('in');el.classList.add('in')}));
@@ -779,14 +841,15 @@ function sheet(o){
 function closeAll(){[...SHEETS].forEach(s=>s.close())}
 /* alert-style popup with illustration */
 function popup(o){
-  const s=sheet({hero:o.hero,title:o.title,sub:o.sub,html:`<div class="stack">${(o.actions||[]).map((a,i)=>`<button class="btn ${a.cls||'ghost'} block" data-i="${i}">${a.ic?ic(a.ic,'sm'):''}${a.label}</button>`).join('')}</div>`,noX:o.noX,onClose:o.onClose,
+  const s=sheet({quiet:1,hero:o.hero,title:o.title,sub:o.sub,html:`<div class="stack">${(o.actions||[]).map((a,i)=>`<button class="btn ${a.cls||'ghost'} block" data-i="${i}">${a.ic?ic(a.ic,'sm'):''}${a.label}</button>`).join('')}</div>`,noX:o.noX,onClose:o.onClose,
     onMount(api){$$('[data-i]',api.el).forEach(b=>b.onclick=()=>{const a=o.actions[+b.dataset.i];api.close();a.fn&&a.fn()})}});
+  if(!o.quiet)sfx(/declin|frozen|panic|reset|cancel|lock everything/i.test((o.title||'')+' '+(o.sub||''))?'warn':'success');
   return s;
 }
 let _tt;
 function toast(msg,warn){
   const t=$('#toast');t.innerHTML=`<span class="ti ${warn?'w':''}">${ic(warn?'info':'check','sm')}</span><span>${msg}</span>`;
-  t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2600);
+  sfx(warn?'warn':'ping');t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2600);
 }
 function syncDock(){const d=$('#paydock');if(!d)return;d.classList.toggle('hide',cur!=='home'||SHEETS.length>0);}
 
@@ -810,7 +873,7 @@ function keypad(host,o={}){
 let cur='home';
 const TABS=['home','cards','trade','security','points'];
 function go(t){
-  const i=TABS.indexOf(t);if(i<0)return;cur=t;
+  const i=TABS.indexOf(t);if(i<0)return;if(cur!==t)sfx('tab');cur=t;
   $$('.page').forEach(p=>p.classList.toggle('active',p.id==='p-'+t));
   $$('#tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   $('#tabbar .lens').style.transform=`translateX(${i*100}%)`;
@@ -823,7 +886,7 @@ const NET='<svg viewBox="0 0 40 26" width="38" height="25"><circle cx="14" cy="1
 const LOGO_MINI='<svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" rx="230" fill="#15102a"/><circle cx="512" cy="512" r="300" fill="none" stroke="url(#gRing)" stroke-width="84" stroke-linecap="round" stroke-dasharray="1519 366" transform="rotate(-10 512 512)"/><path d="M512 430Q512 512 594 512Q512 512 512 594Q512 512 430 512Q512 512 512 430Z" fill="#fff"/><path d="M392 566Q392 610 436 610Q392 610 392 654Q392 610 348 610Q392 610 392 566Z" fill="#fff"/><path d="M632 370Q632 414 676 414Q632 414 632 458Q632 414 588 414Q632 414 632 370Z" fill="#fff"/></svg>';
 const CONST_ART='<svg class="const" viewBox="40 0 220 180"><g stroke="currentColor" stroke-width="1.4" fill="none" opacity=".8"><path d="M150 26 104 56M150 26 198 52M104 56 128 104M198 52 176 92M128 104 176 92M128 104 116 160M176 92 194 154"/></g><g fill="currentColor">'+ORION.map(s=>`<circle cx="${s[1]}" cy="${s[2]}" r="${2.5+s[3]*2.2}"/>`).join('')+'</g></svg>';
 function cardHTML(t,o={}){
-  const cls=`bcard t-${t.id} ${o.locked?'locked':''} ${o.frozen?'frozen':''}`;
+  const cls=`bcard t-${t.id} ${S.plus&&S.plus.skin[t.id]?'sk-'+S.plus.skin[t.id]:''} ${o.locked?'locked':''} ${o.frozen?'frozen':''}`;
   const pan=o.reveal?o.pan:o.compact?'•••• '+(o.last||'4821'):'••••  ••••  ••••  '+(o.last||'4821');
   return `<div class="${cls}" data-card="${t.id}"><div class="grain"></div>${CONST_ART}<div class="sheen"></div>
   <div class="top"><div class="brand">${LOGO_MINI}<span>ORION</span></div><div class="tier">${t.name.replace('Orion ','')}</div></div>
@@ -856,8 +919,8 @@ const tierIdx=id=>TIERS.findIndex(t=>t.id===id);
 const topTier=()=>TIERS.reduce((a,t)=>S.owned[t.id]&&tierIdx(t.id)>tierIdx(a.id)?t:a,TIERS[0]);
 const last4=id=>id==='core'?'4821':String(1000+hash('o'+id)%9000);
 const isFrozen=id=>!!(S.owned[id]&&(S.masterFreeze||S.frozen[id]));
-const ptsMult=()=>topTier().mult*(S.boostUntil>Date.now()?2:1);
-const vaultAPY=()=>topTier().apy;
+const ptsMult=()=>(topTier().mult+(perkOn('mult')?.5:0))*(S.boostUntil>Date.now()?2:1);
+const vaultAPY=()=>topTier().apy+(perkOn('vault30')?.5:0);
 const money0=n=>n===INF?'Unlimited':n>=1e6?'€'+trimM(n/1e6)+'M':'€'+n.toLocaleString('en-US');
 function benefits(t){
   const L=[];
@@ -907,11 +970,14 @@ function cardInfo(){
       <button class="act" id="aDetails"><span class="ib">${ic('eye')}</span>Details</button>
       <button class="act" id="aPrimary"><span class="ib" style="${S.primary===t.id?'background:rgba(230,194,122,.25);color:var(--gold)':''}">${ic('star')}</span>${S.primary===t.id?'Primary':'Make primary'}</button>
       <button class="act" id="aLimits"><span class="ib">${ic('sliders')}</span>Limits</button></div>
+      <div class="row gap8" style="margin-top:12px"><button class="btn ghost sm grow" id="aStyle">${ic('diamond','sm')}Card style</button><button class="btn ghost sm grow" id="aPlus">${ic('star','sm')}Card Plus</button></div>
+      ${own.via==='trial'?`<div class="chip gold" style="margin-top:12px;display:flex;justify-content:center">${ic('clock','xs')}Trial · ${daysLeft(own.exp)} days left</div><button class="btn primary block sm" id="subBtn" style="margin-top:10px">${ic('crown','sm')}Keep it · €${t.price}/month</button>`:''}
       ${own.via==='sub'?`<button class="btn ghost block sm" id="cancelSub" style="margin-top:14px">Cancel subscription · €${t.price}/mo</button>`:''}`;
   }
   const B=benefits(t);
   box.innerHTML=`<div class="row between" style="margin-top:2px"><div><div class="serif" style="font-size:27px;letter-spacing:-.02em">${t.name}</div><div class="mut" style="font-size:14px;margin-top:3px">${t.tag}</div></div>${tierTag(t)}</div>
   ${unlock}
+  ${Object.keys(S.plus.act).filter(k=>perkOn(k)).length?`<div class="sect"><h3>Card Plus add-ons</h3><button class="lnk" id="plusMore">Get more</button></div><div class="glass list" style="padding:4px 16px">${Object.keys(S.plus.act).filter(k=>perkOn(k)).map(k=>{const p=PERKS.find(x=>x.id===k);return `<div class="benefit"><div class="bi" style="color:${p.col}">${ic(p.ic)}</div><div class="grow"><b>${p.n}</b><small>${p.d}</small></div><span class="chip good">${S.plus.act[k]===true?'Forever':daysLeft(S.plus.act[k])+'d'}</span></div>`}).join('')}</div>`:''}
   <div class="sect"><h3>Benefits</h3><span class="mut3" style="font-size:13px">${B.filter(b=>b.on).length} included</span></div>
   <div class="glass list" style="padding:6px 16px">${B.map(b=>`<div class="benefit ${b.on?'':'off'}"><div class="bi">${ic(b.ic)}</div><div class="grow"><b>${b.t}</b><small>${b.s}</small></div>${b.on?`<span style="color:var(--green)">${ic('check','sm')}</span>`:`${ic('lock','sm')}`}</div>`).join('')}</div>
   <button class="btn ghost block" id="cmpBtn2" style="margin-top:16px">${ic('bars','sm')}Compare all cards</button>`;
@@ -923,6 +989,9 @@ function cardInfo(){
   if(q('#aDetails'))q('#aDetails').onclick=()=>cardDetails(t.id);
   if(q('#aPrimary'))q('#aPrimary').onclick=()=>{S.primary=t.id;save();toast(`${t.name} is now your primary card`);cardInfo()};
   if(q('#aLimits'))q('#aLimits').onclick=()=>go('security');
+  if(q('#aStyle'))q('#aStyle').onclick=()=>styleSheet(t.id);
+  if(q('#aPlus'))q('#aPlus').onclick=()=>plusSheet();
+  if(q('#plusMore'))q('#plusMore').onclick=()=>plusSheet();
   if(q('#cancelSub'))q('#cancelSub').onclick=()=>popup({hero:ill('upgrade',{c1:t.c[0],c2:t.c[1]}),title:`Cancel ${t.name}?`,sub:'You will keep your perks until the end of this billing period, then return to the next tier you qualify for.',actions:[{label:'Cancel subscription',cls:'danger',fn:()=>{delete S.owned[t.id];if(S.primary===t.id)S.primary='core';save();toast('Subscription cancelled',1);refresh('cards','home')}},{label:'Keep my card',cls:'light'}]});
 }
 function claimTier(id){
@@ -1120,11 +1189,14 @@ function profile(){
   const t=topTier();
   sheet({hero:ill('profile',{init:S.name[0]}),title:esc(S.name),sub:`${t.name} member since ${new Date(S.owned.core.ts).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}`,
     html:`<div class="panel" style="margin-top:18px"><div class="ctrl"><div class="ci">${ic('pencil')}</div><div class="grow"><small style="margin:0 0 4px">Name on cards</small><input id="nm" value="${esc(S.name)}" maxlength="24" style="font-size:17px;font-weight:600;width:100%"></div></div>
+    <div class="ctrl"><div class="ci">${ic('bell')}</div><div class="grow"><b>Sounds</b><small>Soft tones for taps, payments and rewards</small></div>${tgl(S.pref.sound,'pf-sound')}</div>
+    <div class="ctrl"><div class="ci">${ic('phone')}</div><div class="grow"><b>Haptics</b><small>Gentle vibration where your phone supports it</small></div>${tgl(S.pref.haptic,'pf-haptic')}</div>
     <div class="ctrl" data-g="security"><div class="ci">${ic('shield')}</div><div class="grow"><b>Security</b><small>Cards, one-time cards, crypto rail</small></div>${ic('chev','sm')}</div>
     <div class="ctrl" data-g="points"><div class="ci">${ic('star')}</div><div class="grow"><b>Orion Points</b><small>${S.points.toLocaleString('en-US')} points · ${pointsTier().name}</small></div>${ic('chev','sm')}</div>
     <div class="ctrl" data-g="cards"><div class="ci">${ic('cards')}</div><div class="grow"><b>Cards</b><small>${Object.keys(S.owned).length} active</small></div>${ic('chev','sm')}</div></div>
     <div class="stack"><button class="btn danger block" id="reset">${ic('refresh','sm')}Reset demo data</button></div><div class="mut3" style="text-align:center;font-size:12px;margin-top:16px">Orion Bank · demo build 1.0 · simulated money only</div>`,
-    onMount(a){$$('[data-g]',a.el).forEach(b=>b.onclick=()=>{a.close();go(b.dataset.g)});
+    onMount(a){$$('[data-t^=pf-]',a.el).forEach(b=>b.onclick=()=>{const k=b.dataset.t.slice(3);S.pref[k]=!S.pref[k];b.classList.toggle('on',S.pref[k]);b.setAttribute('aria-checked',S.pref[k]);save();if(S.pref[k])sfx('toggle')});
+      $$('[data-g]',a.el).forEach(b=>b.onclick=()=>{a.close();go(b.dataset.g)});
       $('#nm',a.el).onchange=e=>{S.name=e.target.value.trim()||'Alex Morgan';save();refresh('home','cards')};
       $('#reset',a.el).onclick=()=>popup({hero:ill('panic'),title:'Reset everything?',sub:'This clears your balance, cards, trades and points on this device and restarts the demo.',actions:[{label:'Reset demo',cls:'danger',fn:()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()}},{label:'Cancel',cls:'light'}]})}});
 }
@@ -1169,7 +1241,7 @@ function initMarkets(){
   });
 }
 const quote=A=>{const s=A.t==='crypto'?.0006:A.t==='stock'?.0004:.0003;return{bid:A.p*(1-s/2),ask:A.p*(1+s/2),s}};
-const feeRate=A=>A.t==='crypto'?topTier().fee/100:0;
+const feeRate=A=>A.t==='crypto'?(perkOn('nofee30')?0:topTier().fee/100):0;
 const chg24=A=>(A.p-A.open24)/A.open24*100;
 const qtyStr=q=>q>=1000?q.toFixed(2):q>=1?q.toFixed(4):q.toFixed(6);
 function portfolioValue(){return Object.entries(S.hold).reduce((a,[s,h])=>a+h.q*quote(asset(s)).bid,0)}
@@ -1398,7 +1470,7 @@ R.security=function(){
   <button class="card3 glass grow" id="panic" style="flex-direction:column;align-items:flex-start;gap:12px;padding:16px;border-radius:26px"><span class="ci" style="width:42px;height:42px;border-radius:15px;display:grid;place-items:center;background:rgba(255,111,125,.18);color:var(--red)">${ic('ban')}</span><span style="text-align:left"><b style="display:block;font-size:15.5px">Panic mode</b><small class="mut" style="font-size:12.5px">Lock everything</small></span></button></div>
 
   <div class="sect"><h3>Card controls</h3></div>
-  <div class="glass list" style="padding:4px 14px">${owned.map(t=>`<div class="card3" style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07)"><div class="mini t-${t.id} ${isFrozen(t.id)?'ice':''}"></div><div class="grow"><b style="font-size:15.5px">${t.name}</b><div class="mut" style="font-size:12.5px;margin-top:2px">•• ${last4(t.id)} · ${isFrozen(t.id)?'Frozen':'Active'}</div></div>${tgl(isFrozen(t.id),'fz-'+t.id)}</div>`).join('')}</div>
+  <div class="glass list" style="padding:4px 14px">${owned.map(t=>`<div class="card3" style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07)"><div class="mini t-${t.id} ${skinOf(t.id)?'sk-'+skinOf(t.id):''} ${isFrozen(t.id)?'ice':''}"></div><div class="grow"><b style="font-size:15.5px">${t.name}</b><div class="mut" style="font-size:12.5px;margin-top:2px">•• ${last4(t.id)} · ${isFrozen(t.id)?'Frozen':'Active'}</div></div>${tgl(isFrozen(t.id),'fz-'+t.id)}</div>`).join('')}</div>
 
   <div class="sect"><h3>One-time cards</h3><button class="lnk" id="newDispo">+ Create</button></div>
   <div class="glass list" style="padding:16px"><div class="row gap12"><div class="ci" style="width:46px;height:46px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(169,155,255,.3),rgba(106,91,255,.25));color:#cfc7ff;flex:none">${ic('spark-card')}</div><div class="grow"><b style="font-size:15.5px">Disposable card numbers</b><div class="mut" style="font-size:13px;margin-top:3px;line-height:1.4">A fresh card with a spend limit that burns after one payment. Your real card never leaves your pocket.</div></div></div>
@@ -1548,6 +1620,10 @@ R.points=function(){
   </div>
   <div class="glass list" style="margin-top:14px;padding:16px;display:flex;align-items:center;gap:14px"><div class="ci" style="width:50px;height:50px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(230,194,122,.28),rgba(255,162,126,.2));color:var(--gold);flex:none">${ic('gift','lg')}</div><div class="grow"><b style="font-size:16px">Daily check-in</b><div class="mut" style="font-size:13px;margin-top:2px">${S.streak.n?`${S.streak.n}-day streak`:'Start a streak'} · +${20+Math.min(S.streak.n+(today?0:1),7)*5} pts ${today?'earned today':'today'}</div></div><button class="btn ${today?'ghost':'primary'} sm" id="chk" ${today?'disabled':''}>${today?ic('check','sm')+'Done':'Claim'}</button></div>
 
+  <div class="plusrow">
+    <button class="glass plusc" id="pPlus"><div class="pi" style="background:linear-gradient(135deg,rgba(169,155,255,.35),rgba(224,102,138,.28))">${ic('diamond','lg')}</div><b>Card Plus</b><small>Perks, styles, tier trials</small></button>
+    <button class="glass plusc" id="pWheel"><div class="pi" style="background:linear-gradient(135deg,rgba(230,194,122,.35),rgba(255,162,126,.28))">${ic('refresh','lg')}</div><b>Lucky Orbit</b><small>${S.wheelDay===dayKey(Date.now())?'Spun today':'Free spin ready'}</small>${S.wheelDay===dayKey(Date.now())?'':'<i class="dot"></i>'}</button>
+  </div>
   <div class="sect"><h3>Missions</h3><span class="mut3" style="font-size:13px">${MISSIONS.filter(m=>S.misDone[m.id]).length}/${MISSIONS.length} done</span></div>
   <div class="glass list" style="padding:4px 16px">${MISSIONS.map(m=>{const v=S.mis[m.id]||0,done=v>=m.target,claimed=S.misDone[m.id];return `<div class="mission" style="${claimed?'opacity:.5':''}"><div class="mi" style="${done?'background:rgba(95,227,161,.18);color:var(--green)':''}">${ic(claimed?'check':m.ic)}</div><div class="grow"><b style="font-size:15.5px;display:block;letter-spacing:-.01em">${m.t}</b><div class="mut" style="font-size:12.5px;margin:2px 0 8px">${m.d}</div><div class="bar" style="height:6px"><i style="width:${v/m.target*100}%"></i></div></div>${claimed?'':done?`<button class="btn primary sm" data-m="${m.id}">+${m.r}</button>`:`<span class="chip gold">${ic('star','xs')}${m.r}</span>`}</div>`}).join('')}</div>
 
@@ -1558,6 +1634,8 @@ R.points=function(){
   <div class="glass list" style="padding:4px 16px">${S.ptsLog.length?S.ptsLog.slice(0,6).map(l=>`<div class="kv"><span style="color:var(--ink)">${esc(l.why)}<br><small class="mut3">${dayLabel(l.ts)} · ${timeStr(l.ts)}</small></span><b class="${l.n>0?'up':''}">${l.n>0?'+':'−'}${Math.abs(l.n).toLocaleString('en-US')}</b></div>`).join(''):'<div class="empty">Your points activity appears here</div>'}</div>`;
   p.scrollTop=sc;
   $('#chk',p).onclick=claimCheckin;
+  $('#pPlus',p).onclick=()=>plusSheet();
+  $('#pWheel',p).onclick=()=>wheelSheet();
   $$('[data-m]',p).forEach(b=>b.onclick=()=>{const m=MISSIONS.find(x=>x.id===b.dataset.m);S.misDone[m.id]=true;earnPts(m.r,m.t);save();confetti(p.parentElement.parentElement);toast(`+${m.r} Orion Points`);refresh('points','home')});
   $$('[data-r]',p).forEach(b=>b.onclick=()=>rewardSheet(b.dataset.r));
   $$('[data-cp]',p).forEach(b=>b.onclick=()=>{try{navigator.clipboard.writeText(b.dataset.cp)}catch(_){}toast('Code copied')});
@@ -1605,7 +1683,7 @@ function openPay(){
   auth();
   $$('.term',sh.el).forEach(b=>b.onclick=async()=>{
     if(busy)return;const T=TERMINALS[+b.dataset.i],s=cur();
-    const fail=(t,m)=>{ps(`<div style="color:var(--red)">${ic('ban','lg')}</div><b style="font-size:16px">${t}</b><div class="mut" style="font-size:13.5px;max-width:260px">${m}</div><button class="btn ghost sm" id="again" style="margin-top:6px">Try again</button>`);$('#again',sh.el).onclick=ready};
+    const fail=(t,m)=>{sfx('error');ps(`<div style="color:var(--red)">${ic('ban','lg')}</div><b style="font-size:16px">${t}</b><div class="mut" style="font-size:13.5px;max-width:260px">${m}</div><button class="btn ghost sm" id="again" style="margin-top:6px">Try again</button>`);$('#again',sh.el).onclick=ready};
     if(!S.ctl.contactless)return fail('Contactless is off','Turn it on in Security to pay with Orion Pay.');
     if(s.k==='card'&&isFrozen(s.t.id))return fail('Card frozen','Unfreeze it in Security or choose another card.');
     if(spentToday()+T.a>S.ctl.dailyLimit)return fail('Daily limit reached',`This would exceed your ${eur(S.ctl.dailyLimit,{d:0})} daily limit.`);
@@ -1615,7 +1693,7 @@ function openPay(){
       if(T.a>S.rail.perTx)return fail('Above Chain Pay cap',`Your per-payment cap is ${eur(S.rail.perTx,{d:0})}.`);
       if(S.rail.spent+T.a>S.rail.daily)return fail('Daily Chain Pay cap','Raise it in Security to continue.');
       if(!h||h.q<q2)return fail(`Not enough ${A.s}`,'Buy more in the Trade tab.')}
-    busy=true;ps(`<div class="waves"><i></i><i></i><i></i><div class="core">${ic('nfc','lg')}</div></div><b style="font-size:16px">Processing…</b>`);
+    busy=true;sfx('nfc');ps(`<div class="waves"><i></i><i></i><i></i><div class="core">${ic('nfc','lg')}</div></div><b style="font-size:16px">Processing…</b>`);
     await sleep(900);if(sh.closed){busy=false;return}
     let pts=0;
     if(s.k==='card'){S.spending-=T.a}
@@ -1649,6 +1727,8 @@ function boot(){
   setInterval(tickMarkets,1500);
   setInterval(()=>{accrue();const e=$('#vaultTick');if(e)e.textContent='+€'+S.earned.toFixed(6)},1000);
   setInterval(save,15000);
+  setInterval(expirePlus,1000);
+  document.addEventListener('pointerdown',e=>{const t=e.target.closest&&e.target.closest('button,.ctrl,[data-g],.reward,.tab,a');if(!t)return;audio();if(t.closest('#tabbar'))return hap(8);if(t.classList.contains('tgl')){return}if(t.closest('.keypad,.kp'))sfx('key');else if(!t.closest('#paydock'))sfx('tap');hap(6)},true);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){accrue();R.home()}});
   // splash
   setTimeout(()=>{$('#splash').classList.add('out');setTimeout(()=>{$('#splash').remove();if(!S.welcomed)setTimeout(welcomeSheet,250)},850)},2900);
@@ -1656,6 +1736,112 @@ function boot(){
 }
 document.addEventListener('DOMContentLoaded',boot);
 document.addEventListener('contextmenu',e=>{if(e.target.closest('.bcard'))e.preventDefault()});
+
+/* ============ Orion Bank · Card Plus, Lucky Orbit, rank-ups ============ */
+const PERKS=[
+  {id:'mult',n:'Cashback+',d:'Earn +0.5× extra points on every purchase, permanently.',cost:6000,ic:'star',col:'#ffe6a3',perm:1},
+  {id:'vault30',n:'Vault Boost',d:'+0.5% APY on your Vault for 30 days.',cost:2000,ic:'vault',col:'#b6f06a',days:30},
+  {id:'nofee30',n:'Zero crypto fees',d:'No Orion commission on crypto trades for 30 days.',cost:1500,ic:'bitcoin',col:'#f7b24a',days:30},
+  {id:'travel30',n:'Travel Shield',d:'Travel insurance up to €250,000 for 30 days.',cost:1800,ic:'umbrella',col:'#9cc3ff',days:30},
+  {id:'phone30',n:'Phone Cover',d:'Screen, theft and loss up to €1,000 for 30 days.',cost:1800,ic:'phone',col:'#c6bdff',days:30},
+  {id:'atm30',n:'ATM Unlimited',d:'Free cash withdrawals up to €1,500 for 30 days.',cost:1000,ic:'bank',col:'#7fe0b0',days:30},
+  {id:'conc30',n:'Concierge Chat',d:'A human concierge for travel and dining for 30 days.',cost:1400,ic:'bell-concierge',col:'#ffb08c',days:30},
+  {id:'lounge2',n:'2 Lounge Passes',d:'Two airport lounge visits. Codes land in your vouchers.',cost:2500,ic:'plane',col:'#bfe2ff',voucher:2}
+];
+const SKINS=[
+  {id:'aurora',n:'Aurora',cost:1500},{id:'sunset',n:'Sunset',cost:1500},{id:'emerald',n:'Emerald',cost:2000},{id:'rose',n:'Rose Gold',cost:3000},
+  {id:'carbon',n:'Carbon',cost:3500},{id:'nebula',n:'Nebula',cost:4500},{id:'holo',n:'Holo',cost:6000},{id:'midnight',n:'Midnight Gold',cost:8000}
+];
+const TRIALS=[['silver',2000],['gold',6000],['platinum',14000],['titanium',28000],['black',55000],['zenith',120000]];
+const perkOn=id=>{const v=S&&S.plus&&S.plus.act[id];return v===true||(typeof v==='number'&&v>Date.now())};
+const daysLeft=ts=>Math.max(1,Math.ceil((ts-Date.now())/DAY));
+const skinOf=id=>S.plus&&S.plus.skin[id]||'';
+function expirePlus(){
+  let ch=false;const n=Date.now();
+  Object.keys(S.plus.act).forEach(k=>{const v=S.plus.act[k];if(typeof v==='number'&&v<n){delete S.plus.act[k];ch=true}});
+  Object.keys(S.owned).forEach(k=>{const o=S.owned[k];if(o.via==='trial'&&o.exp<n){delete S.owned[k];if(S.primary===k)S.primary='core';ch=true;toast(`${tierBy(k).name} trial ended`,1)}});
+  if(ch){save();refresh('cards','home','security')}
+  return ch;
+}
+function spendPts(c,why){S.points-=c;S.ptsLog.unshift({ts:Date.now(),n:-c,why});if(S.ptsLog.length>40)S.ptsLog.length=40}
+const vcode=()=>'ORN-'+Array.from({length:8},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('').replace(/(.{4})/,'$1-');
+
+/* ---- floating points + rank-up ---- */
+function floatPts(n){
+  const d=document.createElement('div');d.className='fpts';d.innerHTML=`${ic('star','sm')}+${n.toLocaleString('en-US')}`;$('#app').append(d);setTimeout(()=>d.remove(),1700);
+  const e=$('#ptsNum');if(e){e.textContent=S.points.toLocaleString('en-US');e.parentElement.classList.remove('bump');void e.offsetWidth;e.parentElement.classList.add('bump')}
+}
+function rankUp(T){
+  sfx('level');
+  const s=popup({quiet:1,hero:ill('points'),title:`You reached ${T.name}`,sub:`Another star lights up in your constellation. ${T.perk}.`,actions:[{label:'Keep going',cls:'primary'}]});
+  setTimeout(()=>confetti(s.el),400);refresh('points');
+}
+
+/* ---- Card Plus shop ---- */
+function plusSheet(tab='perks'){
+  let t=tab;
+  const sh=sheet({full:true,hero:ill('upgrade',{blob:'gBlobV',c1:'#a99bff',c2:'#3a2d9e',col:'#fff'}),title:'Card Plus',sub:'Power up your cards with Orion Points.',
+    html:`<div class="row gap8" style="justify-content:center;margin:12px 0 4px"><span class="chip gold">${ic('star','xs')}<span id="pb" class="num">${S.points.toLocaleString('en-US')}</span> pts</span></div>
+    <div class="seg" id="pts" style="margin-top:12px">${[['perks','Perks'],['skins','Card styles'],['trials','Try a tier']].map(([k,l])=>`<button data-k="${k}" class="${k===t?'on':''}">${l}</button>`).join('')}</div><div id="pc" style="margin-top:14px"></div>`,
+    onMount(a){$$('#pts button',a.el).forEach(b=>b.onclick=()=>{t=b.dataset.k;$$('#pts button',a.el).forEach(x=>x.classList.toggle('on',x===b));draw()});draw();
+      function draw(){const pc=$('#pc',a.el);$('#pb',a.el).textContent=S.points.toLocaleString('en-US');
+        if(t==='perks')pc.innerHTML=`<div class="glass list" style="padding:4px 16px">${PERKS.map(p=>{const on=perkOn(p.id),can=S.points>=p.cost;return `<div class="benefit"><div class="bi" style="color:${p.col}">${ic(p.ic)}</div><div class="grow"><b>${p.n}</b><small>${p.d}</small>${on?`<small style="color:var(--green);margin-top:4px">${S.plus.act[p.id]===true?'Active forever':'Active · '+daysLeft(S.plus.act[p.id])+' days left'}</small>`:''}</div>${p.perm&&on?`<span class="chip good">${ic('check','xs')}Owned</span>`:`<button class="btn ${can?'primary':'ghost'} sm" data-b="${p.id}" style="padding:0 14px;height:38px">${ic('star','xs')}${p.cost.toLocaleString('en-US')}</button>`}</div>`}).join('')}</div>`;
+        else if(t==='skins'){const tg=S.owned[TIERS[selCard].id]?TIERS[selCard]:tierBy(S.primary);
+          pc.innerHTML=`<div class="mut" style="font-size:13px;text-align:center;margin:0 0 12px">Applies to <b style="color:var(--ink)">${tg.name}</b>. Change card on the Cards tab.</div><div class="rewards">${[{id:'',n:'Original',cost:0},...SKINS].map(s=>{const own=!s.id||S.plus.skins[s.id],cur=skinOf(tg.id)===s.id;return `<button class="reward glass ${!own&&S.points<s.cost?'cant':''}" data-s="${s.id}"><div class="rimg" style="padding:14px 16px"><div class="mini t-${tg.id} sk-${s.id||'none'}" style="width:100%;border-radius:12px;height:100%;aspect-ratio:auto"></div></div><div class="rb"><b>${s.n}</b>${cur?`<small style="color:var(--green)">${ic('check','xs')}Applied</small>`:own?`<small style="color:var(--ink2)">Owned · tap to apply</small>`:`<small>${ic('star','xs')}${s.cost.toLocaleString('en-US')}</small>`}</div></button>`}).join('')}</div>`}
+        else pc.innerHTML=`<div class="mut" style="font-size:13.5px;line-height:1.5;margin:0 4px 12px">Live a tier for 30 days with every perk switched on. Keep it by subscribing or qualifying, or it returns to your normal card.</div><div class="glass list" style="padding:4px 16px">${TRIALS.map(([id,c])=>{const tr=tierBy(id),o=S.owned[id];return `<div class="benefit"><div class="mini t-${id}" style="width:54px"></div><div class="grow"><b>${tr.name}</b><small>${tr.mult}× points · ${tr.apy.toFixed(1)}% Vault · ${tr.lounge===INF?'unlimited':tr.lounge||'no'} lounges</small>${o&&o.via==='trial'?`<small style="color:var(--green);margin-top:4px">Trial · ${daysLeft(o.exp)} days left</small>`:''}</div>${o?`<span class="chip good">${ic('check','xs')}${o.via==='trial'?'Trial':'Yours'}</span>`:`<button class="btn ${S.points>=c?'primary':'ghost'} sm" data-t="${id}" style="padding:0 14px;height:38px">${ic('star','xs')}${c.toLocaleString('en-US')}</button>`}</div>`}).join('')}</div>`;
+        $$('[data-b]',pc).forEach(b=>b.onclick=()=>buyPerk(b.dataset.b,draw));
+        $$('[data-s]',pc).forEach(b=>b.onclick=()=>buySkin(b.dataset.s,draw));
+        $$('[data-t]',pc).forEach(b=>b.onclick=()=>buyTrial(b.dataset.t,draw))}}});
+  return sh;
+}
+function lack(c){sfx('error');toast(`You need ${(c-S.points).toLocaleString('en-US')} more points`,1)}
+function buyPerk(id,after){
+  const p=PERKS.find(x=>x.id===id);if(S.points<p.cost)return lack(p.cost);
+  spendPts(p.cost,`Card Plus · ${p.n}`);let msg=p.d;
+  if(p.perm)S.plus.act[id]=true;
+  else if(p.voucher){for(let i=0;i<p.voucher;i++)S.rewards.unshift({name:'Airport lounge pass',code:vcode(),ts:Date.now()});msg='Two lounge codes added to your vouchers.'}
+  else{const base=Math.max(Date.now(),typeof S.plus.act[id]==='number'?S.plus.act[id]:0);S.plus.act[id]=base+p.days*DAY}
+  save();sfx('unlock');confetti($('#app'));toast(`${p.n} is on`);after&&after();refresh('cards','points','home','trade');
+}
+function buySkin(id,after){
+  const tg=S.owned[TIERS[selCard].id]?TIERS[selCard]:tierBy(S.primary),s=SKINS.find(x=>x.id===id);
+  if(id&&!S.plus.skins[id]){if(S.points<s.cost)return lack(s.cost);spendPts(s.cost,`Card style · ${s.n}`);S.plus.skins[id]=true;confetti($('#app'));sfx('unlock')}
+  else sfx('toggle');
+  S.plus.skin[tg.id]=id;if(!id)delete S.plus.skin[tg.id];save();toast(id?`${s.n} applied to ${tg.name}`:'Original style restored');after&&after();refresh('cards','points','security');
+}
+function buyTrial(id,after){
+  const c=TRIALS.find(x=>x[0]===id)[1],tr=tierBy(id);if(S.points<c)return lack(c);
+  spendPts(c,`Tier trial · ${tr.name}`);S.owned[id]={via:'trial',ts:Date.now(),exp:Date.now()+30*DAY};S.primary=id;save();
+  after&&after();refresh('cards','points','home','security');
+  const s=popup({quiet:1,hero:ill('upgrade',{c1:tr.c[0],c2:tr.c[1]}),title:`${tr.name.replace('Orion ','')} for 30 days`,sub:`Every perk is live: ${tr.mult}× points and ${tr.apy.toFixed(1)}% on your Vault. It is now your primary card.`,actions:[{label:'Enjoy it',cls:'primary'}]});
+  sfx('level');setTimeout(()=>confetti(s.el),400);
+}
+function styleSheet(id){
+  const t=tierBy(id);
+  sheet({hero:ill('upgrade',{c1:t.c[0],c2:t.c[1]}),title:'Card style',sub:`Choose how ${t.name} looks.`,
+    html:`<div class="rewards" style="margin-top:18px">${[{id:'',n:'Original'},...SKINS.filter(s=>S.plus.skins[s.id])].map(s=>`<button class="reward glass" data-s="${s.id}"><div class="rimg" style="padding:14px 16px"><div class="mini t-${t.id} sk-${s.id||'none'}" style="width:100%;border-radius:12px;height:100%;aspect-ratio:auto"></div></div><div class="rb"><b>${s.n}</b>${skinOf(id)===s.id?`<small style="color:var(--green)">${ic('check','xs')}Applied</small>`:''}</div></button>`).join('')}</div>
+    <div class="stack"><button class="btn primary block" id="more">${ic('star','sm')}Get more styles with points</button></div>`,
+    onMount(a){$$('[data-s]',a.el).forEach(b=>b.onclick=()=>{const v=b.dataset.s;if(v)S.plus.skin[id]=v;else delete S.plus.skin[id];save();sfx('toggle');a.close();refresh('cards','security')});
+      $('#more',a.el).onclick=()=>{a.close();setTimeout(()=>plusSheet('skins'),350)}}});
+}
+
+/* ---- Lucky Orbit daily wheel ---- */
+const WHEEL=[25,50,100,25,250,75,500,50],WW=[20,18,12,20,5,15,2,8];
+function wheelSheet(){
+  const done=S.wheelDay===dayKey(Date.now());let spun=done;
+  const seg=i=>{const a0=i*45,a1=a0+45,P=a=>[120+104*Math.sin(a*Math.PI/180),120-104*Math.cos(a*Math.PI/180)],p0=P(a0),p1=P(a1),m=a0+22.5,tx=120+70*Math.sin(m*Math.PI/180),ty=120-70*Math.cos(m*Math.PI/180);
+    return `<path d="M120 120L${p0[0]} ${p0[1]}A104 104 0 0 1 ${p1[0]} ${p1[1]}Z" fill="${['#2b2342','#3a2d5c'][i%2]}" stroke="rgba(255,255,255,.12)"/><text x="${tx}" y="${ty+5}" text-anchor="middle" font-family="ui-serif,Georgia,serif" font-size="${WHEEL[i]>=250?19:16}" font-weight="600" fill="${WHEEL[i]>=250?'#ffe6a3':'#fff'}" transform="rotate(${m} ${tx} ${ty})">${WHEEL[i]}</text>`};
+  sheet({hero:ill('points'),title:'Lucky Orbit',sub:'One free spin every day. Every spin wins points.',
+    html:`<div style="position:relative;width:260px;height:260px;margin:18px auto 6px"><div style="position:absolute;left:50%;top:-6px;margin-left:-12px;z-index:3;width:24px;height:30px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))"><svg viewBox="0 0 24 30"><path d="M12 30 2 8a11 11 0 1 1 20 0z" fill="url(#gCoral)" stroke="#fff" stroke-opacity=".6"/></svg></div>
+    <svg id="wh" viewBox="0 0 240 240" style="width:260px;height:260px;transition:transform 4.4s cubic-bezier(.12,.72,.08,1)"><circle cx="120" cy="120" r="116" fill="none" stroke="url(#gRing)" stroke-width="6"/>${WHEEL.map((_,i)=>seg(i)).join('')}<circle cx="120" cy="120" r="22" fill="#15102a" stroke="url(#gRing)" stroke-width="3"/>${[0,1,2,3,4,5,6,7].map(i=>{const a=i*45;return `<circle cx="${120+112*Math.sin(a*Math.PI/180)}" cy="${120-112*Math.cos(a*Math.PI/180)}" r="2.5" fill="#fff" opacity=".8"/>`}).join('')}</svg></div>
+    <div class="stack"><button class="btn primary block" id="spin" ${done?'disabled':''}>${done?'Come back tomorrow':ic('refresh','sm')+'Spin the orbit'}</button></div>`,
+    onMount(a){$('#spin',a.el).onclick=()=>{
+      if(spun)return;spun=true;S.wheelDay=dayKey(Date.now());save();const btn=$('#spin',a.el);btn.disabled=true;btn.textContent='Spinning…';
+      let r=Math.random()*WW.reduce((x,y)=>x+y,0),idx=0;for(;idx<WW.length;idx++){r-=WW[idx];if(r<=0)break}idx=Math.min(idx,7);
+      const rot=360*6+360-(idx*45+22.5)+(Math.random()*20-10);$('#wh',a.el).style.transform=`rotate(${rot}deg)`;
+      for(let i=0;i<38;i++)setTimeout(()=>sfx('tick'),4300*Math.pow(i/38,.5));
+      setTimeout(()=>{const v=WHEEL[idx];earnPts(v,'Lucky Orbit');sfx('win');confetti(a.el);btn.innerHTML=`You won ${v} points`;toast(`+${v} Orion Points from Lucky Orbit`);refresh('points','home')},4500)}}});
+}
 
 })();</script>
 </body>
