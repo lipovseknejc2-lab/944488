@@ -15,4 +15,5 @@ sleep 1
 echo "== features";  (cd "$T" && node ../feat.js)   | grep -E "FAIL|passed"
 echo "== phone";     (cd "$T" && node ../phone.js)  | grep -E "FAIL|passed"
 echo "== stress";    (cd "$T" && node ../stress.js) | grep -E "ms|heap|taps|external|error|ERROR"
+echo "== focus";    (cd "$T" && node ../focus.js)  | grep -E "FAIL|passed"
 echo "== offline";   node tests/offl.js "$PWD/$T"   | grep -E "FAIL|passed"

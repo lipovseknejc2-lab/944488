@@ -64,7 +64,7 @@ function rigPaths(p){const R=Math.PI/180,w=1-p.side,up=a=>[Math.sin(a*R),-Math.c
  return{torso:`M${pt(P0)}Q${pt(C)} ${pt(N)}L${pt(nt)}M${pt(ls)}L${pt(rs)}M${pt(T(lh))}L${pt(T(rh))}`,head:hc,nose,far:p.side,
   arms:arm(rs,p.ra,p.re),armF:arm(ls,p.la,p.le),legs:legP(rh,RR),legF:legP(lh,LL)}}
 /* soft tones: a bell for each new step, two rising notes to look back, a small chord at the end, and quiet breath cues */
-function rAudio(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());if(A.state==='suspended')A.resume();return A}catch(e){return null}}
+function rAudio(){const A=audioCtx();if(A)audioIdle(4500);return A}
 function rTone(fs,{vol=.08,dur=1.6,gap=.18}={}){if(S.settings.resetSound===false)return;const A=rAudio();if(!A)return;try{fs.forEach((fr,i)=>{const t=A.currentTime+.02+i*gap;[[fr,1],[fr*2,.18],[fr*3,.05]].forEach(([q,m])=>{const o=A.createOscillator(),g=A.createGain();o.type='sine';o.frequency.value=q;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol*m,t+.025);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(A.destination);o.start(t);o.stop(t+dur+.05)})})}catch(e){}}
 const RSND={step:()=>rTone([528],{vol:.07}),look:()=>{rTone([440,660],{vol:.11,gap:.32,dur:1.8});try{navigator.vibrate&&navigator.vibrate([90,120,90])}catch(e){}},done:()=>rTone([392,494,587,784],{vol:.075,gap:.14,dur:2.2}),in:()=>rTone([330],{vol:.03,dur:1.2}),out:()=>rTone([262],{vol:.026,dur:1.4})};
 /* a routine: one breathing technique, then stretches with a short breath between them, a far look, the end */
@@ -118,7 +118,7 @@ function resetDone(){const el=$('#rst');if(!el||!RS)return;const secs=Math.round
  el.querySelector('.rctl').innerHTML=`<button class="rbtn" id="rBk">${r?`${ic('focus',2)} Back to the timer${r.phase!=='work'?` · ${mmss(leftMs(r))} left`:''}`:`${ic('check',2)} Done`}</button>`;$('#rBk').onclick=closeReset;
  $$('#rst .rdots i').forEach(d=>d.classList.add('d'));RS.steps[RS.i]={k:'done'};setTimeout(()=>RS||$("#rst")?RSND.done():0,650);burstSoft()}
 function burstSoft(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const o=$('#rO');if(o){o.classList.add('bloom');setTimeout(()=>o&&o.classList.remove('bloom'),1200)}}
-function closeReset(){cancelAnimationFrame(window._rraf);const el=$('#rst');RS=null;document.body.classList.remove('rston');if(el){el.classList.add('out');setTimeout(()=>el.remove(),380)}if(!S.focus.zen)wakeOff();if(route.k==='focus')render()}
+function closeReset(){cancelAnimationFrame(window._rraf);const el=$('#rst');RS=null;document.body.classList.remove('rston');if(el){el.classList.add('out');setTimeout(()=>el.remove(),380)}keepAwake();if(route.k==='focus')render()}
 /* a quiet invitation whenever a break is on: on the Focus page and as a small pill in Deep mode */
 function resetCard(){const r=S.focus.run;if(!r||r.phase==='work')return'';return`<button class="card rcta" onclick="openReset('focus')"><span class="rcfig">${figure('rest',{acc:'var(--break)',sw:2.6})}</span><div class="grow"><div class="lab" style="--lc:var(--break)">${ic('coffee',2)}<span>Guided reset · ${r.phase==='long'?3:2} min</span></div><b>Breathe, stretch, look far away</b><div class="sub sm">A fresh mix each break. Gets your focus back.</div></div>${ic('arrow')}</button>`}
 function zenResetPill(r){const z=$('#zen');if(!z)return;let p=$('#zRs');const show=r&&r.phase!=='work'&&!z.classList.contains('done')&&window._zrsOff!==r.round+r.phase;
