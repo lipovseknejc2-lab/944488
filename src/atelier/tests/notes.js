@@ -104,6 +104,17 @@ await ev(()=>{const m=[...document.querySelectorAll('.msg .w-note .nmini')].pop(
 ok(await ev((a)=>note(a[0]).board.blocks.find(b=>b.t==='check').items[1].on!==a[1],[nid,ck0]),T('tick a checklist from chat'));
 await p.screenshot({path:D+'/shots/chatnote-'+theme+'.png'});
 await p.click('.msg .w-note .wopen >> nth=-1');await W(500);ok(await ev(id=>route.k==='note'&&route.a[0]===id,nid),T('unfold icon opens the note'));
+// arrows find their way around other parts
+await ev(()=>{const n=newNote({title:'Routes'});const B=n.board;B.blocks.push({id:'A',t:'text',s:'h',txt:'Start',x:120,y:20,w:120},{id:'M',t:'sticky',txt:'In the way',c:0,rot:0,x:60,y:120,w:240},{id:'C',t:'check',title:'',items:[{id:'i',t:'Goal',on:false}],x:110,y:300,w:140},{id:'D',t:'text',s:'p',txt:'Side',x:16,y:460,w:100},{id:'E',t:'text',s:'p',txt:'Far',x:250,y:460,w:100},{id:'Wl',t:'sticky',txt:'Wall',c:2,rot:0,x:130,y:440,w:100});
+ B.links.push({id:'r1',a:'A',b:'C',sh:'curve',ln:'solid',hd:'end',c:'accent'},{id:'r2',a:'D',b:'E',sh:'elbow',ln:'dash',hd:'end',c:'blue'},{id:'r3',a:'A',b:'D',sh:'straight',ln:'hand',hd:'dot',c:'green'},{id:'r4',a:'C',b:'E',sh:'curve',ln:'solid',hd:'both',c:'ink'});save();go('note:'+n.id)});await W(600);
+const crossed=()=>ev(()=>{const st=document.querySelector('#nSt'),B=note(route.a[0]).board,R={};st.querySelectorAll(':scope > .nb').forEach(el=>{const b=blk(B,el.dataset.b);R[b.id]={x0:b.x,y0:b.y,x1:b.x+b.w,y1:b.y+el.offsetHeight}});
+ const hits=[];document.querySelectorAll('.nl').forEach(g=>{const L=B.links.find(l=>l.id===g.dataset.l),path=g.querySelector('.nlp'),len=path.getTotalLength();for(let i=0;i<=240;i++){const q=path.getPointAtLength(len*i/240);for(const k in R){if(k===L.a||k===L.b)continue;const r=R[k];if(q.x>r.x0&&q.x<r.x1&&q.y>r.y0&&q.y<r.y1)hits.push(L.id+'>'+k)}}});return[...new Set(hits)]});
+await p.screenshot({path:D+'/shots/routes-'+theme+'.png'});let hx=await crossed();ok(hx.length===0,T('arrows go around other parts, never under them'+(hx.length?': '+hx.join(' '):'')));
+const lenR=await ev(()=>document.querySelector('.nl[data-l=r1] .nlp').getTotalLength());ok(await ev(L=>{const B=note(route.a[0]).board,a=blk(B,'A'),c=blk(B,'C'),h=document.querySelector('#nSt > [data-b=A]').offsetHeight;return L>(c.y-(a.y+h))+60},lenR),T('a blocked arrow takes the way around'));
+await ev(()=>{const B=note(route.a[0]).board;blk(B,'M').x=200;blk(B,'M').w=150;nRebuild()});await W(100);hx=await crossed();ok(hx.length===0,T('arrows re-route when a part moves'));
+await ev(()=>{const B=note(route.a[0]).board;blk(B,'M').x=250;blk(B,'M').y=40;blk(B,'M').w=100;nRebuild()});await W(100);ok(await ev(L=>{const g=document.querySelector('.nl[data-l=r1] .nlp');return g.getTotalLength()<L-60},lenR),T('a clear arrow stays short and direct'));
+const rms=await ev(()=>{const st=document.querySelector('#nSt'),t=performance.now();for(let i=0;i<30;i++){st._rc.clear();nLayout()}return(performance.now()-t)/30});ok(rms<16,T(`routing every arrow takes ${rms.toFixed(1)} ms a frame`));
+await p.screenshot({path:D+'/shots/routes2-'+theme+'.png'});
 // student space: study under Flow
 await ev(()=>{S.settings.space='student';save();go('study')});await W(400);ok(await ev(()=>document.querySelector('#tabs a.on').dataset.tab==='flow'),T('study sits under Flow for students'));
 ok(errs.length===0,T('no script errors'+(errs.length?': '+errs.slice(0,3).join(' | '):'')));

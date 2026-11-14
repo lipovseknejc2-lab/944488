@@ -63,22 +63,65 @@ const blockHTML=(b,ed)=>`<div class="nb nb-${b.t}${b.t==='sticky'?' sc'+((b.c||0
 const stageInner=(B,ed)=>`<svg class="nlinks" aria-hidden="true"></svg>${B.blocks.map(b=>blockHTML(b,ed)).join('')}`;
 
 /* ---- arrows ---- */
-function lpath(p1,p2,sh,seed,hand){let pts;
- if(sh==='straight')pts=[p1,p2];
- else if(sh==='elbow'){const h=Math.abs(p2[0]-p1[0])>Math.abs(p2[1]-p1[1]);const mid=h?(p1[0]+p2[0])/2:(p1[1]+p2[1])/2;pts=h?[p1,[mid,p1[1]],[mid,p2[1]],p2]:[p1,[p1[0],mid],[p2[0],mid],p2]}
- else{const dx=p2[0]-p1[0],dy=p2[1]-p1[1],h=Math.abs(dx)>Math.abs(dy),c1=h?[p1[0]+dx*.5,p1[1]]:[p1[0],p1[1]+dy*.5],c2=h?[p2[0]-dx*.5,p2[1]]:[p2[0],p2[1]-dy*.5];
-  pts=[];for(let i=0;i<=24;i++){const t=i/24,u=1-t;pts.push([u*u*u*p1[0]+3*u*u*t*c1[0]+3*u*t*t*c2[0]+t*t*t*p2[0],u*u*u*p1[1]+3*u*u*t*c1[1]+3*u*t*t*c2[1]+t*t*t*p2[1]])}}
- if(hand){const o=[];for(let k=0;k<pts.length-1;k++){const a=pts[k],b=pts[k+1],n=Math.max(1,Math.round(Math.hypot(b[0]-a[0],b[1]-a[1])/14));for(let i=0;i<n;i++){const t=i/n;o.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}o.push(pts[pts.length-1]);
-  let r=seed;const rnd=()=>{r=(r*16807)%2147483647;return r/2147483647-.5};pts=o.map((p,i)=>i===0||i===o.length-1?p:[p[0]+rnd()*2.6,p[1]+rnd()*2.6])}
- return pts}
+function lpath(p1,p2,sh){
+ if(sh==='straight')return[p1,p2];
+ if(sh==='elbow'){const h=Math.abs(p2[0]-p1[0])>Math.abs(p2[1]-p1[1]);const mid=h?(p1[0]+p2[0])/2:(p1[1]+p2[1])/2;return h?[p1,[mid,p1[1]],[mid,p2[1]],p2]:[p1,[p1[0],mid],[p2[0],mid],p2]}
+ const dx=p2[0]-p1[0],dy=p2[1]-p1[1],h=Math.abs(dx)>Math.abs(dy),c1=h?[p1[0]+dx*.5,p1[1]]:[p1[0],p1[1]+dy*.5],c2=h?[p2[0]-dx*.5,p2[1]]:[p2[0],p2[1]-dy*.5];
+ const pts=[];for(let i=0;i<=24;i++){const t=i/24,u=1-t;pts.push([u*u*u*p1[0]+3*u*u*t*c1[0]+3*u*t*t*c2[0]+t*t*t*p2[0],u*u*u*p1[1]+3*u*u*t*c1[1]+3*u*t*t*c2[1]+t*t*t*p2[1]])}return pts}
+/* a hand-drawn line: the same path with a small steady wobble */
+function handify(pts,seed){const o=[];for(let k=0;k<pts.length-1;k++){const a=pts[k],b=pts[k+1],n=Math.max(1,Math.round(Math.hypot(b[0]-a[0],b[1]-a[1])/14));for(let i=0;i<n;i++){const t=i/n;o.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}o.push(pts[pts.length-1]);
+ let r=seed;const rnd=()=>{r=(r*16807)%2147483647;return r/2147483647-.5};return o.map((p,i)=>i===0||i===o.length-1?p:[p[0]+rnd()*2.6,p[1]+rnd()*2.6])}
+/* ---- arrow routing: an arrow never runs under another part. If the simple line is blocked, it is routed
+   around the parts on a fine grid (A* with a cost for every turn), leaves and enters a part straight through
+   the middle of a side, and is then drawn in the arrow's own shape: rounded, straight (pulled tight) or elbow. ---- */
+function segHits(p,q,r){let t0=0,t1=1;const dx=q[0]-p[0],dy=q[1]-p[1];for(const [pp,qq] of [[-dx,p[0]-r.x0],[dx,r.x1-p[0]],[-dy,p[1]-r.y0],[dy,r.y1-p[1]]]){if(pp===0){if(qq<0)return false}else{const t=qq/pp;if(pp<0){if(t>t1)return false;if(t>t0)t0=t}else{if(t<t0)return false;if(t<t1)t1=t}}}return t1-t0>1e-6}
+const polyHits=(pts,obs)=>{for(let i=0;i<pts.length-1;i++)for(const r of obs)if(segHits(pts[i],pts[i+1],r))return true;return false};
+const grow=(r,m)=>({x0:r.x-m,y0:r.y-m,x1:r.x+r.w+m,y1:r.y+r.h+m});
+function roundPts(P,rad){if(P.length<3)return P;const o=[P[0]];for(let i=1;i<P.length-1;i++){const a=P[i-1],c=P[i],b=P[i+1],d1=Math.hypot(c[0]-a[0],c[1]-a[1]),d2=Math.hypot(b[0]-c[0],b[1]-c[1]),r=Math.min(rad,d1/2,d2/2);if(r<1){o.push(c);continue}
+ const A=[c[0]-(c[0]-a[0])/d1*r,c[1]-(c[1]-a[1])/d1*r],Bp=[c[0]+(b[0]-c[0])/d2*r,c[1]+(b[1]-c[1])/d2*r];for(let k=0;k<=6;k++){const t=k/6,u=1-t;o.push([u*u*A[0]+2*u*t*c[0]+t*t*Bp[0],u*u*A[1]+2*u*t*c[1]+t*t*Bp[1]])}}o.push(P[P.length-1]);return o}
+function pullTight(P,obs){const o=[P[0]];let i=0;while(i<P.length-1){let j=P.length-1;while(j>i+1&&polyHits([P[i],P[j]],obs))j--;o.push(P[j]);i=j}return o}
+const RG=8,SIDES=[[0,-1],[1,0],[0,1],[-1,0]];
+function sidePts(r){return SIDES.map(([nx,ny])=>{const e=[r.x+r.w/2+nx*(r.w/2+5),r.y+r.h/2+ny*(r.h/2+5)];return{e,n:[nx,ny],p:[e[0]+nx*14,e[1]+ny*14]}})}
+/* returns corner points from the edge of a to the edge of b, or null */
+function aStar(a,b,others,H,win){const x0=Math.max(-48,win?Math.min(a.x,b.x)-170:-48),x1=Math.min(BW+48,win?Math.max(a.x+a.w,b.x+b.w)+170:BW+48),y0=Math.max(-40,win?Math.min(a.y,b.y)-170:-40),y1=win?Math.max(a.y+a.h,b.y+b.h)+170:H+120;
+ const W=Math.ceil((x1-x0)/RG)+1,Hh=Math.ceil((y1-y0)/RG)+1;if(W*Hh>60000)return null;const blk=new Uint8Array(W*Hh);
+ const mark=(r)=>{const c0=Math.max(0,Math.floor((r.x0-x0)/RG)),c1=Math.min(W-1,Math.ceil((r.x1-x0)/RG)),r0=Math.max(0,Math.floor((r.y0-y0)/RG)),r1=Math.min(Hh-1,Math.ceil((r.y1-y0)/RG));for(let y=r0;y<=r1;y++)for(let x=c0;x<=c1;x++){const cx=x0+x*RG,cy=y0+y*RG;if(cx>r.x0&&cx<r.x1&&cy>r.y0&&cy<r.y1)blk[y*W+x]=1}};
+ others.forEach(r=>mark(grow(r,11)));mark(grow(a,3));mark(grow(b,3));
+ const cell=p=>[Math.round((p[0]-x0)/RG),Math.round((p[1]-y0)/RG)],ok=(x,y)=>x>=0&&y>=0&&x<W&&y<Hh&&!blk[y*W+x];
+ const SA=sidePts(a),SB=sidePts(b),cb=[b.x+b.w/2,b.y+b.h/2],ca=[a.x+a.w/2,a.y+a.h/2];
+ const tg=new Map();SB.forEach((s,i)=>{const [x,y]=cell(s.p);if(ok(x,y))tg.set(y*W+x,i)});if(!tg.size)return null;const TC=[...tg.keys()].map(k=>[k%W,(k/W)|0]);
+ const hf=(x,y)=>{let m=1e9;for(const t of TC){const d=Math.abs(t[0]-x)+Math.abs(t[1]-y);if(d<m)m=d}return m};
+ const N=W*Hh*4,g=new Float32Array(N).fill(1e9),from=new Int32Array(N).fill(-1),heap=[];
+ const push=(s,f)=>{heap.push([f,s]);let i=heap.length-1;while(i){const p=(i-1)>>1;if(heap[p][0]<=heap[i][0])break;[heap[p],heap[i]]=[heap[i],heap[p]];i=p}};
+ const pop=()=>{const t=heap[0],l=heap.pop();if(heap.length){heap[0]=l;let i=0;for(;;){const L=2*i+1,R=L+1;let m=i;if(L<heap.length&&heap[L][0]<heap[m][0])m=L;if(R<heap.length&&heap[R][0]<heap[m][0])m=R;if(m===i)break;[heap[m],heap[i]]=[heap[i],heap[m]];i=m}}return t};
+ SA.forEach((s,d)=>{const [x,y]=cell(s.p);if(!ok(x,y))return;const face=(s.n[0]*(cb[0]-ca[0])+s.n[1]*(cb[1]-ca[1]))>0?0:6,st=(y*W+x)*4+d;if(face<g[st]){g[st]=face;from[st]=-2-d;push(st,face+hf(x,y))}});
+ let end=-1,it=0;while(heap.length&&it++<N){const [f,s]=pop(),c=s>>2,d=s&3,x=c%W,y=(c/W)|0;if(f-hf(x,y)>g[s]+1e-3)continue;
+  if(tg.has(c)){const ti=tg.get(c),need=(SIDES[ti][0]===-SIDES[d][0]&&SIDES[ti][1]===-SIDES[d][1]);if(need||g[s]>0){end=s;break}}
+  for(let nd=0;nd<4;nd++){if(nd===((d+2)&3))continue;const nx=x+SIDES[nd][0],ny=y+SIDES[nd][1];if(!ok(nx,ny))continue;const ns=((ny*W+nx)<<2)|nd,cost=g[s]+1+(nd!==d?3:0);if(cost<g[ns]){g[ns]=cost;from[ns]=s;push(ns,cost+hf(nx,ny))}}}
+ if(end<0)return null;
+ const cells=[];let s=end;while(s>=0){cells.push(s);const f=from[s];if(f<-1){cells.push(f);break}s=f}const sd=-2-cells.pop();cells.reverse();
+ const P=cells.map(s=>{const c=s>>2;return[x0+(c%W)*RG,y0+((c/W)|0)*RG]});const ti=tg.get(end>>2),A=SA[sd],Bs=SB[ti];
+ /* line the first and last runs up with the exact middle of the sides */
+ const fix=(arr,side)=>{const ax=side.n[0]===0?0:1,v=side.e[ax===0?0:1],k=ax===0?0:1;const base=arr[0][k];for(let i=0;i<arr.length&&Math.abs(arr[i][k]-base)<.01;i++)arr[i][k]=v};
+ fix(P,A);P.reverse();fix(P,Bs);P.reverse();
+ const C=[A.e];for(let i=0;i<P.length;i++){const p=P[i],q=P[i-1],r=P[i+1];if(!q||!r||(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0])!==0)C.push(p)}C.push(Bs.e);
+ return C.filter((p,i)=>!i||Math.hypot(p[0]-C[i-1][0],p[1]-C[i-1][1])>.5)}
+function routeLink(a,b,R,L,H){const ida=L.a,idb=L.b,others=Object.keys(R).filter(k=>k!==ida&&k!==idb).map(k=>R[k]);
+ const ca=[a.x+a.w/2,a.y+a.h/2],cb=[b.x+b.w/2,b.y+b.h/2],p1=edgePt(a,cb),p2=edgePt(b,ca),sh=L.sh||'curve',pts=lpath(p1,p2,sh);
+ const obs=[...others.map(r=>grow(r,5)),grow(a,-2),grow(b,-2)];
+ const overlap=a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;if(overlap||!polyHits(pts,obs))return pts;
+ const C=aStar(a,b,others,H,true)||aStar(a,b,others,H,false);if(!C)return pts;
+ if(sh==='elbow')return C;if(sh==='straight')return pullTight(C,obs);return roundPts(C,16)}
 function edgePt(r,to){const cx=r.x+r.w/2,cy=r.y+r.h/2,dx=to[0]-cx,dy=to[1]-cy;if(!dx&&!dy)return[cx,cy];const sx=dx?(r.w/2+6)/Math.abs(dx):1e9,sy=dy?(r.h/2+6)/Math.abs(dy):1e9,s=Math.min(sx,sy);return[cx+dx*s,cy+dy*s]}
 function headD(p,q,sz){const a=Math.atan2(p[1]-q[1],p[0]-q[0]),l=sz||9;return`M${(p[0]-Math.cos(a-.5)*l).toFixed(1)} ${(p[1]-Math.sin(a-.5)*l).toFixed(1)}L${p[0].toFixed(1)} ${p[1].toFixed(1)}L${(p[0]-Math.cos(a+.5)*l).toFixed(1)} ${(p[1]-Math.sin(a+.5)*l).toFixed(1)}`}
 /* draws every arrow of a stage from the parts' real sizes; also returns the stage height */
 function paintLinks(st,B,selId,ed){const R={};let H=0;st.querySelectorAll(':scope > .nb').forEach(el=>{const b=blk(B,el.dataset.b);if(!b)return;const h=el.offsetHeight;R[b.id]={x:b.x,y:b.y,w:b.w,h};H=Math.max(H,b.y+h)});
  const svg=st.querySelector(':scope > .nlinks');if(svg){svg.setAttribute('width',BW);svg.setAttribute('height',Math.max(H+40,200));
-  svg.innerHTML=(B.links||[]).map(L=>{const a=R[L.a],b=R[L.b];if(!a||!b)return'';const ca=[a.x+a.w/2,a.y+a.h/2],cb=[b.x+b.w/2,b.y+b.h/2],p1=edgePt(a,cb),p2=edgePt(b,ca);
-   const seed=[...L.id].reduce((s,c)=>s*31+c.charCodeAt(0)|0,7)>>>0||7,pts=lpath(p1,p2,L.sh||'curve',seed%2147483646+1,L.ln==='hand'),d='M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L'),col=NLC[L.c||'ink'],n=pts.length;
-   const end=L.hd==='none'?'':L.hd==='dot'?`<circle cx="${p2[0].toFixed(1)}" cy="${p2[1].toFixed(1)}" r="3.6" fill="${col}"/>`:`<path d="${headD(pts[n-1],pts[n-2])}"/>`,start=L.hd==='both'?`<path d="${headD(pts[0],pts[1])}"/>`:'';
+  const RK=JSON.stringify(R),cache=st._rc||(st._rc=new Map());if(cache.size>300)cache.clear();
+  svg.innerHTML=(B.links||[]).map(L=>{const a=R[L.a],b=R[L.b];if(!a||!b)return'';
+   const seed=[...L.id].reduce((s,c)=>s*31+c.charCodeAt(0)|0,7)>>>0||7,ck=L.a+L.b+(L.sh||'')+RK;let base=cache.get(ck);if(!base){base=routeLink(a,b,R,L,H);cache.set(ck,base)}
+   const pts=L.ln==='hand'?handify(base,seed%2147483646+1):base,d='M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L'),col=NLC[L.c||'ink'],n=pts.length;
+   const end=L.hd==='none'?'':L.hd==='dot'?`<circle cx="${pts[n-1][0].toFixed(1)}" cy="${pts[n-1][1].toFixed(1)}" r="3.6" fill="${col}"/>`:`<path d="${headD(pts[n-1],pts[n-2])}"/>`,start=L.hd==='both'?`<path d="${headD(pts[0],pts[1])}"/>`:'';
    return`<g class="nl ${selId===L.id?'sel':''}" data-l="${L.id}" style="--lc:${col}"><path class="nlp ${L.ln==='dash'?'dash':''}" d="${d}"/>${end}${start}${ed?`<path class="nlh" d="${d}"/>`:''}</g>`}).join('')}
  return H}
 /* draws the pinned sketches; strokes are stored in the part's own units, so they scale with it */
