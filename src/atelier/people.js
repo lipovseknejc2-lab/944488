@@ -30,10 +30,10 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 function seedBots(){if(S.people.length)return;BOT_SEED.forEach(b=>S.people.push({id:uid(),bot:true,handle:b.name.split(' ')[0].toLowerCase(),status:'Available',...b}))}
 function botReply(chat,text,att){if(typeof chanOf==='function'&&['announce','all'].includes(chanOf(chat)?.type))return;const pool=chat.kind==='dm'?[chat.with]:(grp(chat.with)?.members||[]).filter(id=>id!=='me'&&person(id)?.bot);
  if(!pool.length)return;const who=chat.kind==='dm'?pool:[...pool].sort(()=>Math.random()-.5).slice(0,Math.min(pool.length,Math.random()<.45?2:1));
- let delay=700+Math.random()*900;who.forEach(pid=>{const p=person(pid);if(!p)return;const top=att?(LINES[att.kind]?att.kind:'file'):topicOf(text);const line=pick(LINES[top][p.tone||'warm']);
+ let delay=700+Math.random()*900;const mine=[...chat.msgs].reverse().find(x=>x.from==='me');if(typeof botReact==='function'&&mine&&Date.now()-mine.at<5000)botReact(chat,mine,who[0]);who.forEach(pid=>{const p=person(pid);if(!p)return;const top=att?(LINES[att.kind]?att.kind:'file'):topicOf(text);const line=pick(LINES[top][p.tone||'warm']);
   const t0=delay;setTimeout(()=>{chat.typing=pid;if(onChat(chat))typingUI(chat)},t0);
   delay+=900+Math.min(1800,line.length*28)+Math.random()*500;
-  setTimeout(()=>{chat.typing=null;chat.msgs.push({id:uid(),from:pid,text:line,at:Date.now()});save();if(onChat(chat)){chat.read=Date.now();appendMsgs(chat)}else{nav();if(!(chat.kind==='group'&&grp(chat.with)?.mute))toast(`${p.name.split(' ')[0]}: ${line}`)}},delay);delay+=400})}
+  setTimeout(()=>{chat.typing=null;const bm={id:uid(),from:pid,text:line,at:Date.now()};chat.msgs.push(bm);save();if(typeof plugOnMsg==='function')plugOnMsg(chat,bm);if(onChat(chat)){chat.read=Date.now();appendMsgs(chat)}else{nav();if(!(chat.kind==='group'&&grp(chat.with)?.mute))toast(`${p.name.split(' ')[0]}: ${line}`)}},delay);delay+=400})}
 /* bots react inside projects: vote on ideas, pick up tasks */
 function botsReactIdea(p,idea){const bots=projMembers(p).filter(id=>person(id)?.bot);bots.slice(0,2).forEach((id,i)=>setTimeout(()=>{if(!idea.votes.includes(id)&&Math.random()<.75){idea.votes.push(id);act(p,id,`voted for “${idea.text.slice(0,40)}”`);save();if(route.k==='project'&&route.a[0]===p.id)render()}},1600+i*1400))}
 function botsReactTask(p,t){const b=person(t.who);if(!b?.bot||t.st!=='todo')return;setTimeout(()=>{if(t.st==='todo'){t.st='doing';act(p,b.id,`started “${t.t.slice(0,40)}”`);save();if(route.k==='project'&&route.a[0]===p.id)render()}},2500)}

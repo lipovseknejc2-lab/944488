@@ -74,3 +74,10 @@ JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `reset
 - Channel types (`CHT`): Talk, Announcements (only roles with announce post), Files (shelf of files, upload), Photos, Projects (only projects), Notes (shared note boards), Ideas (votes; bots vote too), Plans (agenda, day and countdown widgets) and Everything (one feed of all that is attached in every channel, with filters). Every channel shows what is attached in it (the folder button).
 - Layout: on phones the channel opens full screen, channels slide in from the left and members (grouped by role, filter by role) from the right. From 1100 px wide, channels, chat and members sit side by side.
 - `pServer(gid, chId)` is the route `g:gid:chId`; `group:gid` is the group page with roles, channels, verification, plugins (coming soon), projects, media and notes. Links to `c:` chats of groups open their channel.
+
+## Plugins and reactions (plugins.js, ../plugkit/pk.js)
+- The engine `PK` is shared with Atelier Plugins (the desktop hub at `atelier-plugins/`). A plugin is nodes (`graph`) or code (`code`), with a name, picture, size (small or big) and version.
+- In a group, plugins run on events: join, message, keyword, command, reaction, daily (first message of the day), timer (every few minutes while open), file, role and install. They answer as themselves (the Plugin tag), react, pin, give roles, file copies in channels, make channels and keep values like coins.
+- Starters: Welcome, Coins (daily coins, /coins, /top, /give, stars pay a coin), Spotlight (/leader once a day) and File helper (describes files, files copies in #files).
+- The Plugins page (from Groups) lists them, scans QR codes, opens pasted codes and files. A group's page lists its plugins with switches.
+- Reactions: press and hold a message; ten drawn reactions or any emoji from the keyboard.

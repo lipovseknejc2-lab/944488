@@ -1,6 +1,6 @@
 // Atelier offline worker. Lives in atelier/ and only ever clears its own atelier- caches, never other apps on the site.
-const CACHE='atelier-v18';
-const CORE=['./','./index.html','./manifest.webmanifest','./icon.svg?v=thread','./icon-192.png?v=thread','./icon-512.png?v=thread','./apple-touch-icon.png?v=thread'];
+const CACHE='atelier-v19';
+const CORE=['./','./index.html','./manifest.webmanifest','./icon.svg?v=matte','./icon-192.png?v=matte','./icon-512.png?v=matte','./apple-touch-icon.png?v=matte'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>Promise.all(CORE.map(u=>c.add(new Request(u,{cache:'reload'})).catch(()=>{})))));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith('atelier-')&&x!==CACHE).map(x=>caches.delete(x)))));self.clients.claim()});
 /* tapping a focus alert brings Atelier back to the timer */

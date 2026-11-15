@@ -69,7 +69,7 @@ async function exportAll(){toast('Preparing backup…');const blobs={};try{for(c
 /* switch between the student and the work space */
 function setSpace(k){if(space()===k)return;S.settings.space=k;if(!S.focus.run)S.focus.mode=k==='student'?'study':'pomo';use('space');save();applyTheme();go('today');toast(k==='student'?'Student space':'Work space')}
 /* ============ BOOT ============ */
-function boot(){try{gFixAll(S)}catch(e){}applyTheme();if(S.focus.run){tickOn();if(S.me)catchUp();if(S.focus.zen&&S.focus.run&&S.me)setTimeout(enterZen,60)}else S.focus.zen=false;
+function boot(){try{gFixAll(S)}catch(e){}applyTheme();try{plugBoot()}catch(e){}if(S.focus.run){tickOn();if(S.me)catchUp();if(S.focus.zen&&S.focus.run&&S.me)setTimeout(enterZen,60)}else S.focus.zen=false;
  render();unlockProfile();const sp=$('#splash');setTimeout(()=>{sp.classList.add('out');setTimeout(()=>sp.remove(),700)},matchMedia('(prefers-reduced-motion: reduce)').matches?0:1500);
  if(window._from==='restored')setTimeout(()=>toast('Restored from the backup copy'),1800);if(window._noStore)setTimeout(()=>toast('This preview cannot save. Open the file in Safari to keep your work.'),2000);try{const pr=navigator.storage&&navigator.storage.persist&&navigator.storage.persist();if(pr&&pr.catch)pr.catch(()=>{})}catch(e){}}
 /* offline support when served from a website (GitHub Pages); harmless when opened as a file */

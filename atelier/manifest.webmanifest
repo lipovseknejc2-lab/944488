@@ -11,25 +11,25 @@
   "lang": "en",
   "icons": [
     {
-      "src": "icon-192.png?v=thread",
+      "src": "icon-192.png?v=matte",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-512.png?v=thread",
+      "src": "icon-512.png?v=matte",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-maskable-512.png?v=thread",
+      "src": "icon-maskable-512.png?v=matte",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "icon.svg?v=thread",
+      "src": "icon.svg?v=matte",
       "sizes": "any",
       "type": "image/svg+xml"
     }

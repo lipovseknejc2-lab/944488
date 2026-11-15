@@ -1,0 +1,117 @@
+/* ============ PLUGINS in Atelier ============
+   Plugins are made in Atelier Plugins (the desktop hub) or come with Atelier (the starters). They reach the phone
+   as a QR code (one or several), a link, a file, pasted text, or, on the same computer, through the hub's inbox
+   (localStorage "atelier-plugin-inbox"). The library lives in S.plugins; a group runs them as instances in
+   g.plugins = [{id, pid, on, store, at}]. The shared engine is PK (src/plugkit/pk.js). */
+const HUB_URL='https://lipovseknejc2-lab.github.io/944488/atelier-plugins/';
+const plugOf=id=>(S.plugins||[]).find(p=>p.id===id)||PK.STARTERS.find(p=>p.id===id);
+const plugAll=()=>[...(S.plugins||[]),...PK.STARTERS.filter(s=>!(S.plugins||[]).some(p=>p.id===s.id))];
+let _plPend=null;
+function plugCard(pl,k=0){const inf=PK.info(pl),n=S.groups.filter(g=>(g.plugins||[]).some(i=>i.pid===pl.id)).length;
+ return`<a class="card plcard" href="#plugin:${PK.esc(pl.id)}" style="--i:${Math.min(k,12)}">${PK.picHtml(pl,'lg')}<div class="grow"><b>${esc(pl.name)}</b><span class="sub sm">${esc(pl.author||'You')} · ${pl.size==='big'?'Big plugin':'Small plugin'}${pl.mode==='code'?' · Code':''}</span><p class="sub">${esc(pl.desc||'A plugin for your groups.')}</p>
+ <div class="plchips">${inf.cmds.slice(0,4).map(c=>`<span class="plcmd">/${esc(c)}</span>`).join('')}${n?`<span class="plin">${ic('group',2)} ${plural(n,'group')}</span>`:''}</div></div></a>`}
+function pPlugins(){const mine=(S.plugins||[]).filter(p=>!p.starter),st=PK.STARTERS,gs=S.groups.filter(g=>(g.plugins||[]).length);
+ return`<div class="page">${header('Plugins',{sub:'Powers for your groups',back:'groups',right:`<button class="btn primary sm" onclick="plugScan()">${ic('scan',2)} Scan</button>`})}
+ <div class="card plhub"><span class="plhubm">${hubMark(40)}</span><div class="grow"><b>Atelier Plugins</b><p class="sub">Build plugins with nodes or code on a computer, test them, then scan their code here.</p><div class="row wrap"><button class="btn sm" onclick="plugScan()">${ic('scan',2)} Scan a code</button><button class="btn sm" onclick="try{navigator.clipboard.writeText(HUB_URL)}catch(e){}toast('Link copied. Open it on your computer.')">${ic('link',2)} Copy the hub link</button></div></div></div>
+ ${mine.length?`<section><div class="sh"><h2>On this phone</h2><span class="sub">${mine.length}</span></div><div class="plgrid">${mine.map(plugCard).join('')}</div></section>`:''}
+ <section><div class="sh"><h2>Starter plugins</h2><span class="sub">${st.length}</span></div><div class="plgrid">${st.map(plugCard).join('')}</div></section>
+ ${gs.length?`<section><div class="sh"><h2>In your groups</h2></div><div class="card list">${gs.map(g=>`<a class="li" href="#group:${g.id}">${gAv(g,'sm')}<div class="grow"><div class="t">${esc(g.name)}</div><div class="sub sm">${g.plugins.map(i=>esc(plugOf(i.pid)?.name||'Plugin')).join(', ')}</div></div>${ic('chevr')}</a>`).join('')}</div></section>`:''}</div>`}
+function pPlugin(id){const pend=_plPend&&_plPend.id===id?_plPend:null,pl=pend||plugOf(id);if(!pl)return redirect('plugins');const inf=PK.info(pl),have=!!(S.plugins||[]).find(p=>p.id===id),starter=!!pl.starter,old=pend&&plugOf(id);
+ const inGs=S.groups.filter(g=>(g.plugins||[]).some(i=>i.pid===id));
+ return`<div class="page plpage">${header(esc(pl.name),{sub:pend?'Ready to add':pl.size==='big'?'Big plugin':'Small plugin',back:'plugins'})}
+ <div class="card plhero">${PK.picHtml(pl,'xl')}<div class="grow"><h2>${esc(pl.name)}</h2><span class="sub">${esc(pl.author||'You')} · version ${esc(pl.ver||'1.0')} · ${pl.mode==='code'?'coded':plural(inf.nodes,'node')}</span><p>${esc(pl.desc||'')}</p>
+  <div class="row wrap">${pend?`<button class="btn primary" onclick="plugInstall()">${ic('plus',2)} ${old?'Update':'Add to this phone'}</button><button class="btn" onclick="_plPend=null;go('plugins')">Not now</button>`:`<button class="btn primary" onclick="plugToGroup('${PK.esc(id)}')">${ic('group',2)} Add to a group</button><button class="btn" onclick="plugShare('${PK.esc(id)}')">${ic('qr',2)} Show code</button>`}</div></div></div>
+ ${pend&&old?`<div class="card plnote">${ic('info',1.9)}<span>You already have ${esc(old.name)} ${esc(old.ver||'')}. Adding this replaces it in every group, and keeps their coins and values.</span></div>`:''}
+ <div class="grid2 plinfo"><div class="card"><div class="lab" style="--lc:var(--accent)">${ic('bolt',2)}<span>Listens for</span></div>${inf.trig.length?inf.trig.map(t=>`<div class="plrow">${esc(t)}</div>`).join(''):'<p class="sub">Nothing yet</p>'}</div>
+  <div class="card"><div class="lab" style="--lc:var(--blue)">${ic('shield',2)}<span>It can</span></div>${inf.perms.length?inf.perms.map(t=>`<div class="plrow">${esc(t)}</div>`).join(''):'<p class="sub">Only listen</p>'}</div></div>
+ ${inf.cmds.length?`<section><div class="sh"><h2>Commands</h2></div><div class="card plcmds">${inf.cmds.map(c=>`<span class="plcmd big">/${esc(c)}</span>`).join('')}<p class="sub">Type these in any channel of a group that has ${esc(pl.name)}.</p></div></section>`:''}
+ ${!pend?`<section><div class="sh"><h2>In groups</h2><span class="sub">${inGs.length}</span></div>${inGs.length?`<div class="card list">${inGs.map(g=>{const i=g.plugins.find(x=>x.pid===id);return`<div class="li">${gAv(g,'sm')}<a class="grow t" href="#group:${g.id}">${esc(g.name)}</a><label class="switch" aria-label="On in ${esc(g.name)}"><input type="checkbox" ${i.on?'checked':''} onchange="plugToggle('${g.id}','${i.id}',this.checked)"><span></span></label></div>`}).join('')}</div>`:`<div class="card emptyrow sub">Add it to a group and it starts working there.</div>`}</section>
+ <section class="row wrap">${have||starter?`<button class="btn" onclick="plugDownload('${PK.esc(id)}')">${ic('download')} Download file</button>`:''}${have&&!starter?`<button class="btn danger" onclick="plugRemove('${PK.esc(id)}')">${ic('trash')} Remove from phone</button>`:''}</section>`:''}</div>`}
+/* the hub's mark: the Atelier A whose thread ends in a plug */
+function hubMark(s=40){return`<svg class="hubm" viewBox="0 0 56 56" width="${s}" height="${s}" aria-hidden="true"><path d="${MARK_A}" class="ha"/><path d="M12.6 34.2C18 31.8 22.6 31.2 26 31.2C31.8 31.2 37.4 32.6 42.2 30.4C44 29.6 45.4 27.4 45.6 24.8" class="hb"/><rect x="41.4" y="16.6" width="8.4" height="8" rx="2.2" class="hp"/><path d="M43.6 16.6V13.2M47.6 16.6V13.2" class="hb"/></svg>`}
+/* ---- getting plugins onto the phone ---- */
+async function plugOpenCode(text){try{const pl=await PK.decode(text);_plPend=pl;use('plugin_scan');go('plugin:'+pl.id);return true}catch(e){toast(e.message||'That code did not work');return false}}
+function plugInstall(){const pl=_plPend;if(!pl)return;S.plugins=S.plugins||[];const i=S.plugins.findIndex(p=>p.id===pl.id);if(i>=0)S.plugins[i]=pl;else S.plugins.push(pl);_plPend=null;use('plugin_add');led('plugin',`Added the plugin ${pl.name}`,{ref:'plugin:'+pl.id});save();render();burst('var(--accent)');toast(pl.name+' is on this phone')}
+function plugScan(){let stop=null;const col=PK.collector();
+ openModal(`<div class="sheet plscan" role="dialog" aria-modal="true" aria-label="Scan a plugin"><div class="sheet-h"><h2>Scan a plugin</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div>
+ <div class="plcam"><video id="plV" playsinline muted></video><canvas id="plC" hidden></canvas><div class="plframe"><i></i><i></i><i></i><i></i></div><div class="plcamhint" id="plH">Point the camera at the code in Atelier Plugins</div></div>
+ <div class="plprog" id="plP" hidden><div class="pbar"><i id="plPB" style="width:0"></i></div><span id="plPT"></span></div>
+ <details class="pladv"><summary>Paste a code or open a file</summary><textarea id="plT" rows="3" placeholder="ATP1…" spellcheck="false"></textarea><div class="row"><button class="btn sm primary" id="plTB">Open code</button><label class="btn sm">${ic('file',2)} Open file<input type="file" id="plF" accept=".json,.atelier-plugin,application/json" hidden></label></div></details></div>`);
+ const done=async t=>{if(stop){stop();stop=null}closeSheet();await plugOpenCode(t)};
+ const onT=t=>{const r=col.add(t);if(r.done)return done(r.done);if(r.got){$('#plP').hidden=false;$('#plPB').style.width=Math.round(r.got/r.n*100)+'%';$('#plPT').textContent=`Code ${r.got} of ${r.n}. Keep the camera on the codes.`}};
+ if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&typeof jsQR==='function'){stop=PK.scan($('#plV'),$('#plC'),onT,()=>{$('#plH').textContent='The camera is not available. Paste the code or open the file instead.';$('.plcam').classList.add('off')})}else{$('#plH').textContent='This browser cannot use the camera here. Paste the code or open the file.';$('.plcam').classList.add('off')}
+ onSheetClose(()=>{if(stop){stop();stop=null}});
+ $('#plTB').onclick=()=>{const v=$('#plT').value.trim();if(v)done(v)};
+ $('#plF').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const t=await f.text();let pl;try{pl=JSON.parse(t)}catch(x){return done(t)}const bad=PK.valid(pl);if(bad){toast(bad);return}if(stop){stop();stop=null}closeSheet();_plPend=PK.clean(pl);go('plugin:'+pl.id)}catch(x){toast('Could not read that file')}}}
+/* show a plugin as QR codes, cycling when it needs several */
+async function plugShare(id){const pl=plugOf(id);if(!pl)return;const code=await PK.encode(pl),parts=PK.parts(code,380);let k=0,tm=0;
+ openModal(`<div class="sheet" role="dialog" aria-modal="true" aria-label="Plugin code"><div class="sheet-h"><h2>${esc(pl.name)}</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div><p class="sub" style="margin:0 2px 10px">Scan this with Atelier on another phone, or with Atelier Plugins on a computer.</p>
+ <div class="plqr" id="plQ">${PK.qrSvg(parts[0])}</div>${parts.length>1?`<div class="plqrn"><span id="plQN">1</span> of ${parts.length} · the codes change by themselves</div>`:''}
+ <div class="row mt"><button class="btn grow" id="plCp">${ic('copy')} Copy code</button><button class="btn grow" onclick="plugDownload('${PK.esc(id)}')">${ic('download')} File</button></div></div>`);
+ if(parts.length>1){tm=setInterval(()=>{k=(k+1)%parts.length;const q=$('#plQ');if(!q)return clearInterval(tm);q.innerHTML=PK.qrSvg(parts[k]);$('#plQN').textContent=k+1},900);onSheetClose(()=>clearInterval(tm))}
+ $('#plCp').onclick=()=>{try{navigator.clipboard.writeText(code)}catch(e){}toast('Plugin code copied')}}
+function plugDownload(id){const pl=plugOf(id);if(!pl)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(PK.clean(pl),null,1)],{type:'application/json'}));a.download=pl.name.replace(/[^\w-]+/g,'-').toLowerCase()+'.atelier-plugin.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function plugRemove(id){ask('Remove this plugin from the phone? It also leaves every group.',()=>{S.plugins=(S.plugins||[]).filter(p=>p.id!==id);S.groups.forEach(g=>g.plugins=(g.plugins||[]).filter(i=>i.pid!==id));go('plugins')},'Remove')}
+/* ---- plugins in a group ---- */
+function plugToGroup(id){const gs=S.groups.map(gFix).filter(g=>can(g,'manage'));if(!gs.length){toast('Make a group first, or ask its owner');return}
+ pickList('Add to a group',gs.map(g=>({id:g.id,html:`${gAv(g,'sm')}<div class="grow"><div class="t">${esc(g.name)}</div><div class="sub sm">${(g.plugins||[]).some(i=>i.pid===id)?'Already added':plural((g.plugins||[]).length,'plugin')}</div></div>`})),gid=>{closeSheet();plugAdd(gid,id)},'')}
+function plugAdd(gid,pid){const g=G(gid),pl=plugOf(pid);if(!g||!pl)return;g.plugins=g.plugins||[];if(g.plugins.some(i=>i.pid===pid)){go('group:'+gid);return}
+ if(pl.starter&&!(S.plugins||[]).some(p=>p.id===pid)){S.plugins=S.plugins||[];S.plugins.push(JSON.parse(JSON.stringify(pl)))}
+ const inst={id:'i'+uid(),pid,on:true,store:{},at:Date.now()};g.plugins.push(inst);use('plugin_use');led('plugin',`${pl.name} works in ${g.name} now`,{ref:'group:'+g.id});save();toast(pl.name+' added to '+g.name);
+ plugFireInst(g,inst,{k:'install',user:plugMe(g)});go('g:'+g.id)}
+function plugToggle(gid,iid,on){const g=G(gid),i=(g.plugins||[]).find(x=>x.id===iid);if(!i)return;i.on=on;save();toast(on?'On':'Off')}
+function plugDrop(gid,iid){const g=G(gid);ask('Remove this plugin from the group? Its values, like coins, go too.',()=>{g.plugins=(g.plugins||[]).filter(x=>x.id!==iid)},'Remove')}
+function plugGroupHtml(g){const L=(g.plugins||[]).map(i=>({i,pl:plugOf(i.pid)})).filter(x=>x.pl),mg=can(g,'manage');
+ return`<section><div class="sh"><h2>Plugins</h2><a class="lnk" href="#plugins">Browse</a></div>${L.length?`<div class="card list">${L.map(({i,pl})=>{const inf=PK.info(pl);return`<div class="li plgrow">${PK.picHtml(pl)}<a class="grow" href="#plugin:${PK.esc(pl.id)}"><div class="t">${esc(pl.name)}</div><div class="sub sm">${inf.cmds.length?inf.cmds.map(c=>'/'+esc(c)).join(' '):esc(inf.trig.slice(0,2).join(', '))}${i.err?` · <span style="color:var(--red)">${esc(i.err.slice(0,60))}</span>`:''}</div></a>${mg?`<label class="switch" aria-label="${esc(pl.name)} on"><input type="checkbox" ${i.on?'checked':''} onchange="plugToggle('${g.id}','${i.id}',this.checked)"><span></span></label><button class="icon-btn sm" onclick="plugDrop('${g.id}','${i.id}')" aria-label="Remove ${esc(pl.name)}">${ic('close')}</button>`:''}</div>`}).join('')}</div>`:''}
+ ${mg?`<div class="plgadd">${plugAll().filter(pl=>!(g.plugins||[]).some(i=>i.pid===pl.id)).slice(0,6).map(pl=>`<button type="button" class="pladd" onclick="plugAdd('${g.id}','${PK.esc(pl.id)}')">${PK.picHtml(pl)}<span>${esc(pl.name)}</span>${ic('plus',2)}</button>`).join('')}<button type="button" class="pladd scan" onclick="plugScan()">${ic('scan',1.9)}<span>Scan a plugin</span></button></div>`:L.length?'':`<div class="card emptyrow sub">No plugins here yet.</div>`}</section>`}
+/* ---- running them ---- */
+const plugMe=g=>({id:'me',name:S.me.name||'You'});
+function plugSnap(g){return{group:{id:g.id,name:g.name},me:'me',members:g.members.map(id=>{const p=person(id);return p||id==='me'?{id,name:id==='me'?(S.me.name||'You'):p.name,bot:!!p?.bot,roles:rolesOf(g,id).map(r=>r.name)}:null}).filter(Boolean),channels:g.chs.filter(c=>c.type!=='all').map(c=>({id:c.id,name:c.name,type:c.type}))}}
+/* runs of one plugin take turns, so each sees the values the last one left */
+const _plQ=new WeakMap();
+function plugFireInst(g,inst,ev){const q=(_plQ.get(inst)||Promise.resolve()).then(()=>plugRun(g,inst,ev)).catch(e=>console.warn('[plugin]',e));_plQ.set(inst,q);return q}
+async function plugRun(g,inst,ev){const pl=plugOf(inst.pid);if(!pl||!inst.on)return;ev.now=Date.now();const r=await PK.run(pl,ev,plugSnap(g),inst.store||{});inst.store=r.store||inst.store;inst.err=r.err||null;if(r.err)console.warn('[plugin]',pl.name,r.err);
+ if(r.actions&&r.actions.length){use('plugin_run');(r.actions||[]).slice(0,40).forEach(a=>a.at?setTimeout(()=>plugAct(g,pl,a,ev),a.at):plugAct(g,pl,a,ev))}saveSoon()}
+function plugFire(g,ev){if(!g||!(g.plugins||[]).some(i=>i.on))return;g.plugins.filter(i=>i.on).forEach(i=>plugFireInst(g,i,{...ev}))}
+const plugHasCmds=c=>{const g=c&&c.kind==='group'?grp(c.with):null;return!!g&&(g.plugins||[]).some(i=>i.on&&PK.info(plugOf(i.pid)||{}).cmds.length)};
+function plugCmds(g){const out=[];(g.plugins||[]).filter(i=>i.on).forEach(i=>{const pl=plugOf(i.pid);if(pl)PK.info(pl).cmds.forEach(c=>out.push({c,pl}))});return out}
+/* a message in a group: commands, messages, words, the day's first message, files */
+function plugOnMsg(c,m){if(!c||c.kind!=='group'||m.from==='pl')return;const g=grp(c.with),ch=chanOf(c);if(!g||!ch||!(g.plugins||[]).some(i=>i.on))return;const p=m.from==='me'?plugMe(g):{id:m.from,name:person(m.from)?.name||'Someone'};
+ const base={user:p,ch:{id:ch.id,name:ch.name},msg:{id:m.id},text:m.text||''},t=(m.text||'').trim();
+ if(t.startsWith('/')){const [cmd,...args]=t.slice(1).split(/\s+/);plugFire(g,{...base,k:'command',cmd:cmd.toLowerCase(),args});return}
+ g.pday=g.pday||{};if(g.pday[p.id]!==today()){g.pday[p.id]=today();plugFire(g,{...base,k:'daily'})}
+ if(t){plugFire(g,{...base,k:'message'});plugFire(g,{...base,k:'keyword'})}
+ if(m.att&&(m.att.kind==='doc'||m.att.kind==='photo')){(async()=>{let blob=null;try{if(m.att.fid)blob=await IDB.get(m.att.fid)}catch(e){}const file=await PK.fileInfo(m.att.title||'File',m.att.type||(m.att.kind==='photo'?'image/jpeg':''),m.att.size||blob?.size||0,blob);plugFire(g,{...base,k:'file',file})})()}}
+function plugOnReact(c,m,key,who){if(!c||c.kind!=='group')return;const g=grp(c.with),ch=chanOf(c);if(!g||!ch)return;const r=PK.RX[key];
+ plugFire(g,{k:'reaction',user:who==='me'?plugMe(g):{id:who,name:person(who)?.name||'Someone'},author:m.from==='me'?plugMe(g):m.from==='pl'?null:{id:m.from,name:person(m.from)?.name||'Someone'},ch:{id:ch.id,name:ch.name},msg:{id:m.id},text:m.text||'',reaction:{key,label:r?r[1]:key.slice(2)}})}
+function plugOnJoin(g,ids){ids.forEach(id=>{const p=person(id);if(p)plugFire(g,{k:'join',user:{id,name:p.name}})})}
+function plugOnRole(g,pid,role){const p=pid==='me'?plugMe(g):{id:pid,name:person(pid)?.name||'Someone'};plugFire(g,{k:'role',user:p,role:{name:role}})}
+function plugTick(){S.groups.forEach(g=>{const on=(g.plugins||[]).filter(i=>i.on);if(on.some(i=>{const pl=plugOf(i.pid);return pl&&(pl.mode==='code'?/on\(\s*['"]timer/.test(pl.code||''):(pl.graph?.nodes||[]).some(n=>n.k==='timer'))}))plugFire(g,{k:'timer',user:plugMe(g)})})}
+/* what plugins do, applied for real */
+function plugAct(g,pl,a,ev){if(!grp(g.id))return;const pm=(c,att,text)=>{const m={id:uid(),from:'pl',pl:{id:pl.id,name:pl.name,pic:pl.pic},text:String(text||'').slice(0,2000),at:Date.now()};if(att)m.att={...att};c.msgs.push(m);if(onChat(c)){c.read=Date.now();appendMsgs(c)}else nav();return m};
+ const chatOf=id=>{const ch=g.chs.find(x=>x.id===id);return ch&&ch.type!=='all'?chanChat(g,ch):null};
+ switch(a.t){case'send':{const c=chatOf(a.ch)||chatOf((g.chs.find(x=>x.type==='talk')||{}).id);if(c&&a.text)pm(c,null,a.text);break}
+  case'react':{const c=chatOf(a.ch),m=c&&c.msgs.find(x=>x.id===a.msg);if(m){m.rx=m.rx||{};const L=m.rx[a.key]=m.rx[a.key]||[];const who='pl:'+pl.id;if(!L.includes(who))L.push(who);msgRefresh(c,m)}break}
+  case'pin':{const c=chatOf(a.ch),m=c&&c.msgs.find(x=>x.id===a.msg);if(m&&!m.pin){m.pin=Date.now();if(onChat(c))render()}break}
+  case'role':{if(!g.members.includes(a.who))break;let r=g.roles.find(x=>x.name.toLowerCase()===a.role.toLowerCase());if(!r&&a.on){r={id:'r'+uid(),name:a.role.slice(0,24),col:RCOL[g.roles.length%RCOL.length],perms:{}};g.roles.splice(Math.max(1,g.roles.length-1),0,r)}if(!r||r.id==='owner')break;
+   const L=new Set(g.mroles[a.who]||[]);if(a.on)L.add(r.id);else L.delete(r.id);if(!L.size)L.add('member');g.mroles[a.who]=[...L];if(route.k==='g'&&route.a[0]===g.id)svMem(g.id);break}
+  case'notify':toast(a.text);break;
+  case'copy':{const from=chatOf(a.from),m=from&&from.msgs.find(x=>x.id===a.msg),to=chatOf(a.ch);if(m&&m.att&&to)pm(to,m.att,'Shared by '+(m.from==='me'?(S.me.name||'You').split(' ')[0]:person(m.from)?.name.split(' ')[0]||'someone')+' in #'+(chanOf(from)?.name||''));break}
+  case'mkch':{if(!g.chs.some(x=>x.name===a.name)){g.chs.push({id:'h'+uid(),name:a.name,type:CHT[a.type]?a.type:'talk',cat:(g.cats[0]||{}).id,topic:'Made by '+pl.name});if(route.k==='g'&&route.a[0]===g.id){const el=$('#svCh');if(el)el.innerHTML=chPanel(g,g.chs.find(x=>x.id===g.last))}}break}}
+ saveSoon()}
+/* ---- reactions: drawn ones, or any emoji from the keyboard ---- */
+function rxRow(c,m){const E=Object.entries(m.rx||{}).filter(([k,v])=>v.length);if(!E.length)return'';return`<div class="rxs">${E.map(([k,v])=>`<button type="button" class="rx ${v.includes('me')?'on':''}" data-rx="${c.id}|${m.id}|${PK.esc(k)}" aria-label="${PK.esc(PK.RX[k]?.[1]||'Reaction')}, ${v.length}">${PK.rxHtml(k)}<b>${v.length}</b></button>`).join('')}</div>`}
+function msgRefresh(c,m){if(!onChat(c))return;const el=document.querySelector(`.msg[data-id="${m.id}"]`);if(!el)return;const i=c.msgs.indexOf(m),d=document.createElement('div');d.innerHTML=msgHtml(c,m,c.msgs[i-1],i);const n=d.firstElementChild;el.replaceWith(n);loadImgs(n)}
+function rxToggle(c,m,key,who='me'){m.rx=m.rx||{};const L=m.rx[key]=m.rx[key]||[];const on=!L.includes(who);if(on)L.push(who);else L.splice(L.indexOf(who),1);if(!L.length)delete m.rx[key];if(on&&who==='me')use('react');save();msgRefresh(c,m);if(on)plugOnReact(c,m,key,who);return on}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rx]');if(!b)return;e.preventDefault();e.stopPropagation();const [cid,mid,key]=b.dataset.rx.split('|'),c=S.chats.find(x=>x.id===cid),m=c?.msgs.find(x=>x.id===mid);if(m)rxToggle(c,m,key)},true);
+const rxFirst=s=>{try{if(typeof Intl!=='undefined'&&Intl.Segmenter){const it=new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(s.trim())[Symbol.iterator]().next();return it.value?it.value.segment:''}}catch(e){}return Array.from(s.trim()).slice(0,2).join('')};
+function rxPicker(cid,mid){const c=S.chats.find(x=>x.id===cid),m=c?.msgs.find(x=>x.id===mid);return`<div class="rxpick" role="group" aria-label="React">${PK.REACTS.map(r=>`<button type="button" class="${(m?.rx?.[r[0]]||[]).includes('me')?'on':''}" data-rk="${r[0]}" aria-label="${r[1]}">${PK.rxSvg(r[0])}</button>`).join('')}<button type="button" class="rxkb" id="rxKb" aria-label="React with an emoji from the keyboard">${ic('plus',2)}</button></div><div class="rxtype" id="rxTy" hidden><input id="rxIn" placeholder="Type an emoji" maxlength="16" autocomplete="off" enterkeyhint="done"><button type="button" class="btn sm primary" id="rxGo">React</button></div>`}
+function rxBind(cid,mid){const c=S.chats.find(x=>x.id===cid),m=c?.msgs.find(x=>x.id===mid);if(!m)return;$$('.rxpick [data-rk]').forEach(b=>b.onclick=()=>{rxToggle(c,m,b.dataset.rk);closeSheet()});
+ $('#rxKb').onclick=()=>{$('#rxTy').hidden=false;$('#rxIn').focus()};const go=()=>{const v=rxFirst($('#rxIn').value);if(!v||/^[\w\s.,!?'"-]+$/.test(v)){toast('Pick an emoji');return}rxToggle(c,m,'u:'+v);closeSheet()};$('#rxGo').onclick=go;$('#rxIn').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go()}}}
+/* bots react now and then */
+function botReact(chat,m,pid){if(!m||Math.random()>.3)return;const k=pick(['love','like','haha','star','done','spark']);setTimeout(()=>{if(!S.chats.includes(chat))return;rxToggle(chat,m,k,pid)},1200+Math.random()*1800)}
+/* the hub on the same computer leaves plugins in an inbox */
+function plugInbox(){let L=[];try{L=JSON.parse(localStorage.getItem('atelier-plugin-inbox')||'[]')}catch(e){}if(!L.length)return;try{localStorage.removeItem('atelier-plugin-inbox')}catch(e){}
+ (async()=>{let n=0,last=null;for(const t of L){try{const pl=await PK.decode(t);S.plugins=S.plugins||[];const i=S.plugins.findIndex(p=>p.id===pl.id);if(i>=0)S.plugins[i]=pl;else S.plugins.push(pl);n++;last=pl}catch(e){}}if(n){use('plugin_add');save();toast(n>1?`${n} plugins arrived from Atelier Plugins`:`${last.name} arrived from Atelier Plugins`);if(route.k==='plugins'||route.k==='plugin')render()}})()}
+function plugBoot(){plugInbox();addEventListener('focus',plugInbox);document.addEventListener('visibilitychange',()=>{if(!document.hidden)plugInbox()});setInterval(plugTick,60000);
+ const h=location.hash||'';if(h.startsWith('#plugin=')){const t=decodeURIComponent(h.slice(8));try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}setTimeout(()=>plugOpenCode(t),400)}}
