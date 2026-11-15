@@ -66,3 +66,11 @@ JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `reset
 ## Flow (flow.js)
 - `pFlow()`: counts, a create strip (Note, Agenda, Upload, plus Exam and Flashcards or Project and Task), recent notes, a week strip with the agenda, materials and the study or projects section.
 - Materials: `S.materials=[{id,name,type,size,fid,tag,at}]`, blobs in IndexedDB under `m…` (never `c…`, so chat clean-up never touches them). Sending one to chat copies the blob to a new `c…` key. `pMaterials()` lists, searches and filters by tag.
+
+## Groups as servers (groups.js)
+- Chat has three rounded section tabs: Messages (direct chats, with a strip of groups on top), Groups and People.
+- A group is private (schoolwork, friends, small teams) or official (a company or a school: `g.org` with name, kind, website and email; `g.verify` is `pending` until verified, and the verified badge shows only then). The Atelier Community group, which Atelier runs itself, is the one verified group and can be joined from Discover.
+- Every group has a picture (an icon or an uploaded photo), a banner (thread, dots, rings, grid, wash, drawing or an uploaded picture), roles (Owner and Member to start; new roles with a colour and what they can do: manage, channels, roles, announce, pin, invite) and categories with channels.
+- Channel types (`CHT`): Talk, Announcements (only roles with announce post), Files (shelf of files, upload), Photos, Projects (only projects), Notes (shared note boards), Ideas (votes; bots vote too), Plans (agenda, day and countdown widgets) and Everything (one feed of all that is attached in every channel, with filters). Every channel shows what is attached in it (the folder button).
+- Layout: on phones the channel opens full screen, channels slide in from the left and members (grouped by role, filter by role) from the right. From 1100 px wide, channels, chat and members sit side by side.
+- `pServer(gid, chId)` is the route `g:gid:chId`; `group:gid` is the group page with roles, channels, verification, plugins (coming soon), projects, media and notes. Links to `c:` chats of groups open their channel.

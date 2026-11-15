@@ -21,7 +21,7 @@ async function run(name,url,frameSel,block){const b=await chromium.launch();cons
  ok(await F.locator('#tabs a:has-text("Flow")').isVisible()&&!(await F.locator('#tabs a:has-text("Notes")').count()),name+': a student gets the Flow tab');
  await F.locator('#tabs a:has-text("Flow")').tap();await W(500);ok(await F.locator('.ph .eyebrow:has-text("Study flow")').isVisible()&&await F.locator('.sttiles').isVisible(),name+': Study flow holds study');
  await F.locator('#tabs a:has-text("You")').tap();await W(500);await F.locator('.spseg [data-sp=work]').tap();await W(900);ok(await F.locator('#tabs a:has-text("Flow")').isVisible()&&await F.locator('.shero').isVisible(),name+': switch to the work space');
- for(const [tab,check] of [['Focus','.clockwrap'],['Flow','.fmake'],['Chat','.convo'],['You','.knotsum'],['Today','.ttl']]){
+ for(const [tab,check] of [['Focus','.clockwrap'],['Flow','.fmake'],['Chat','.ctabs'],['You','.knotsum'],['Today','.ttl']]){
   await F.locator(`#tabs a:has-text("${tab}")`).tap();await W(600);ok(await F.locator(check).first().isVisible(),`${name}: tab ${tab} opens`)}
  await F.locator('.thav').tap();await W(500);ok(await F.locator('.knotsum').isVisible(),name+': avatar opens account');
  await F.locator('#tabs a:has-text("Today")').tap();await W(400);
@@ -60,16 +60,20 @@ async function run(name,url,frameSel,block){const b=await chromium.launch();cons
  await F.locator('[aria-label="Skip to next phase"]').tap();await W(600);await F.locator('.rcta').tap();await W(900);ok(await F.locator('#rst').isVisible()&&!(await F.locator('#tabs').isVisible()),name+': guided reset opens with a tap on a break');
  for(let i=0;i<3;i++){await F.locator('#rSk').tap();await W(350)}await F.locator('#rPa').tap();await W(200);await F.locator('#rPa').tap();await F.locator('#rX').tap();await W(700);ok(!(await F.locator('#rst').count())&&await F.locator('#tabs').isVisible(),name+': skip, pause and close the reset with taps');
  await F.locator('[aria-label=Stop]').tap();await W(400);
- await F.locator('#tabs a:has-text("Chat")').tap();await W(400);await F.locator('.convo').first().tap();await W(600);ok(await F.locator('#ci').isVisible(),name+': conversation opens');
+ await F.locator('#tabs a:has-text("Chat")').tap();await W(400);ok(await F.locator('.ctabs .ctab').count()===3,name+': chat sections as rounded tabs');
+ await F.locator('.ctab:has-text("Groups")').tap();await W(400);ok(await F.locator('.gtile').first().isVisible(),name+': groups as servers');await F.locator('.gtile').first().tap();await W(600);ok(await F.locator('#ci').isVisible(),name+': a group opens in its channel');
+ await F.locator('.svgb').tap();await W(550);await F.locator('#svCh .chp:has-text("files")').tap();await W(600);ok(await F.locator('.svshelf').isVisible(),name+': channels panel, tap a channel');
+ await F.locator('.svgb').tap();await W(550);await F.locator('#svCh .chp:has-text("general")').tap();await W(600);ok(await F.locator('#ci').isVisible(),name+': conversation opens');
  await F.locator('#ci').fill('Hi team');await F.locator('.sendb').tap();await W(400);ok(await F.locator('.msg.me >> text=Hi team').isVisible(),name+': message sends');
  await F.locator('.composer [aria-label=Share]').tap();await W(450);ok(await F.locator('.wtile').count()===10,name+': share sheet opens with widgets');
  await F.locator('.wtile[data-k=day]').tap();await W(600);await F.locator('#wT [data-v=tint]').tap();await W(200);await F.locator('#wSend').tap();await W(700);ok(await F.locator('.msg.me .w-day.wt-tint').first().isVisible(),name+': my day widget, styled with a tap');
  await F.locator('.composer [aria-label=Share]').tap();await W(400);await F.locator('.wtile[data-k=agenda]').tap();await W(600);await F.locator('#wSend').tap();await W(700);ok(await F.locator('.msg.me .w-agenda').first().isVisible(),name+': agenda widget with a tap');
- await F.locator('.chinfo').tap();await W(700);ok(await F.locator('.mstrip').isVisible(),name+': tap the chat header for group info');
+ await F.locator('.svgb').tap();await W(550);await F.locator('#svCh [aria-label="Group settings"]').tap();await W(700);ok(await F.locator('.mstrip').isVisible(),name+': the gear opens group info');
  ok(await F.locator('.sh h2:has-text("Active projects")').isVisible()||await F.locator('.sh h2:has-text("Active projects")').count()===1,name+': group info lists active projects');
  await F.locator('.ph .icon-btn[aria-label=Back]').tap();await W(600);ok(await F.locator('#ci').isVisible(),name+': back from group info to the chat');
- await F.locator('.chath a[aria-label=Back]').tap();await W(400);await F.locator('.seg a:has-text("Groups")').tap();await W(400);ok(await F.locator('.gcard').first().isVisible(),name+': groups open');
- await F.locator('.seg a:has-text("People")').tap();await W(400);ok(await F.locator('text=Maja Kovač').isVisible(),name+': people open');
+ await F.locator('.svmb').tap();await W(550);ok(await F.locator('#svMem .svm').first().isVisible(),name+': members panel with a tap');await F.locator('.svscrim').tap({position:{x:20,y:300}});await W(500);
+ await F.locator('.chath a[aria-label="Back to groups"]').tap();await W(400);ok(await F.locator('.gtile').first().isVisible(),name+': groups open');
+ await F.locator('.ctab:has-text("People")').tap();await W(400);ok(await F.locator('text=Maja Kovač').isVisible(),name+': people open');
  await F.locator('#tabs a:has-text("Focus")').tap();await W(400);await F.locator('[data-mode=study]').tap();await W(300);await F.locator('.cbtn.main').tap();await W(600);ok(await F.locator('[aria-label=Pause]').isVisible(),name+': focus starts');
  await F.locator('#tabs a:has-text("Today")').tap();await W(500);ok(await F.locator('.fcard').isVisible(),name+': live focus card');
  ok(errs.length===0,name+': no errors'+(errs.length?': '+[...new Set(errs)].slice(0,4).join(' | '):''));

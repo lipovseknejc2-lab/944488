@@ -56,7 +56,7 @@ function openWidget(cid,kind,preset,after){const c=cid?S.chats.find(x=>x.id===ci
  onSheetClose(()=>{if(url){const u=url;setTimeout(()=>URL.revokeObjectURL(u),3000)}});
  $('#wSend').onclick=async()=>{if(!a)return;S.widgets=S.widgets||{};S.widgets[kind]=w;let att={...a,w};delete att.src;
   if(kind==='photo'){if(!file)return;const fid='c'+uid();try{await IDB.put(fid,file)}catch(e){toast('Could not save the photo');return}att.fid=fid}
-  const send=t=>{sendMsg(t,'',att);use('widget');if(after)after(t);else if(route.k==='c'&&route.a[0]===t.id)appendMsgs(t);else go('c:'+t.id)};
+  const send=t=>{sendMsg(t,'',att);use('widget');if(after)after(t);else if(onChat(t))appendMsgs(t);else go('c:'+t.id)};
   closeSheet();if(c)send(c);else setTimeout(()=>pickConvo(t=>{send(t);toast('Widget sent to '+convoName(t))},'Send widget to'),230)}}
 /* a note widget opens up right in the chat: tap the page to see all of it, tap the unfold mark to edit it */
 document.addEventListener('click',e=>{const mi=e.target.closest('.w-note .nmini.wmini');if(!mi||e.target.closest('[data-ck],.wopen'))return;const w=mi.closest('.w-note');if(!mi.dataset.h)mi.dataset.h=parseInt(mi.style.height)||150;

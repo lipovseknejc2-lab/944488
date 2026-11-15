@@ -75,7 +75,7 @@ function progressSheet(pid){const p=proj(pid),auto=Math.round((()=>{const m=p.pm
  ${gs.length?`<label class="chk"><input type="checkbox" name="post" checked> Post the update to ${esc(gs.map(g=>g.name).join(', '))}</label>`:''}`,
  fd=>{const from=Math.round(progOf(p)*100);p.pmode=fd.mode==='manual'?'manual':'auto';if(p.pmode==='manual')p.pct=clamp(+fd.pct||0,0,100);p.up=Date.now();trackProg(p);const to=Math.round(progOf(p)*100),note=(fd.note||'').trim();
   use('progress');act(p,'me',`updated progress to ${to}%${note?': '+note.slice(0,60):''}`);led('milestone',`${p.name} is ${to}% done`,{sub:note,ref:'project:'+p.id});
-  if(fd.post)gs.forEach(g=>sendMsg(ensureGroupChat(g.id),'',{kind:'progress',id:p.id,title:p.name,col:p.col,pct:to,from,note}));if(to>=100&&from<100)burst(p.col);toast(`Progress: ${to}%`)});
+  if(fd.post)gs.forEach(g=>sendMsg(ensureGroupChat(g.id,'projects'),'',{kind:'progress',id:p.id,title:p.name,col:p.col,pct:to,from,note}));if(to>=100&&from<100)burst(p.col);toast(`Progress: ${to}%`)});
  const f=$('#sf'),R=$('#pgR'),show=v=>{$('#pgV').textContent=v+'%';$('#pgB i').style.width=v+'%'};
  f.addEventListener('change',e=>{if(e.target.name==='mode'){const man=f.mode.value==='manual';R.disabled=!man;if(!man)R.value=auto;show(+R.value)}});R.oninput=()=>show(+R.value)}
 const ICOL=['#f6dd8a','#bfd6fb','#c6e9cf','#f8cfbf','#ddd0f7'];

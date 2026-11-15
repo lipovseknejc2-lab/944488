@@ -90,7 +90,7 @@ ok(await p.isVisible('#dch .bar'),'table draws a chart');await p.click('text=Lin
 await p.click('text=Row');await W(300);ok(await ev(()=>S.projects[0].table.rows.length===3),'add row');
 await go('project:'+pid);ok(await p.isVisible('.phero')&&await p.isVisible('.ptab .chart'),'overview with progress and chart');
 // chat
-await go('chat');ok(await ev(()=>document.querySelectorAll('.convo').length>=1),'conversation list');
+await go('chat');ok(await ev(()=>document.querySelectorAll('.convo,.gsi').length>=1),'conversation list and groups strip');
 await ev(id=>{const c=ensureDM(id);save();go('c:'+c.id)},bot);await W(500);await p.fill('#ci','Hi Luka, any idea for the cover?');await p.press('#ci','Enter');await W(300);
 ok(await p.isVisible('.msg.me >> text=any idea'),'message sent');await W(1800);ok(await p.isVisible('#typ:not([hidden])')||await ev(()=>S.chats.find(c=>c.with===S.people[1].id).msgs.length>1),'typing indicator');
 await W(3500);ok(await ev(id=>S.chats.find(c=>c.kind==='dm'&&c.with===id).msgs.length===2,bot),'bot replies');
@@ -99,7 +99,7 @@ const gc=await ev(()=>S.chats.find(c=>c.kind==='group').id);await go('c:'+gc);aw
 ok(await ev(id=>S.chats.find(c=>c.id===id).msgs.filter(m=>m.from!=='me').length>=2,gc),'group members reply');
 ok(await p.isVisible('#tabs .badge'),'unread badge on Chat tab');
 // groups & people
-await go('groups');await p.click('text=New >> nth=0');await W(400);await p.fill('#gN','Study club');await p.check('#sf input[name^="m_"] >> nth=0');await p.click('#sf button[type=submit]');await W(800);
+await go('groups');await p.click('text=New >> nth=0');await W(400);await p.click('.gtype [data-t=private]');await W(500);await p.fill('#gN','Study club');await p.check('#sf input[name^="m_"] >> nth=0');await p.click('#sf button[type=submit]');await W(800);
 ok(await ev(()=>S.groups.length===2&&S.groups[1].members.length===2),'group created');
 await go('people');await p.click('text=Add');await W(400);await p.fill('#bN','Nika Petek');await p.fill('#bR','Marketing');await p.click('#sf .seg label:nth-child(3)');await p.check('#sf input[name^="g_"] >> nth=1');await p.click('#sf button[type=submit]');await W(500);
 ok(await ev(()=>S.people.length===6&&S.people[5].tone==='curious'&&S.groups[1].members.includes(S.people[5].id)),'new bot teammate added to a group');
@@ -231,20 +231,20 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await r.click('.msg:has(.aph) .bub',{button:'right'});await Z(400);ok(await r.isVisible('#maPin'),'press and hold opens the message menu');
  await r.click('#maPin');await Z(500);ok(await E(i=>!!S.chats.flatMap(c=>c.msgs).find(m=>m.id===i).pin,ph.id)&&await r.isVisible('.pinbar'),'pin a message, pinned bar shows');
  // group info
- await r.click('.chinfo');await Z(700);ok(await E(g=>route.k==='group'&&route.a[0]===g,gid),'tap the group name to open group info');
+ await r.click('.svgb');await Z(500);await r.click('#svCh [aria-label="Group settings"]');await Z(700);ok(await E(g=>route.k==='group'&&route.a[0]===g,gid),'the gear in the channels panel opens group info');
  ok(await E(g=>document.querySelectorAll('.mstrip .mem:not(.add)').length===grp(g).members.length,gid),'group info: members at the top');
  ok(await E(()=>{const t=[...document.querySelectorAll('.sh h2')].map(h=>h.textContent);return t.indexOf('Members')<t.indexOf('Active projects')&&t.indexOf('Active projects')<t.indexOf('Pinned')&&t.indexOf('Pinned')<t.indexOf('Photos')&&t.indexOf('Photos')<t.indexOf('Files')}),'group info order: members, active projects, pinned, photos, files');
  ok(await E(()=>document.querySelectorAll('.apcard').length===1&&/90%/.test(document.querySelector('.apcard').textContent)),'active project with progress');
  ok(await E(()=>document.querySelectorAll('.mgrid .mthumb').length===1&&[...document.querySelectorAll('.card.list .li')].some(l=>/t\.pdf/.test(l.textContent))),'photos and files collected');
  await Z(400);ok(await E(()=>!!document.querySelector('.mgrid img').src),'photo thumbnails load');
- ok(await E(c=>document.querySelector('.ph .icon-btn[aria-label=Back]').getAttribute('href')==='#c:'+c,gc),'back returns to the chat');
+ ok(await E(g=>document.querySelector('.ph .icon-btn[aria-label=Back]').getAttribute('href')==='#g:'+g,gid),'back returns to the group');
  await r.click('.mgrid .mthumb');await Z(600);ok(await E(()=>isOpen()&&!!document.querySelector('.sheet .fprev[src]')&&!!document.querySelector('.sheet a[download]')),'open a shared photo');await E(()=>closeSheet());await Z(400);
- ok(await E(()=>document.documentElement.scrollWidth<=innerWidth+1&&!!document.querySelector('.ghero .gfig')&&getComputedStyle(document.querySelector('.ghero')).display!=='flex'),'the group page fits the phone width');
+ ok(await E(()=>document.documentElement.scrollWidth<=innerWidth+1&&!!document.querySelector('.ghero2 .gban')),'the group page fits the phone width');
  // group look
  await r.click('.ph .btn:has-text("Edit")');await Z(400);await r.click('.gicons label:has(input[value=cap])');await r.click('#gK label:has(input[value=study])');await r.click('.figpick label:has(input[value=read])');await r.locator('#sf input[name=mute]').scrollIntoViewIfNeeded();await Z(300);await r.check('#sf input[name=mute]');await r.click('#sf button[type=submit]');await Z(500);
  ok(await E(g=>{const x=grp(g);return x.icon==='cap'&&x.kind==='study'&&x.fig==='read'&&x.mute===true},gid),'group icon, kind, cover drawing and quiet mode saved');
- ok(await E(()=>/Study group/.test(document.querySelector('.ph .eyebrow').textContent)&&document.querySelector('.gbadge path').getAttribute('d')===ICON.cap),'group info shows the new look');
- await G('chat');ok(await E(()=>!!document.querySelector('.convo .mutei')),'quiet groups are marked in the list');
+ ok(await E(()=>/Study group/.test(document.querySelector('.ghero2 .sub').textContent)&&document.querySelector('.ghero2 .gav path').getAttribute('d')===ICON.cap),'group info shows the new look');
+ await G('groups');ok(await E(()=>!!document.querySelector('.gtile .mutei')),'quiet groups are marked in the list');
  // forward and delete
  const fwd=await E(()=>S.people[0].id);await G('c:'+gc);await r.click('.msg:has(.att) .bub >> nth=0',{button:'right'});await Z(300);await r.click('#maFwd');await Z(500);
  await r.click(`.sheet [data-i]:has-text("${await E(i=>person(i).name,fwd)}")`);await Z(600);ok(await E(i=>{const c=S.chats.find(c=>c.kind==='dm'&&c.with===i);return c&&c.msgs.some(m=>m.att&&m.att.kind==='doc')},fwd),'forward a message to a person');
@@ -408,7 +408,7 @@ await p.setInputFiles('#obF input[type=file]',[]).catch(()=>{});
  await G('today');ok(await E(()=>!!document.querySelector('.thav .frm-dotted')),'the frame shows on your avatar');
  ok(await E(()=>SKINS.every((s,i)=>i===0||s.at>SKINS[i-1].at)&&SKINS[SKINS.length-1].at>=1000000&&FRAMES[0].at>=SKINS[5].at&&FRAMES[FRAMES.length-1].at>SKINS[SKINS.length-1].at),'prices rise to over a million; frames start at mid-theme prices and end above the top theme');
  // every screen in every theme, light and dark
- const scr=['today','focus','flow','materials','study','notes','projects','chat','groups','you','rewards','profile','settings','posters','timetable','grades','pulse',...(await E(()=>S.groups.slice(0,1).map(g=>'group:'+g.id)))];let bad=[];
+ const scr=['today','focus','flow','materials','study','notes','projects','chat','groups','you','rewards','profile','settings','posters','timetable','grades','pulse',...(await E(()=>S.groups.slice(0,1).flatMap(g=>['group:'+g.id,'g:'+g.id,'g:'+g.id+':files'])))];let bad=[];
  for(const sk of await E(()=>SKINS.map(s=>s.id)))for(const th of ['light','dark']){const x=await E(([sk,th,scr])=>{S.usage.total=2e6;S.settings.skin=sk;S.settings.theme=th;applyTheme();const out=[];for(const h of scr){go(h);if(/Something went wrong/.test(document.querySelector('#view').textContent))out.push(h);else if(document.documentElement.scrollWidth>innerWidth+1)out.push(h+' too wide')}try{openReset();if(!document.querySelector('#rst .rfig'))out.push('reset');closeReset()}catch(e){out.push('reset '+e.message)}return out},[sk,th,scr]);if(x.length)bad.push(sk+'/'+th+': '+x.join())}
  ok(!bad.length,'every screen opens in every theme, light and dark'+(bad.length?' '+bad.join(' | '):''));
  await E(()=>{S.settings.skin='clay';S.settings.theme='light';S.usage.total=400000;applyTheme()});

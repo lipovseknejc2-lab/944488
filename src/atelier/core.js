@@ -25,7 +25,7 @@ function load(){let d=null;window._from='main';try{d=parseSave(LS.getItem(KEY))}
  return fixData(Object.assign(DEF(),d||{}))}
 /* knots: a normal full day of use is about 1,600 (checked against typical days); older saves are scaled once so everyone keeps their place */
 const KSCALE=8;
-function fixData(s){if(!Array.isArray(s.materials))s.materials=[];s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};if(!Array.isArray(s.pulse))s.pulse=[];if(!Array.isArray(s.nudges))s.nudges=[];if(!Array.isArray(s.resets))s.resets=[];
+function fixData(s){try{if(typeof gFixAll==='function')gFixAll(s)}catch(e){/* groups load later; boot() runs it again */}if(!Array.isArray(s.materials))s.materials=[];s.focus=Object.assign(DEF().focus,s.focus||{});s.usage=Object.assign({days:{},total:0},s.usage||{});s.settings=Object.assign(DEF().settings,s.settings||{});s.study=Object.assign(DEF().study,s.study||{});if(!s.widgets||typeof s.widgets!=='object')s.widgets={};if(!Array.isArray(s.pulse))s.pulse=[];if(!Array.isArray(s.nudges))s.nudges=[];if(!Array.isArray(s.resets))s.resets=[];
  if(!s.usage.ks){Object.values(s.usage.days).forEach(d=>{if(d&&d._n)d._n*=KSCALE});s.usage.total=(s.usage.total||0)*KSCALE;s.usage.ks=KSCALE}return s}
 let S=load(),_bk=0;
 function save(){if(!S.me&&!S.notes.length)return false;let raw;try{raw=JSON.stringify(S)}catch(e){return false}
@@ -107,7 +107,7 @@ async function loadImgs(root){for(const im of (root||document).querySelectorAll(
  if(u){im.onload=()=>box&&box.classList.add('ld');im.src=u}else if(box)box.classList.add('miss')}}
 /* ---------- knots: every action is metered (tracking only, shown on the You page) ---------- */
 const ACT={signin:['Sign in','Account',1],note_new:['New note','Notes',3],note_edit:['Note edit','Notes',1],note_share:['Share','Notes',2],note_block:['Note part','Notes',1],note_view:['Open in chat','Notes',0],note_link:['Arrow','Notes',1],note_sketch:['Sketch','Notes',2],material:['Material','Flow',2],flow_open:['Flow','Flow',0],
- msg:['Message','Chat',1],chat_new:['New conversation','Chat',2],group_new:['New group','Groups',5],group_edit:['Group change','Groups',1],bot_new:['New teammate','Groups',3],
+ msg:['Message','Chat',1],chat_new:['New conversation','Chat',2],group_new:['New group','Groups',5],group_edit:['Group change','Groups',1],channel_new:['New channel','Groups',3],role_new:['New role','Groups',2],role_give:['Give a role','Groups',1],group_verify:['Verification request','Groups',4],group_join:['Join a group','Groups',3],idea_vote:['Vote','Groups',1],channel_open:['Open a channel','Groups',0],bot_new:['New teammate','Groups',3],
  project_new:['New project','Projects',6],task_new:['New task','Projects',2],task_move:['Task update','Projects',1],idea:['Idea','Projects',2],vote:['Vote','Projects',1],
  file:['File upload','Projects',4],board_save:['Drawing saved','Projects',3],inspo:['Inspiration','Projects',2],table_edit:['Table edit','Projects',1],
  focus_min:['Focus minute','Focus',1],focus_start:['Focus start','Focus',1],feel:['Check-in','Today',1],voice:['Voice memo','Today',3],motd:['Message of the day','Today',1],poster:['Poster export','You',2],profile:['Profile update','Account',1],space:['Space switch','Account',1],pulse:['Motivation check','Today',3],nudge:['Nudge taken','Today',1],class_new:['Class','Study',2],grade:['Mark','Study',2],quiz:['Quiz','Study',3],plan_build:['Study plan','Study',3],skin:['Theme change','You',1],frame:['Frame change','You',1],quote:['Quote','You',1],widget:['Widget','Chat',2],
@@ -163,7 +163,7 @@ const TABS_STUDENT=TABS;
 const space=()=>S.settings.space==='student'?'student':'work';
 const tabsNow=()=>space()==='student'?TABS_STUDENT:TABS;
 function tabOf(k){const t=TAB_OF[k]||'today';if(space()==='student'&&['study','deck','review','timetable','grades','quiz'].includes(k))return'flow';return t}
-const TAB_OF={timetable:'focus',grades:'focus',quiz:'focus',pulse:'today',rewards:'you',profile:'you',today:'today',ledger:'today',focus:'focus',study:'focus',deck:'focus',review:'focus',flow:'flow',materials:'flow',notes:'flow',note:'flow',projects:'flow',project:'flow',board:'flow',chat:'chat',c:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
+const TAB_OF={timetable:'focus',grades:'focus',quiz:'focus',pulse:'today',rewards:'you',profile:'you',today:'today',ledger:'today',focus:'focus',study:'focus',deck:'focus',review:'focus',flow:'flow',materials:'flow',notes:'flow',note:'flow',projects:'flow',project:'flow',board:'flow',chat:'chat',c:'chat',g:'chat',groups:'chat',group:'chat',people:'chat',person:'chat',you:'you',posters:'you',settings:'you'};
 let route={k:'today',a:[]},_prevRoute='';
 /* Pages change in memory, so navigation works everywhere, also in previews that block address changes. */
 let _hash=(()=>{try{return decodeURIComponent(location.hash.slice(1))}catch(e){return''}})()||'today';
@@ -183,7 +183,7 @@ const navBadge=()=>nav();
 function render(){if(!S.me){$('#shell').classList.add('nologin');onboarding();return}$('#shell').classList.remove('nologin');
  route=parseHash();const key=_hash;const fresh=key!==_prevRoute;_prevRoute=key;
  const V=$('#view'),y=fresh?0:scrollY;
- const P={flow:pFlow,materials:pMaterials,timetable:pTimetable,grades:pGrades,quiz:pQuiz,pulse:pPulse,rewards:pRewards,profile:pProfile,study:pStudy,deck:pDeck,review:pReview,person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
+ const P={flow:pFlow,materials:pMaterials,timetable:pTimetable,grades:pGrades,quiz:pQuiz,pulse:pPulse,rewards:pRewards,profile:pProfile,study:pStudy,deck:pDeck,review:pReview,person:pPerson,today:pToday,ledger:pLedger,focus:pFocus,notes:pNotes,note:pNote,projects:pProjects,project:pProject,board:pBoard,chat:pChat,c:pConvo,g:pServer,groups:pGroups,group:pGroup,people:pPeople,you:pYou,posters:pPosters,settings:pSettings}[route.k]||pToday;
  try{V.innerHTML=P(...route.a)||''}catch(e){console.error(e);V.innerHTML=`<div class="page">${empty('think','Something went wrong','This view could not be shown. Your work is safe.',`<a class="btn primary" href="#today">Back to Today</a>`)}</div>`}
  if(fresh){V.classList.remove('enter');void V.offsetWidth;V.classList.add('enter');scrollTo(0,0)}else scrollTo(0,y);
  nav();paintRail();countUp(V);if(V._after){const f=V._after;V._after=null;f()}miniTimer();loadImgs(V)}

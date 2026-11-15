@@ -28,12 +28,12 @@ const LINES={
 function topicOf(t){t=t.toLowerCase();if(/\b(hi|hey|hello|živjo|zdravo|good morning)\b/.test(t))return'greet';if(/thank|hvala|thx/.test(t))return'thanks';if(/idea|ideja|what if|maybe we/.test(t))return'idea';if(/deadline|due|tomorrow|today|friday|rok|jutri/.test(t))return'time';if(/meet|call|sestan|session/.test(t))return'meet';if(/\?$/.test(t.trim()))return'q';return'gen'}
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function seedBots(){if(S.people.length)return;BOT_SEED.forEach(b=>S.people.push({id:uid(),bot:true,handle:b.name.split(' ')[0].toLowerCase(),status:'Available',...b}))}
-function botReply(chat,text,att){const pool=chat.kind==='dm'?[chat.with]:(grp(chat.with)?.members||[]).filter(id=>id!=='me'&&person(id)?.bot);
+function botReply(chat,text,att){if(typeof chanOf==='function'&&['announce','all'].includes(chanOf(chat)?.type))return;const pool=chat.kind==='dm'?[chat.with]:(grp(chat.with)?.members||[]).filter(id=>id!=='me'&&person(id)?.bot);
  if(!pool.length)return;const who=chat.kind==='dm'?pool:[...pool].sort(()=>Math.random()-.5).slice(0,Math.min(pool.length,Math.random()<.45?2:1));
  let delay=700+Math.random()*900;who.forEach(pid=>{const p=person(pid);if(!p)return;const top=att?(LINES[att.kind]?att.kind:'file'):topicOf(text);const line=pick(LINES[top][p.tone||'warm']);
-  const t0=delay;setTimeout(()=>{chat.typing=pid;if(route.k==='c'&&route.a[0]===chat.id)typingUI(chat)},t0);
+  const t0=delay;setTimeout(()=>{chat.typing=pid;if(onChat(chat))typingUI(chat)},t0);
   delay+=900+Math.min(1800,line.length*28)+Math.random()*500;
-  setTimeout(()=>{chat.typing=null;chat.msgs.push({id:uid(),from:pid,text:line,at:Date.now()});save();if(route.k==='c'&&route.a[0]===chat.id){chat.read=Date.now();appendMsgs(chat)}else{nav();if(!(chat.kind==='group'&&grp(chat.with)?.mute))toast(`${p.name.split(' ')[0]}: ${line}`)}},delay);delay+=400})}
+  setTimeout(()=>{chat.typing=null;chat.msgs.push({id:uid(),from:pid,text:line,at:Date.now()});save();if(onChat(chat)){chat.read=Date.now();appendMsgs(chat)}else{nav();if(!(chat.kind==='group'&&grp(chat.with)?.mute))toast(`${p.name.split(' ')[0]}: ${line}`)}},delay);delay+=400})}
 /* bots react inside projects: vote on ideas, pick up tasks */
 function botsReactIdea(p,idea){const bots=projMembers(p).filter(id=>person(id)?.bot);bots.slice(0,2).forEach((id,i)=>setTimeout(()=>{if(!idea.votes.includes(id)&&Math.random()<.75){idea.votes.push(id);act(p,id,`voted for “${idea.text.slice(0,40)}”`);save();if(route.k==='project'&&route.a[0]===p.id)render()}},1600+i*1400))}
 function botsReactTask(p,t){const b=person(t.who);if(!b?.bot||t.st!=='todo')return;setTimeout(()=>{if(t.st==='todo'){t.st='doing';act(p,b.id,`started “${t.t.slice(0,40)}”`);save();if(route.k==='project'&&route.a[0]===p.id)render()}},2500)}
@@ -62,6 +62,6 @@ function onboarding(){const slides=[['wave','Work better, together.','Notes, pro
   const p=cleanProfile(fd),name=p.first;
   S.me={id:'me',name,handle:name.split(/\s+/)[0].toLowerCase(),fig:{h:OB.h,c:OB.c},created:Date.now()};S.settings.space=p.status==='student'?'student':'work';S.focus.mode=p.status==='student'?'study':'pomo';storeProfile(p);use('signin');applyTheme();
   if(fd.team){seedBots();const ids=S.people.map(p=>p.id);const g={id:uid(),name:'Studio',col:GCOL[0],desc:'Your first working group.',members:['me',...ids],at:Date.now()};S.groups.push(g);
-   const c={id:uid(),kind:'group',with:g.id,msgs:[],read:Date.now(),at:Date.now()};S.chats.push(c);c.msgs.push({id:uid(),from:ids[3],text:`Welcome to Studio, ${name.split(' ')[0]}! This is where we plan things.`,at:Date.now()});
+   const c={id:uid(),kind:'group',with:g.id,ch:'general',msgs:[],read:Date.now(),at:Date.now()};S.chats.push(c);gFix(g);c.msgs.push({id:uid(),from:ids[3],text:`Welcome to Studio, ${name.split(' ')[0]}! This is where we plan things.`,at:Date.now()});
    S.notes.push({id:uid(),title:'Welcome to Atelier',body:'# Start here\nNotes are yours until you share them.\n\n[ ] Make your first note\n[ ] Start a focus session\n[ ] Create a project with Studio\n\n- Share notes with a group from the note menu\n- Your activity shows up on Today',col:0,pin:true,share:{groups:[],projects:[]},at:Date.now(),up:Date.now()})}
   save();go('today');render();setTimeout(()=>burst(),300)}}
