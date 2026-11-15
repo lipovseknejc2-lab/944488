@@ -114,7 +114,7 @@ function pServer(gid,chId){svClose();const g=G(gid);if(!g)return redirect('group
  let ch=g.chs.find(x=>x.id===chId)||g.chs.find(x=>x.id===g.last)||g.chs.find(x=>x.type!=='all')||g.chs[0];
  if(ch&&g.last!==ch.id){g.last=ch.id;saveSoon()}const c=ch&&ch.type!=='all'?chanChat(g,ch):null;window._svc=c?c.id:null;if(c&&unreadOf(c)){c.read=Date.now();saveSoon()}
  const t=ch?CHT[ch.type]||CHT.talk:CHT.talk,pins=c?pinsOf(c):[],nAtt=c?c.msgs.filter(m=>m.att).length:0;
- after(()=>{const f=$('#cf'),i=$('#ci');if(f&&c){f.onsubmit=e=>{e.preventDefault();const v=i.value;if(!v.trim())return;i.value='';cmdPop(g,'');const m=sendMsg(c,v);appendMsgs(c);if(ch.type==='ideas'&&m)botsVote(c,m)};i.addEventListener('input',()=>cmdPop(g,i.value));if(!('ontouchstart' in window)&&innerWidth>=900)i.focus()}
+ after(()=>{const f=$('#cf'),i=$('#ci');if(f&&c){f.onsubmit=e=>{e.preventDefault();const v=i.value;if(!v.trim())return;i.value='';i.classList.remove('cmdin');cmdPop(g,'');const m=sendMsg(c,v);appendMsgs(c);if(ch.type==='ideas'&&m)botsVote(c,m)};i.addEventListener('input',()=>{cmdPop(g,i.value);i.classList.toggle('cmdin',i.value.startsWith('/'))});if(!('ontouchstart' in window)&&innerWidth>=900)i.focus()}
   if(c){msgPress($('#msgs'),c);scrollChat(false)}if(!window._svU){window._svU=1;use('channel_open')}});
  const body=!ch?`<div class="chwel"><span class="chbig">#</span><h3>No channels yet</h3><p class="sub">Channels are where everything happens.</p>${can(g,'channels')?`<button class="btn primary" onclick="channelForm('${g.id}')">New channel</button>`:''}</div>`
   :ch.type==='all'?`${chWelcome(g,ch)}${feedHtml(g)}`

@@ -35,12 +35,13 @@ await p.fill('#ci','Morning team');await p.press('#ci','Enter');await W(6500);
 const coins=()=>ev(id=>{const g=grp(id),i=g.plugins[0];return(i.store.m||{})},gid);
 ok(await ev(id=>(grp(id).plugins[0].store.m.me||{}).coins===10,gid),T('first message of the day pays 10 coins'));
 ok(await ev(()=>!!document.querySelector('.msg.me .rx .rxi')),T('the plugin reacts with a coin'));
-await p.fill('#ci','/coins');await p.press('#ci','Enter');await W(900);ok(await p.isVisible('.msg .mtx >> text=you have 10 coins'),T('/coins answers with the balance'));
+await p.fill('#ci','/coins');await p.press('#ci','Enter');await W(900);ok(await ev(()=>[...document.querySelectorAll('.msg .plw')].some(x=>x.querySelector('.plwt')?.textContent==='Balance'&&x.querySelector('.plwv b')?.textContent==='10')),T('/coins answers with a balance widget'));
 const maja=await ev(id=>grp(id).members.find(m=>m!=='me'),gid),mname=await ev(i=>person(i).name.split(' ')[0],maja);
 const mb=await ev(([id,m])=>(grp(id).plugins[0].store.m[m]||{}).coins||0,[gid,maja]);await p.fill('#ci','/give '+mname+' 3');await p.press('#ci','Enter');await W(900);
 ok(await ev(([id,m,b])=>{const s=grp(id).plugins[0].store.m;return s.me.coins===7&&s[m].coins===b+3},[gid,maja,mb]),T('/give moves coins to someone else'));
-await p.fill('#ci','/give '+mname+' 50');await p.press('#ci','Enter');await W(900);ok(await p.isVisible('.msg .mtx >> text=You need at least 50 coins'),T('cannot give coins you do not have'));
-await p.fill('#ci','/top');await p.press('#ci','Enter');await W(900);ok(await ev(()=>[...document.querySelectorAll('.msg .mtx')].some(x=>/Most coins:\n1\. /.test(x.textContent))),T('/top shows a leaderboard'));
+await p.fill('#ci','/give '+mname+' 50');await p.press('#ci','Enter');await W(900);ok(await p.isVisible('.msg .plw >> text=You need at least 50 coins'),T('cannot give coins you do not have'));
+await p.fill('#ci','/top');await p.press('#ci','Enter');await W(900);ok(await ev(()=>[...document.querySelectorAll('.msg .plw')].some(x=>/Most coins/i.test(x.querySelector('.plwt')?.textContent||'')&&x.querySelectorAll('.plwr div').length>=2)),T('/top shows a leaderboard widget with rows'));
+ok(await ev(()=>document.querySelector('.msg.me .cmdt, .me .cmdt')?.textContent.startsWith('/')),T('commands glow in my messages'));await p.fill('#ci','/co');ok(await ev(()=>document.querySelector('#ci').classList.contains('cmdin')),T('the composer lights up for a command'));await p.fill('#ci','');
 ok(await ev(()=>{const m=[...S.chats.flatMap(c=>c.msgs)].filter(m=>m.text&&m.text.startsWith('/'));return true}),T('commands do not get chatty bot replies'));
 // reactions by hand
 await p.click('.msg.me .bub >> nth=0',{button:'right'});await W(400);ok(await ev(()=>document.querySelectorAll('.rxpick [data-rk]').length===10),T('press and hold: ten drawn reactions'));
@@ -55,14 +56,14 @@ ok(await ev(([id,m,b])=>grp(id).plugins[0].store.m[m].coins===b+1,[gid,maja,befo
 // spotlight
 await ev(id=>plugAdd(id,'atelier.spotlight'),gid);await W(800);await p.fill('#ci','/leader');await p.press('#ci','Enter');await W(1000);
 ok(await ev(id=>{const g=grp(id),r=g.roles.find(x=>x.name==='Leader');return r&&Object.values(g.mroles).some(L=>L.includes(r.id))},gid),T('Spotlight picks a leader and gives the Leader role'));
-await p.fill('#ci','/leader');await p.press('#ci','Enter');await W(900);ok(await p.isVisible('.msg .mtx >> text=We already have a leader today'),T('Spotlight waits a day'));
+await p.fill('#ci','/leader');await p.press('#ci','Enter');await W(900);ok(await p.isVisible('.msg .plw >> text=We already have a leader today'),T('Spotlight waits a day'));
 // welcome
 await ev(id=>plugAdd(id,'atelier.welcome'),gid);await W(700);
 await ev(id=>{const g=grp(id),p=S.people.find(x=>!g.members.includes(x.id))||(S.people.push({id:'zz',name:'Zoe Novak',bot:true,tone:'warm',role:'Tester'}),S.people.find(x=>x.id==='zz'));g.members.push(p.id);gRolesFix(g);plugOnJoin(g,[p.id])},gid);await W(900);
-ok(await ev(()=>[...document.querySelectorAll('.msg .mtx')].some(x=>/Welcome to .*, Zoe/.test(x.textContent))),T('Welcome greets a new member'));
+ok(await ev(()=>[...document.querySelectorAll('.msg .plw')].some(x=>/Welcome to .*, Zoe/.test(x.textContent))),T('Welcome greets a new member'));
 // file helper
 await ev(id=>plugAdd(id,'atelier.files'),gid);await W(700);await p.click('.composer [aria-label="Share"]');await W(400);await p.setInputFiles('#sh_doc',D+'/t.pdf');await W(1600);
-ok(await ev(()=>[...document.querySelectorAll('.msg .mtx')].some(x=>/t\.pdf: PDF/.test(x.textContent))),T('File helper describes the file'));
+ok(await ev(()=>[...document.querySelectorAll('.msg .plw')].some(x=>/t\.pdf: PDF/.test(x.textContent))),T('File helper describes the file'));
 ok(await ev(id=>{const c=S.chats.find(x=>x.kind==='group'&&x.with===id&&x.ch==='files');return c&&c.msgs.some(m=>m.from==='pl'&&m.att&&m.att.title==='t.pdf')},gid),T('and files a copy in #files'));
 await p.screenshot({path:D+'/shots/plugchat-'+theme+'.png'});
 // a coded plugin runs in the sandbox
@@ -70,7 +71,7 @@ const code="on('command', {name:'roll'}, a => {\n  const n = a.random('dice', 1,
 await ev(c=>{_plPend=PK.clean({f:'atelier-plugin',v:1,id:'t.roll',name:'Dice',desc:'Rolls',mode:'code',code:c,pic:{k:'bolt'}});go('plugin:t.roll')},code);await W(400);
 ok(await p.isVisible('.plhero .btn:has-text("Add to this phone")'),T('a scanned plugin waits for you to add it'));await p.click('.plhero .btn:has-text("Add to this phone")');await W(400);
 await ev(id=>plugAdd(id,'t.roll'),gid);await W(900);await p.fill('#ci','/roll');await p.press('#ci','Enter');await W(1500);
-ok(await ev(()=>[...document.querySelectorAll('.msg .mtx')].some(x=>/Nejc rolled [1-6]\. Rolls: 1/.test(x.textContent))),T('coded plugins run in their sealed box'));
+ok(await ev(()=>[...document.querySelectorAll('.msg .plw')].some(x=>/Nejc rolled [1-6]\. Rolls: 1/.test(x.textContent))),T('coded plugins run in their sealed box'));
 const t0=Date.now();await p.fill('#ci','/spin');await p.press('#ci','Enter');await W(2600);
 ok(await ev(id=>/too long/.test(grp(id).plugins.find(i=>i.pid==='t.roll').err||''),gid)&&Date.now()-t0<6000,T('a plugin that never stops is stopped, the app keeps going'));
 ok(await ev(async()=>{const r=await PK.run({mode:'code',code:"on('install',a=>{a.notify(typeof localStorage+typeof fetch)})"},{k:'install',user:{id:'me',name:'N'}},{members:[],channels:[],me:'me'},{});return r.err||r.actions.length===0||!/object/.test(r.actions[0].text)||true}),T('the sandbox has no access to the app'));

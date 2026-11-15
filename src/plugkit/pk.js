@@ -27,6 +27,7 @@ PK.NODES={
  install:{c:'start',l:'Plugin added',i:'M9 3.5V8M15 3.5V8M6.5 8h11v3.2a5.5 5.5 0 0 1-11 0zM12 16.7v4.1',d:'The plugin is added to a group.',o:['next'],p:[]},
  send:{c:'act',l:'Send message',i:'M4.5 12L19.5 5L16 19.5L11.5 13.5zM11.5 13.5L19.5 5',d:'Post in a channel as the plugin.',o:['next'],p:[_P('ch','Channel (empty = same)','text',''),_P('text','Message','long','Hello {user}!')]},
  reply:{c:'act',l:'Reply',i:'M9 8L4 12.5L9 17M4.5 12.5H14a6 6 0 0 1 6 6',d:'Answer in the same channel.',o:['next'],p:[_P('text','Message','long','Thanks, {user}.')]},
+ card:{c:'act',l:'Send a widget',i:'M4 5.5h16v13H4zM7.5 9h5M7.5 15.5h3M14.5 12.5h3v3h-3z',d:'Posts a widget card: a title, a big value and a line of text.',o:['next'],p:[_P('ch','Channel (empty = same)','text',''),_P('title','Title','text','Balance'),_P('value','Big value','text','{coins}'),_P('unit','Under the value','text','coins'),_P('text','Text','long','{user}'),_P('tone','Colour','select','accent',[['accent','Clay'],['yellow','Gold'],['green','Green'],['blue','Blue'],['violet','Violet'],['red','Red']])]},
  react:{c:'act',l:'React',i:'M12 20.5a8.5 8.5 0 1 0 0-17a8.5 8.5 0 1 0 0 17M8.5 14c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2M9 9.5v.5M15 9.5v.5',d:'Add a reaction to the message.',o:['next'],p:[_P('key','Reaction','react','star')]},
  pin:{c:'act',l:'Pin message',i:'M14.5 4L20 9.5M15.5 5L9.6 9.2L6.4 9.6L14.4 17.6L14.8 14.4L19 8.5M10 14L4 20',d:'Pin the message to the top.',o:['next'],p:[]},
  notify:{c:'act',l:'Show a notice',i:'M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5L19 18H5zM10 20.5h4',d:'A short notice on screen.',o:['next'],p:[_P('text','Notice','text','{user} did something')]},
@@ -91,6 +92,7 @@ function pkCore(){
   const api={event:ev,members:snap.members,channels:snap.channels,group:snap.group,tmp,fill,
    get picked(){return picked},
    reply(text){out.actions.push({t:'send',ch:chId(''),text:fill(text),at:out.t});return api},
+   card(o={}){out.actions.push({t:'send',ch:chId(o.ch||''),text:fill(o.text||''),card:{title:fill(o.title||''),value:fill(o.value==null?'':o.value),unit:fill(o.unit||''),tone:['accent','yellow','green','blue','violet','red'].includes(o.tone)?o.tone:'accent'},at:out.t});return api},
    send(ch,text){if(text===undefined){text=ch;ch=''}out.actions.push({t:'send',ch:chId(ch),text:fill(text),at:out.t});return api},
    react(key){if(ev.msg)out.actions.push({t:'react',ch:ev.ch&&ev.ch.id,msg:ev.msg.id,key:String(key||'star'),at:out.t});return api},
    pin(){if(ev.msg)out.actions.push({t:'pin',ch:ev.ch&&ev.ch.id,msg:ev.msg.id,at:out.t});return api},
@@ -122,7 +124,7 @@ function pkCore(){
  /* one node, run through the same API a coded plugin uses */
  function step(n,api,ev){const p=n.p||{},cmp=(a,op,b)=>{const x=api.fill(a),y=api.fill(b),nx=parseFloat(x),ny=parseFloat(y),bn=isFinite(nx)&&isFinite(ny);
    switch(op){case'=':return bn?nx===ny:x.toLowerCase()===y.toLowerCase();case'!=':return bn?nx!==ny:x.toLowerCase()!==y.toLowerCase();case'>':return bn&&nx>ny;case'<':return bn&&nx<ny;case'>=':return bn&&nx>=ny;case'<=':return bn&&nx<=ny;case'has':return x.toLowerCase().includes(y.toLowerCase())}return false};
-  switch(n.k){case'send':api.send(p.ch||'',p.text);break;case'reply':api.reply(p.text);break;case'react':api.react(p.key);break;case'pin':api.pin();break;case'notify':api.notify(p.text);break;
+  switch(n.k){case'send':api.send(p.ch||'',p.text);break;case'card':api.card(p);break;case'reply':api.reply(p.text);break;case'react':api.react(p.key);break;case'pin':api.pin();break;case'notify':api.notify(p.text);break;
    case'mkchannel':api.makeChannel(p.name,p.type);break;case'if':return cmp(p.a,p.op,p.b)?'yes':'no';case'chance':return api.chance(p.pct)?'yes':'no';case'cooldown':return api.cooldown(n.id,p.per,p.mins,p.who)?'yes':'no';
    case'hasrole':return api.hasRole(p.who,p.role)?'yes':'no';case'pick':api.pick({from:p.from,role:p.role,notMe:!!p.notme});if(!api.picked)return'stop';break;case'wait':api.wait(p.s);break;case'random':api.random(p.name,p.min,p.max);break;case'text':api.text(p.name,p.value);break;
    case'add':api.add(p.name,p.amount,p.who);break;case'set':api.set(p.name,p.value,p.who);break;case'board':api.leaderboard(p.name,p.n);break;case'giverole':api.giveRole(p.who,p.role);break;case'takerole':api.takeRole(p.who,p.role);break;
@@ -144,7 +146,7 @@ PK.core=pkCore();
 
 /* ---- turning a graph into code: the nodes write the program for you ---- */
 PK.gen=function(pl){const G=pl.graph||{nodes:[],links:[]},q=s=>JSON.stringify(String(s??'')),L=[],seen=new Set();
- const W=n=>{const p=n.p||{};switch(n.k){case'send':return`a.send(${q(p.ch||'here')}, ${q(p.text)})`;case'reply':return`a.reply(${q(p.text)})`;case'react':return`a.react(${q(p.key)})`;case'pin':return'a.pin()';case'notify':return`a.notify(${q(p.text)})`;
+ const W=n=>{const p=n.p||{};switch(n.k){case'send':return`a.send(${q(p.ch||'here')}, ${q(p.text)})`;case'reply':return`a.reply(${q(p.text)})`;case'card':return`a.card({ ch: ${q(p.ch||'')}, title: ${q(p.title)}, value: ${q(p.value)}, unit: ${q(p.unit)}, text: ${q(p.text)}, tone: ${q(p.tone||'accent')} })`;case'react':return`a.react(${q(p.key)})`;case'pin':return'a.pin()';case'notify':return`a.notify(${q(p.text)})`;
   case'mkchannel':return`a.makeChannel(${q(p.name)}, ${q(p.type)})`;case'pick':return`if (!a.pick({ from: ${q(p.from)}, role: ${q(p.role)}, notMe: ${!!p.notme} })) return`;case'wait':return`a.wait(${+p.s||0})`;case'random':return`a.random(${q(p.name)}, ${+p.min||0}, ${+p.max||0})`;case'text':return`a.text(${q(p.name)}, ${q(p.value)})`;
   case'add':return`a.add(${q(p.name)}, ${q(p.amount)}, ${q(p.who)})`;case'set':return`a.set(${q(p.name)}, ${q(p.value)}, ${q(p.who)})`;case'board':return`a.leaderboard(${q(p.name)}, ${+p.n||5})`;case'giverole':return`a.giveRole(${q(p.who)}, ${q(p.role)})`;case'takerole':return`a.takeRole(${q(p.who)}, ${q(p.role)})`;
   case'summarize':return'a.summarize()';case'copyfile':return`a.copyFile(${q(p.ch)})`}return`// ${n.k}`};
@@ -158,9 +160,9 @@ PK.gen=function(pl){const G=pl.graph||{nodes:[],links:[]},q=s=>JSON.stringify(St
 
 /* ---- what a plugin needs, read from its nodes or code ---- */
 PK.info=function(pl){const ks=new Set(),cmds=[],trig=new Set();if(pl.mode==='code'){const c=pl.code||'';const re=/on\(\s*['"](\w+)['"]\s*(?:,\s*\{([^}]*)\})?/g;let m;while((m=re.exec(c))){trig.add(m[1]);if(m[1]==='command'){const nm=(m[2]||'').match(/name\s*:\s*['"]([^'"]+)/);if(nm)cmds.push(nm[1])}}
-  [['send','send'],['reply','send'],['react','react'],['pin','pin'],['giveRole','role'],['takeRole','role'],['makeChannel','mkchannel'],['copyFile','files'],['summarize','files'],['add(','data'],['set(','data'],['notify','notify']].forEach(([w,k])=>{if(c.includes('.'+w))ks.add(k)})}
+  [['send','send'],['reply','send'],['card','send'],['react','react'],['pin','pin'],['giveRole','role'],['takeRole','role'],['makeChannel','mkchannel'],['copyFile','files'],['summarize','files'],['add(','data'],['set(','data'],['notify','notify']].forEach(([w,k])=>{if(c.includes('.'+w))ks.add(k)})}
  else(pl.graph?.nodes||[]).forEach(n=>{const c=PK.NODES[n.k]?.c;if(c==='start'){trig.add(n.k);if(n.k==='command'&&n.p?.name)cmds.push(String(n.p.name).replace(/^\//,''))}
-  ({send:'send',reply:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify'})[n.k]&&ks.add(({send:'send',reply:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify'})[n.k])});
+  ({send:'send',reply:'send',card:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify'})[n.k]&&ks.add(({send:'send',reply:'send',card:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify'})[n.k])});
  const PL={send:'Post messages',react:'Add reactions',pin:'Pin messages',role:'Give and take roles',mkchannel:'Make channels',files:'Read and file shared files',data:'Keep its own values, like coins',notify:'Show notices'};
  return{perms:[...ks].map(k=>PL[k]),cmds:[...new Set(cmds)],trig:[...trig].map(k=>PK.NODES[k]?.l||k),nodes:(pl.graph?.nodes||[]).length}};
 PK.valid=function(pl){if(!pl||pl.f!=='atelier-plugin'||typeof pl.name!=='string'||!pl.id)return'This is not an Atelier plugin.';if(pl.v>PK.VER)return'This plugin needs a newer Atelier.';
@@ -207,18 +209,32 @@ PK.fileInfo=async function(name,type,size,blob){const ext=(String(name).split('.
 
 /* ---- the starter plugins, in both apps ---- */
 PK.STARTERS=(()=>{let i=0;const N=(k,x,y,p={})=>({id:'n'+(++i),k,x,y,p}),Lk=(a,b,ap='next')=>({id:'l'+a.id+b.id+ap,a:a.id,ap,b:b.id});
- const mk=(id,name,desc,pic,size,nodes,links)=>({f:'atelier-plugin',v:1,id,name,desc,pic:{k:pic},size,author:'Atelier',ver:'1.0',mode:'nodes',made:1763200000000,up:1763200000000,starter:true,graph:{nodes,links}});
+ const mk=(id,name,desc,pic,size,nodes,links)=>({f:'atelier-plugin',v:1,id,name,desc,pic:{k:pic},size,author:'Atelier',ver:'1.1',mode:'nodes',made:1763200000000,up:1763300000000,starter:true,graph:{nodes,links}});
  i=0;let a=N('join',40,60),b=N('send',340,60,{ch:'',text:'Welcome to {group}, {user}! Say hi here and look around the channels.'}),c=N('react',640,60,{key:'love'}),d=N('install',40,260),e=N('send',340,260,{ch:'',text:'Welcome is on. Everyone who joins gets a warm hello.'});
  const welcome=mk('atelier.welcome','Welcome','Greets every new member with a message in the group.','wave','small',[a,b,c,d,e],[Lk(a,b),Lk(d,e)]);
  i=0;const d1=N('daily',40,40),d2=N('add',330,40,{name:'coins',amount:'10',who:'user'}),d3=N('react',620,40,{key:'coin'}),
-  c1=N('command',40,230,{name:'coins'}),c2=N('reply',330,230,{text:'{user}, you have {coins} coins.'}),
-  t1=N('command',40,400,{name:'top'}),t2=N('board',330,400,{name:'coins',n:5}),t3=N('reply',620,400,{text:'Most coins:\n{leaderboard}'}),
+  c1=N('command',40,230,{name:'coins'}),c2=N('card',330,230,{ch:'',title:'Balance',value:'{coins}',unit:'coins',text:'{user}, keep going. A star on your message pays a coin.',tone:'yellow'}),
+  t1=N('command',40,400,{name:'top'}),t2=N('board',330,400,{name:'coins',n:5}),t3=N('card',620,400,{ch:'',title:'Most coins',value:'',unit:'',text:'{leaderboard}',tone:'yellow'}),
   r1=N('reaction',40,570,{key:'star'}),r2=N('add',330,570,{name:'coins',amount:'1',who:'author'}),
   g1=N('command',40,740,{name:'give'}),g2=N('if',330,740,{a:'{coins}',op:'>=',b:'{arg2}'}),g3=N('if',620,700,{a:'{arg2}',op:'>',b:'0'}),g4=N('add',910,660,{name:'coins',amount:'-{arg2}',who:'user'}),g5=N('add',1200,660,{name:'coins',amount:'{arg2}',who:'arg'}),g6=N('reply',1490,660,{text:'{user} gave {arg2} coins to {arg1}.'}),g7=N('reply',620,880,{text:'You need at least {arg2} coins for that, {user}.'}),g8=N('reply',910,800,{text:'Give a number, like /give Ana 5.'}),
   i1=N('install',40,930),i2=N('send',330,930,{ch:'',text:'Coins is on. Everyone gets 10 coins a day. Type /coins, /top or /give name amount. A star on a message gives its author a coin.'});
  const coins=mk('atelier.coins','Coins','A small economy: daily coins, stars that pay, a leaderboard and giving coins to others.','coin','big',[d1,d2,d3,c1,c2,t1,t2,t3,r1,r2,g1,g2,g3,g4,g5,g6,g7,g8,i1,i2],[Lk(d1,d2),Lk(d2,d3),Lk(c1,c2),Lk(t1,t2),Lk(t2,t3),Lk(r1,r2),Lk(g1,g2),Lk(g2,g3,'yes'),Lk(g2,g7,'no'),Lk(g3,g4,'yes'),Lk(g3,g8,'no'),Lk(g4,g5),Lk(g5,g6),Lk(i1,i2)]);
- i=0;const s1=N('command',40,80,{name:'leader'}),s2=N('cooldown',330,80,{per:'day',mins:10,who:'group'}),s3=N('pick',620,40,{from:'all',role:'',notme:false}),s4=N('giverole',910,40,{who:'picked',role:'Leader'}),s5=N('add',1200,40,{name:'coins',amount:'25',who:'picked'}),s6=N('send',1490,40,{ch:'',text:'{picked} is today\'s leader and gets 25 coins. Lead well!'}),s7=N('reply',620,220,{text:'We already have a leader today. Try again tomorrow.'});
+ i=0;const s1=N('command',40,80,{name:'leader'}),s2=N('cooldown',330,80,{per:'day',mins:10,who:'group'}),s3=N('pick',620,40,{from:'all',role:'',notme:false}),s4=N('giverole',910,40,{who:'picked',role:'Leader'}),s5=N('add',1200,40,{name:'coins',amount:'25',who:'picked'}),s6=N('card',1490,40,{ch:'',title:'Leader of the day',value:'{picked}',unit:'+25 coins',text:'Lead well! Ask {picked} where to start today.',tone:'violet'}),s7=N('reply',620,220,{text:'We already have a leader today. Try again tomorrow.'});
  const spot=mk('atelier.spotlight','Spotlight','Type /leader to choose a leader of the day: a role and 25 coins.','crown','small',[s1,s2,s3,s4,s5,s6,s7],[Lk(s1,s2),Lk(s2,s3,'yes'),Lk(s2,s7,'no'),Lk(s3,s4),Lk(s4,s5),Lk(s5,s6)]);
- i=0;const f1=N('file',40,60),f2=N('summarize',330,60),f3=N('reply',620,60,{text:'{summary}'}),f4=N('if',910,60,{a:'{channel}',op:'!=',b:'files'}),f5=N('copyfile',1200,20,{ch:'files'}),f6=N('reply',1490,20,{text:'I filed a copy in #files.'});
+ i=0;const f1=N('file',40,60),f2=N('summarize',330,60),f3=N('card',620,60,{ch:'',title:'{file}',value:'',unit:'',text:'{summary}',tone:'green'}),f4=N('if',910,60,{a:'{channel}',op:'!=',b:'files'}),f5=N('copyfile',1200,20,{ch:'files'}),f6=N('reply',1490,20,{text:'I filed a copy in #files.'});
  const files=mk('atelier.files','File helper','Describes every shared file and files a copy in #files.','files','small',[f1,f2,f3,f4,f5,f6],[Lk(f1,f2),Lk(f2,f3),Lk(f3,f4),Lk(f4,f5,'yes'),Lk(f5,f6)]);
  return[welcome,coins,spot,files]})();
+
+/* ---- plugin messages are widgets: a card with the plugin's picture, a title, a big value, ranked rows ---- */
+PK.guess=function(text){const t=String(text||''),L=t.split('\n'),rows=[],rest=[];let title='';
+ L.forEach(l=>{const m=l.match(/^\s*(\d+)\.\s+(.+?):\s*(-?\d+(?:[.,]\d+)?)\s*$/);if(m)rows.push([m[2],m[3]]);else if(l.trim())rest.push(l)});
+ if(rows.length>=1&&rest.length&&/:\s*$/.test(rest[0])){title=rest.shift().replace(/:\s*$/,'')}
+ const st=rows.length||t.length>70?null:t.match(/(-?\d+(?:[.,]\d+)?)\s+(coins?|points?|stars?|rolls?|xp|votes?)\b/i);
+ return{title,value:st?st[1]:'',unit:st?st[2]:'',text:rest.join('\n'),rows}};
+PK.fmt=t=>PK.esc(t).replace(/(^|\s)(\/[a-z0-9-]+)/gi,'$1<span class="cmdt">$2</span>').replace(/(^|\s)#([a-z0-9čšž-]+)/gi,'$1<span class="chm">#$2</span>');
+PK.plCard=function(m,pl){const c=m.card?{...m.card,text:m.text||'',rows:[]}:PK.guess(m.text);if(m.card&&c.text){const g=PK.guess(c.text);if(g.rows.length){c.rows=g.rows;c.text=g.text}}
+ const mx=Math.max(1,...c.rows.map(r=>Math.abs(parseFloat(String(r[1]).replace(',','.'))||0)));const tone=c.tone||'violet';
+ return`<div class="plw" style="--pt:var(--${tone==='accent'?'accent':tone})"><div class="plwh">${PK.picHtml(pl||{},'sm')}<b>${PK.esc(pl?.name||'Plugin')}</b><span class="pltag">Plugin</span></div>
+ ${c.title?`<div class="plwt">${PK.esc(c.title)}</div>`:''}${c.value!==''&&c.value!=null?`<div class="plwv"><b>${PK.esc(c.value)}</b>${c.unit?`<span>${PK.esc(c.unit)}</span>`:''}</div>`:''}
+ ${c.rows.length?`<div class="plwr">${c.rows.slice(0,10).map((r,i)=>`<div class="${i===0?'top':''}"><i>${i+1}</i><span>${PK.esc(r[0])}</span><b>${PK.esc(r[1])}</b><em style="width:${Math.round(Math.abs(parseFloat(String(r[1]).replace(',','.'))||0)/mx*100)}%"></em></div>`).join('')}</div>`:''}
+ ${c.text?`<p class="plwx">${PK.fmt(c.text)}</p>`:''}</div>`};

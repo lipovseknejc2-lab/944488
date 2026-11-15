@@ -79,5 +79,7 @@ JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `reset
 - The engine `PK` is shared with Atelier Plugins (the desktop hub at `atelier-plugins/`). A plugin is nodes (`graph`) or code (`code`), with a name, picture, size (small or big) and version.
 - In a group, plugins run on events: join, message, keyword, command, reaction, daily (first message of the day), timer (every few minutes while open), file, role and install. They answer as themselves (the Plugin tag), react, pin, give roles, file copies in channels, make channels and keep values like coins.
 - Starters: Welcome, Coins (daily coins, /coins, /top, /give, stars pay a coin), Spotlight (/leader once a day) and File helper (describes files, files copies in #files).
+- Plugin messages render as widgets (`PK.plCard`, class `.plw` in a `.bub.plb`): a `card` (the Send a widget node or `a.card()`) gives a title, a big value, a unit, text and a tone; plain text with a ranked list or a short stat is turned into a widget by `PK.guess`. The starters (1.1) answer with widgets.
+- Message text goes through `PK.fmt`: `/commands` become glowing `.cmdt` chips and `#channels` turn blue (`.chm`). The composer gets `cmdin` while it starts with `/`.
 - The Plugins page (from Groups) lists them, scans QR codes, opens pasted codes and files. A group's page lists its plugins with switches.
 - Reactions: press and hold a message; ten drawn reactions or any emoji from the keyboard.

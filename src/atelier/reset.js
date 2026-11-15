@@ -83,7 +83,7 @@ function openReset(from){const r=S.focus.run,long=!!(r&&r.phase==='long');const 
   <svg class="rhz" viewBox="0 0 200 60" fill="none" stroke-linecap="round" aria-hidden="true"><path d="M8 50C40 34 64 40 92 30C118 21 146 26 192 14"/><circle cx="158" cy="14" r="6"/></svg></div>
  <div class="rtxt"><div class="rph" id="rPh"></div><div class="rsub" id="rSub"></div><div class="rname" id="rN"></div></div>
  <div class="rctl"><button class="zb" id="rPa" aria-label="Pause">${ic('pause',2)}</button><button class="zb" id="rSk" aria-label="Next step">${ic('skip',2)}</button></div>`;
- document.body.classList.add('rston');$('#rX').onclick=closeReset;$('#rPa').onclick=()=>{RS.paused=!RS.paused;$('#rPa').innerHTML=ic(RS.paused?'play':'pause',2);$('#rPa').setAttribute('aria-label',RS.paused?'Resume':'Pause');el.classList.toggle('paused',RS.paused)};
+ document.body.classList.add('rston');$('#rX').onclick=closeReset;$('#rPa').onclick=()=>{if(!RS)return;RS.paused=!RS.paused;$('#rPa').innerHTML=ic(RS.paused?'play':'pause',2);$('#rPa').setAttribute('aria-label',RS.paused?'Resume':'Pause');el.classList.toggle('paused',RS.paused)};
  $('#rSnd').onclick=()=>{const on=S.settings.resetSound===false;S.settings.resetSound=on;save();const b=$('#rSnd');b.classList.toggle('off',!on);b.setAttribute('aria-label',on?'Mute tones':'Turn tones on');if(on)RSND.step()};
  $('#rSk').onclick=()=>resetNext();wakeOn();use('reset');resetEnter();cancelAnimationFrame(window._rraf);window._rraf=requestAnimationFrame(resetLoop)}
 function resetEnter(){const el=$('#rst');if(!el||!RS)return;const s=RS.steps[RS.i];RS.t=0;RS.bph='';el.dataset.k=s.k;delete el.dataset.ph;$$('#rst .rdots i').forEach((d,k)=>{d.classList.toggle('d',k<RS.i);d.classList.toggle('n',k===RS.i)});

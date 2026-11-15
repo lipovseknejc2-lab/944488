@@ -4,7 +4,8 @@
    (localStorage "atelier-plugin-inbox"). The library lives in S.plugins; a group runs them as instances in
    g.plugins = [{id, pid, on, store, at}]. The shared engine is PK (src/plugkit/pk.js). */
 const HUB_URL='https://lipovseknejc2-lab.github.io/944488/atelier-plugins/';
-const plugOf=id=>(S.plugins||[]).find(p=>p.id===id)||PK.STARTERS.find(p=>p.id===id);
+/* starters always run in their newest version; other plugins run as they were added */
+const plugOf=id=>{const own=(S.plugins||[]).find(p=>p.id===id),st=PK.STARTERS.find(p=>p.id===id);return own&&!own.starter?own:st||own};
 const plugAll=()=>[...(S.plugins||[]),...PK.STARTERS.filter(s=>!(S.plugins||[]).some(p=>p.id===s.id))];
 let _plPend=null;
 function plugCard(pl,k=0){const inf=PK.info(pl),n=S.groups.filter(g=>(g.plugins||[]).some(i=>i.pid===pl.id)).length;
@@ -90,7 +91,7 @@ function plugTick(){S.groups.forEach(g=>{const on=(g.plugins||[]).filter(i=>i.on
 /* what plugins do, applied for real */
 function plugAct(g,pl,a,ev){if(!grp(g.id))return;const pm=(c,att,text)=>{const m={id:uid(),from:'pl',pl:{id:pl.id,name:pl.name,pic:pl.pic},text:String(text||'').slice(0,2000),at:Date.now()};if(att)m.att={...att};c.msgs.push(m);if(onChat(c)){c.read=Date.now();appendMsgs(c)}else nav();return m};
  const chatOf=id=>{const ch=g.chs.find(x=>x.id===id);return ch&&ch.type!=='all'?chanChat(g,ch):null};
- switch(a.t){case'send':{const c=chatOf(a.ch)||chatOf((g.chs.find(x=>x.type==='talk')||{}).id);if(c&&a.text)pm(c,null,a.text);break}
+ switch(a.t){case'send':{const c=chatOf(a.ch)||chatOf((g.chs.find(x=>x.type==='talk')||{}).id);if(c&&(a.text||a.card)){const m=pm(c,null,a.text);if(a.card){m.card=a.card;msgRefresh(c,m)}}break}
   case'react':{const c=chatOf(a.ch),m=c&&c.msgs.find(x=>x.id===a.msg);if(m){m.rx=m.rx||{};const L=m.rx[a.key]=m.rx[a.key]||[];const who='pl:'+pl.id;if(!L.includes(who))L.push(who);msgRefresh(c,m)}break}
   case'pin':{const c=chatOf(a.ch),m=c&&c.msgs.find(x=>x.id===a.msg);if(m&&!m.pin){m.pin=Date.now();if(onChat(c))render()}break}
   case'role':{if(!g.members.includes(a.who))break;let r=g.roles.find(x=>x.name.toLowerCase()===a.role.toLowerCase());if(!r&&a.on){r={id:'r'+uid(),name:a.role.slice(0,24),col:RCOL[g.roles.length%RCOL.length],perms:{}};g.roles.splice(Math.max(1,g.roles.length-1),0,r)}if(!r||r.id==='owner')break;

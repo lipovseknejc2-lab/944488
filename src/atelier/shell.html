@@ -917,6 +917,22 @@ body.svl #rail,body.svr #rail,body.svl #mini,body.svr #mini{opacity:0;pointer-ev
 /* commands while typing */
 .cmdpop{position:absolute;left:8px;right:8px;bottom:calc(100% + 8px);display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:20px;background:color-mix(in srgb,var(--card2) 88%,transparent);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border:1px solid var(--gl-edge);box-shadow:inset 0 1px 0 var(--gl-hi),0 16px 36px -14px rgba(0,0,0,.35);animation:rise .25s var(--ease);z-index:3}
 .cmdpop button{display:flex;align-items:center;gap:10px;padding:7px 10px 7px 7px;border:none;background:none;border-radius:14px;color:var(--text);text-align:left;cursor:pointer}.cmdpop button:hover,.cmdpop button:active{background:var(--fill)}.cmdpop b{font:650 14px ui-monospace,Menlo,monospace}.cmdpop span:last-child{margin-left:auto;font-size:12.5px;color:var(--muted)}.cmdpop .pkpic{width:28px;height:28px;border-radius:9px}
+/* ===== Plugin widgets and commands ===== */
+.bub.plb{background:none!important;border:none!important;box-shadow:none!important;padding:0!important;max-width:min(320px,82%)}
+.plw{--pt:var(--violet);position:relative;width:min(300px,74vw);border-radius:20px;padding:12px 14px 12px;background:linear-gradient(165deg,color-mix(in srgb,var(--pt) 10%,var(--card)),var(--card) 62%);border:1px solid color-mix(in srgb,var(--pt) 26%,var(--line));box-shadow:inset 0 1px 0 var(--gl-hi),0 10px 24px -14px rgba(0,0,0,.35);overflow:hidden}
+.plw::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--pt);opacity:.85}
+.plwh{display:flex;align-items:center;gap:8px}.plwh b{font-size:13.5px}.plwh .pkpic{width:26px;height:26px;border-radius:8px}.plwh .pltag{margin-left:auto}
+.plwt{margin-top:10px;font-size:10.5px;font-weight:750;letter-spacing:.11em;text-transform:uppercase;color:color-mix(in srgb,var(--pt) 70%,var(--text))}
+.plwv{display:flex;align-items:baseline;gap:7px;margin-top:2px}.plwv b{font-size:34px;line-height:1.1;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.02em;overflow-wrap:anywhere}.plwv span{font-size:13px;color:var(--muted);font-weight:600}
+.plwr{display:flex;flex-direction:column;gap:5px;margin-top:10px}.plwr div{position:relative;display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:11px;background:var(--fill);overflow:hidden;font-size:13.5px}
+.plwr i{font-style:normal;font-size:11px;font-weight:750;width:18px;height:18px;border-radius:6px;display:grid;place-items:center;background:color-mix(in srgb,var(--pt) 18%,transparent);position:relative;z-index:1}.plwr span{flex:1;position:relative;z-index:1}.plwr b{font-variant-numeric:tabular-nums;position:relative;z-index:1}
+.plwr em{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--pt) 12%,transparent);transform-origin:left;animation:plbar .7s var(--ease) both}.plwr .top i{background:var(--pt);color:var(--card)}@keyframes plbar{from{transform:scaleX(0)}}
+.plwx{margin:8px 0 0;font-size:14.5px;line-height:1.45;white-space:pre-wrap}.plw+.rxs{margin-top:6px}
+.cmdt{display:inline-block;font:650 .92em/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;padding:1px 6px;border-radius:7px;color:var(--violet);background:color-mix(in srgb,var(--violet) 15%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--violet) 26%,transparent),0 0 12px -2px color-mix(in srgb,var(--violet) 45%,transparent)}
+.msg.me .cmdt{color:inherit;background:color-mix(in srgb,currentColor 18%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,currentColor 35%,transparent),0 0 14px -2px color-mix(in srgb,currentColor 45%,transparent)}
+.chm{font-weight:650;color:var(--blue)}.msg.me .chm{color:inherit;text-decoration:underline;text-underline-offset:2px}
+#ci.cmdin{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--violet);border-color:color-mix(in srgb,var(--violet) 50%,transparent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--violet) 14%,transparent)}
+.cmdpop b{color:var(--violet)}
 @media(prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}.drawn path,#splash path,.uline path,.ln{stroke-dashoffset:0!important}}
 </style>
 </head>

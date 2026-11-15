@@ -177,7 +177,88 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .steps{margin:0;padding-left:20px;display:grid;gap:12px;color:var(--ink2);font-size:14.5px}.steps b{color:var(--text)}.steps em{font-style:normal;color:var(--accent);font-weight:650}
 .warnbox{display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--yellow) 12%,transparent);color:var(--yellow);font-size:13.5px;margin:8px 0}.warnbox .ic{width:18px;height:18px}
 .imp{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}.impcam{position:relative;aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:#0c0b0a;border:1px solid var(--line)}.impcam video{width:100%;height:100%;object-fit:cover}.impcam span{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;font-size:13px;background:rgba(0,0,0,.5);padding:6px;border-radius:10px}.imp label{margin-top:0}.imp textarea{font:12.5px var(--mono)}
-@media(max-width:1100px){.tiles{grid-template-columns:1fr 1fr}.dgrid,.licpage{grid-template-columns:1fr}.stbody{grid-template-columns:200px 1fr 270px}.bbody{grid-template-columns:190px 1fr 250px}}
+/* ===== surfaces, grid, sizes, calm ===== */
+[data-surface=graphite]{--bg:#121315;--bg2:#18191c;--card:#1d1f22;--card2:#24262a;--card3:#2c2e33;--text:#e9eaec;--ink2:#c3c6cc;--muted:#878b93;--line:rgba(233,234,236,.09);--line2:rgba(233,234,236,.16);--fill:rgba(233,234,236,.06);--grid:rgba(233,234,236,.045);--grid2:rgba(233,234,236,.08)}
+[data-surface=walnut]{--bg:#17110d;--bg2:#1e1611;--card:#241b15;--card2:#2c211a;--card3:#352820;--text:#f2e6d8;--ink2:#d4c3b0;--muted:#9a8672;--line:rgba(242,230,216,.09);--line2:rgba(242,230,216,.16);--fill:rgba(242,230,216,.06);--grid:rgba(242,230,216,.045);--grid2:rgba(242,230,216,.08)}
+[data-surface=paper]{color-scheme:light;--bg:#f3efe8;--bg2:#ebe5db;--card:#fbf8f3;--card2:#fffdf9;--card3:#f1ece4;--text:#22201c;--ink2:#4a463f;--muted:#857e73;--line:rgba(34,32,28,.1);--line2:rgba(34,32,28,.18);--fill:rgba(34,32,28,.05);--grid:rgba(34,32,28,.06);--grid2:rgba(34,32,28,.1);--sh:0 1px 0 rgba(255,255,255,.6) inset,0 12px 30px -18px rgba(60,40,20,.25);--gl-hi:rgba(255,255,255,.7);--glt:rgba(255,255,255,.5)}
+[data-surface=paper] .cv::after{background:none}[data-surface=paper] .nd{box-shadow:0 10px 24px -14px rgba(60,40,20,.35)}
+.btn.primary:hover{background:var(--text);filter:brightness(1.12)}
+[data-grid=dots] .cv{background-image:radial-gradient(circle,var(--grid2) 1.1px,transparent 1.5px)!important}[data-grid=none] .cv{background-image:none!important}
+.nd{width:var(--ndw,220px)}.cedg,.cedh,.ced textarea{font-size:var(--cfs,13.5px)!important}
+.calm *,.calm *::before,.calm *::after{animation:none!important;transition-duration:0s!important}
+/* ===== the welcome tour ===== */
+.authart{gap:0}.gridart{position:absolute;inset:0;width:100%;height:100%;color:var(--text)}
+.tour{position:relative;flex:1;display:flex;flex-direction:column;min-height:0;margin-top:10px}
+.tslides{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;outline:none;border-radius:20px}.tslides::-webkit-scrollbar{display:none}
+.tslide{flex:0 0 100%;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:4px 8px}
+.tart{width:100%;max-width:600px;margin:0 auto}.tcap{max-width:470px;padding:0 4px}.tcap h2{font:400 32px/1.1 var(--serif);margin:0}.tcap p{color:var(--ink2);margin:8px 0 0;font-size:15px}
+.tslide .tart,.tslide .tcap{opacity:.25;transform:translateY(8px);transition:opacity .6s var(--ease),transform .6s var(--ease)}.tslide.on .tart,.tslide.on .tcap{opacity:1;transform:none}.tslide:not(.on) .scene *{animation-play-state:paused}
+.tnav{display:flex;align-items:center;gap:12px;margin-top:16px;position:relative}.tnext .ic{transform:rotate(180deg)}.tdots{display:flex;gap:4px}.tdots button{border:none;background:none;padding:8px 3px;cursor:pointer}.tdots i{display:block;width:8px;height:8px;border-radius:99px;background:var(--line2);transition:width .35s var(--ease),background .3s}.tdots .on i{width:28px;background:var(--accent)}
+/* ===== scenes ===== */
+.scene{width:100%;height:auto;display:block;color:var(--text);overflow:visible}.scene *{transform-box:view-box}
+.scene .fg path,.scene .fg circle{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.gnd{stroke:currentColor;opacity:.35;stroke-width:1.5;fill:none}.gnd2{stroke:currentColor;opacity:.2;stroke-width:1.5}
+.brk .bk{fill:var(--card2);stroke:var(--line2);stroke-width:1.2}.bp{fill:var(--bg);stroke:var(--ink2);stroke-width:1.6}.bt1{font:700 8.5px var(--mono);letter-spacing:.1em;fill:var(--muted)}.bkt2{font:600 11px var(--sans);fill:var(--text)}
+.wire2{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:4 5;animation:flow 1.2s linear infinite}
+.lift{animation:lift 3.2s var(--ease) infinite}@keyframes lift{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.guide{stroke:var(--accent);stroke-dasharray:2 4;opacity:.6;fill:none}.snap{stroke:var(--accent);stroke-width:2;opacity:.55;animation:blink 1.6s infinite}@keyframes blink{50%{opacity:.1}}
+.cbk{fill:var(--bg2);stroke:var(--line2);stroke-width:1.2}.cd1{fill:var(--red);opacity:.7}.cd2{fill:var(--yellow);opacity:.7}.cd3{fill:var(--green);opacity:.7}
+.cln{fill:var(--card2);stroke:var(--line2)}.cln.cacc{stroke:var(--accent)}.ct1{font:500 10px var(--mono);fill:var(--ink2)}.ck{fill:var(--violet)}.cs{fill:var(--green)}.cnote{font:700 7.5px var(--mono);letter-spacing:.14em;fill:var(--muted)}
+.cl{opacity:0;animation:typein 6s var(--ease) infinite}.cl.l2{animation-delay:.9s}.cl.l3{animation-delay:1.6s}@keyframes typein{0%{opacity:0;transform:translateX(14px)}10%,86%{opacity:1;transform:none}100%{opacity:0}}
+.push{animation:push 6s var(--ease) infinite}@keyframes push{0%{transform:translateX(0);opacity:1}14%{transform:translateX(-30px);opacity:1}18%,100%{transform:translateX(-30px);opacity:0}}
+.caret{fill:var(--accent);animation:blink 1s steps(1) infinite}.crate{fill:none;stroke:currentColor;stroke-width:1.6;opacity:.65}.crate2{stroke:currentColor;stroke-width:1.2;opacity:.4}
+.lbl{font:700 9.5px var(--mono);letter-spacing:.16em;fill:var(--muted)}.lbl.sm{font-size:7px}
+.clk{fill:none;stroke:currentColor;stroke-width:2}.cdot{fill:currentColor}.hand1,.hand2{stroke-linecap:round;transform-origin:428px 70px}.hand1{stroke:var(--accent);stroke-width:2.6;animation:spin 2.4s linear infinite}.hand2{stroke:currentColor;stroke-width:2.4;animation:spin 9s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.sbench{fill:var(--card3);stroke:currentColor;stroke-width:1.4}.bleg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;opacity:.8}.scr{fill:var(--bg2);stroke:currentColor;stroke-width:1.8}.stand{stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round}
+.sch{font:700 10px var(--sans);fill:var(--blue)}.bub1{fill:var(--card2)}.bub2{fill:color-mix(in srgb,var(--blue) 30%,var(--card))}.bub3{fill:var(--card2);stroke:color-mix(in srgb,var(--violet) 45%,transparent)}.pstrip{fill:var(--violet)}
+.bt3{font:500 10px var(--sans);fill:var(--text)}.bt3.cmd{font-family:var(--mono);fill:var(--violet);font-weight:700}.bt4{font:700 7px var(--mono);fill:var(--violet);letter-spacing:.1em}.bt5{font:650 13px var(--sans);fill:var(--text)}
+.msgp{opacity:0;animation:popin 6s var(--ease) infinite}.msgp.m2{animation-delay:.9s}.msgp.m3{animation-delay:1.8s}@keyframes popin{0%{opacity:0;transform:translateY(6px)}8%,86%{opacity:1;transform:none}100%{opacity:0}}
+.coin{opacity:0;animation:coinup 6s var(--ease) infinite}.coin.c1{animation-delay:2.3s}.coin.c2{animation-delay:2.7s}@keyframes coinup{0%{opacity:0;transform:translateY(0)}6%{opacity:1}22%{opacity:0;transform:translateY(-40px)}100%{opacity:0}}
+.cn{fill:color-mix(in srgb,var(--yellow) 70%,var(--card));stroke:currentColor;stroke-width:1.4}.cnl{stroke:currentColor;stroke-width:1.4}
+.pan{fill:var(--card2);stroke:currentColor;stroke-width:1.2}.kb{fill:var(--card3);stroke:var(--line2)}.kb.press{fill:var(--accent);animation:press 6s infinite}@keyframes press{0%,30%{transform:translateY(0)}34%{transform:translateY(2px)}42%,100%{transform:none}}
+.base{fill:var(--card3);stroke:currentColor;stroke-width:1.4}.mn{fill:var(--card2);stroke:var(--line2)}.bt6{font:700 7px var(--mono);fill:var(--muted);letter-spacing:.08em}.qrb{fill:#fff}.qrd{fill:#161513}
+.beam{fill:none;stroke:var(--accent);stroke-width:1.6;stroke-dasharray:3 6;animation:flow 1s linear infinite}.pkt{fill:var(--accent)}
+.phone{fill:var(--card3);stroke:currentColor;stroke-width:2}.pscr{fill:var(--bg)}.notch{fill:currentColor;opacity:.5}.chpl{fill:color-mix(in srgb,var(--blue) 22%,transparent)}.bt7{font:700 7px var(--sans);fill:var(--blue)}.bt8{font:700 6px var(--mono);fill:var(--violet);letter-spacing:.08em}.bt9{font:700 14px var(--sans);fill:var(--text)}
+.rxc{fill:var(--card2);stroke:var(--line2)}.av1{fill:color-mix(in srgb,var(--accent) 55%,var(--card))}.av2{fill:color-mix(in srgb,var(--blue) 55%,var(--card))}.av3{fill:color-mix(in srgb,var(--green) 55%,var(--card))}
+.scan{fill:var(--accent);opacity:.85;animation:scan 2.2s ease-in-out infinite}@keyframes scan{0%,100%{transform:translateY(0)}50%{transform:translateY(124px)}}
+.plq{fill:var(--card2);stroke:currentColor;stroke-width:2}.plq2{fill:none;stroke:var(--accent);stroke-width:1;stroke-dasharray:3 3}.pa{fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.ppb{fill:none;stroke:var(--accent);stroke-width:3.6;stroke-linecap:round}.pp{fill:var(--accent)}
+.pt1{font:400 18px var(--serif);fill:var(--text);letter-spacing:.02em}.pt2{font:700 7px var(--mono);letter-spacing:.16em;fill:var(--accent)}.pt3{font:600 10px var(--mono);letter-spacing:.14em;fill:var(--muted)}.raise{animation:lift 3.6s var(--ease) infinite}
+.spark path{stroke:var(--accent);stroke-width:2;stroke-linecap:round;fill:none}.spark{animation:twinkle 2.4s infinite}.spark.s2{animation-delay:.8s}.spark.s3{animation-delay:1.6s}@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:none}}
+.spark.s1{transform-origin:70px 76px}.spark.s2{transform-origin:296px 57px}.spark.s3{transform-origin:300px 154px}
+.plqart{width:300px;margin:0 0 10px -12px}.auth.lic .licwrap{max-width:620px}
+/* ===== node points ===== */
+.nppill{position:relative;display:flex;align-items:center;gap:8px;margin:0 4px 14px;padding:8px 11px;border-radius:13px;border:1px solid var(--line2);background:var(--bg);color:var(--text);cursor:pointer;text-align:left;transition:border-color .2s}.nppill:hover{border-color:var(--accent)}
+.nppill b{font:650 15px var(--mono);font-variant-numeric:tabular-nums}.nppill span{font-size:11.5px;color:var(--muted)}.npi{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;flex:none}.npi rect{fill:color-mix(in srgb,var(--accent) 18%,transparent)}
+.npfly{position:absolute!important;right:10px;top:4px;color:var(--accent)!important;font:700 12px var(--mono)!important;animation:npfly .9s var(--ease) forwards;pointer-events:none}@keyframes npfly{to{transform:translateY(-22px);opacity:0}}
+.npcard{margin-bottom:14px}.npcard h2{display:flex;align-items:center;gap:8px}.npg{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:20px;align-items:center}
+.npbig b{display:block;font-size:44px;line-height:1;font-weight:650;letter-spacing:-.02em}.npbig span{display:block;font:400 20px var(--serif);margin:6px 0 8px}.nplv{height:7px;border-radius:9px;background:var(--fill);overflow:hidden}.nplv i{display:block;height:100%;background:var(--accent);border-radius:9px;animation:grow2 .9s var(--ease) both;transform-origin:left}@keyframes grow2{from{transform:scaleX(0)}}.npbig em{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:6px}
+.npst{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}.npst span{display:block;font:700 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.npst b{font-size:22px;color:var(--accent)}.npspark{grid-column:1/-1;width:100%;height:44px}.npspark rect{fill:color-mix(in srgb,var(--accent) 60%,transparent)}
+.npby{display:grid;gap:6px}.npby div{position:relative;display:flex;justify-content:space-between;padding:6px 10px;border-radius:10px;background:var(--bg2);overflow:hidden;font-size:13px}.npby span,.npby b{position:relative;z-index:1}.npby i{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--accent) 14%,transparent);transform-origin:left;animation:grow2 .8s var(--ease) both}
+/* ===== license page ===== */
+.lstat{display:inline-flex;gap:8px;align-items:center;padding:7px 14px;border-radius:99px;background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--green);font-weight:650;font-size:13.5px}.lstat i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 color-mix(in srgb,var(--green) 60%,transparent);animation:pulse 2s infinite}@keyframes pulse{70%{box-shadow:0 0 0 8px transparent}}
+.lgrid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;margin-bottom:14px;align-items:start}.lhero{display:grid;grid-template-columns:210px 1fr;gap:20px;align-items:center}.lplq .scene{max-width:210px}
+.linfo dl{margin:12px 0;display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px}.linfo dt{font:700 10px/1.9 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.linfo dd{margin:0;font-weight:600}
+.lkey{display:flex;gap:6px;align-items:center}.lkey>span{flex:1;font-size:16px;letter-spacing:.14em;padding:10px 14px;border-radius:12px;background:var(--bg2);border:1px dashed var(--line2)}
+.meter{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.meter:last-child{border-bottom:none}.meter>.ic{color:var(--mc)}.mrow2{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px}.mbar{height:6px;border-radius:9px;background:var(--fill);overflow:hidden}.mbar i{display:block;height:100%;background:var(--mc);border-radius:9px;transform-origin:left;animation:grow2 .9s var(--ease) both}
+.seats{display:grid;gap:8px;margin-top:12px}.seat{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--bg2)}.seat.on{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.seat>.ic{color:var(--accent)}.seat b{display:block;font-size:14px}.seat span.mono{font-size:11px;color:var(--muted)}
+.llog div{display:flex;gap:14px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}.llog div:last-child{border-bottom:none}.llog span{font-size:11px;color:var(--muted);min-width:96px}.llog b{font-weight:600}
+/* ===== settings ===== */
+.setgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.setgrid h2{margin-bottom:4px}
+.accs{display:flex;gap:12px;flex-wrap:wrap}.acc{display:flex;flex-direction:column;align-items:center;gap:5px;border:none;background:none;cursor:pointer;color:var(--ink2);font-size:12px;font-weight:600}.acc i{width:32px;height:32px;border-radius:50%;background:var(--c);box-shadow:inset 0 -3px 0 rgba(0,0,0,.15);transition:transform .3s var(--spring)}.acc:hover i{transform:scale(1.08)}.acc.on i{box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--c)}.accs.sm i{width:24px;height:24px}
+.surfs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.surf{display:flex;flex-direction:column;align-items:center;gap:6px;border:none;background:none;cursor:pointer;color:var(--ink2);font-size:12.5px;font-weight:600}.surf i{display:flex;flex-direction:column;gap:4px;justify-content:center;width:100%;height:52px;border-radius:12px;padding:10px;border:1px solid var(--line2)}.surf em{display:block;height:6px;border-radius:4px;background:var(--accent);width:60%}.surf em+em{width:85%;opacity:.4;background:currentColor}
+.sf-charcoal i{background:#1a1917;color:#efe8dc}.sf-graphite i{background:#18191c;color:#e9eaec}.sf-walnut i{background:#1e1611;color:#f2e6d8}.sf-paper i{background:#f3efe8;color:#22201c}.surf.on i{box-shadow:0 0 0 2px var(--accent)}.surf.on{color:var(--text)}
+.wprev{display:flex;gap:8px;margin-top:14px}.wprev svg{flex:1;height:auto;border-radius:10px;background:var(--bg2);border:1px solid var(--line)}.wprev rect{fill:var(--card2);stroke:var(--line2)}.wprev path{fill:none;stroke:var(--ink2);stroke-width:2}.wprev svg.on{border-color:var(--accent)}.wprev svg.on path{stroke:var(--accent)}
+.cfprev{font-size:var(--cfs);background:var(--bg2);padding:14px;border-radius:12px;color:var(--ink2);margin:12px 0 0;white-space:pre}
+/* ===== plugin widgets (same as in Atelier) ===== */
+.plw{--pt:var(--violet);position:relative;width:min(320px,100%);border-radius:18px;padding:12px 14px;background:linear-gradient(165deg,color-mix(in srgb,var(--pt) 10%,var(--card2)),var(--card2) 62%);border:1px solid color-mix(in srgb,var(--pt) 28%,var(--line));box-shadow:0 10px 24px -16px rgba(0,0,0,.6);overflow:hidden}.plw::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--pt)}
+.plwh{display:flex;align-items:center;gap:8px}.plwh b{font-size:13.5px}.plwh .pkpic{width:26px;height:26px;border-radius:8px}.plwh .pltag{margin-left:auto}
+.plwt{margin-top:10px;font:700 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb,var(--pt) 70%,var(--text))}.plwv{display:flex;align-items:baseline;gap:7px;margin-top:2px}.plwv b{font-size:32px;line-height:1.1;font-weight:650;font-variant-numeric:tabular-nums}.plwv span{font-size:13px;color:var(--muted);font-weight:600}
+.plwr{display:flex;flex-direction:column;gap:5px;margin-top:10px}.plwr div{position:relative;display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:10px;background:var(--fill);overflow:hidden;font-size:13.5px}.plwr i{font-style:normal;font-size:11px;font-weight:750;width:18px;height:18px;border-radius:6px;display:grid;place-items:center;background:color-mix(in srgb,var(--pt) 20%,transparent);position:relative;z-index:1}.plwr span{flex:1;position:relative;z-index:1}.plwr b{position:relative;z-index:1;font-variant-numeric:tabular-nums}.plwr em{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--pt) 12%,transparent)}.plwr .top i{background:var(--pt);color:var(--bg)}
+.plwx{margin:8px 0 0;font-size:14px;line-height:1.45;white-space:pre-wrap}
+.cmdt{display:inline-block;font:650 .92em/1.25 var(--mono);padding:1px 6px;border-radius:7px;color:var(--violet);background:color-mix(in srgb,var(--violet) 16%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--violet) 28%,transparent),0 0 12px -2px color-mix(in srgb,var(--violet) 45%,transparent)}.chm{font-weight:650;color:var(--blue)}
+.bmsg.plonly{flex-direction:column;align-items:flex-start;gap:4px}.bmsg.plonly.pickable .plw{outline:1px dashed var(--accent);outline-offset:2px;cursor:pointer}
+#bI.cmdin{font-family:var(--mono);color:var(--violet);border-color:color-mix(in srgb,var(--violet) 50%,transparent)}
+@media(max-width:1100px){.tiles{grid-template-columns:1fr 1fr}.dgrid,.licpage,.lgrid,.setgrid,.npg{grid-template-columns:1fr}.stbody{grid-template-columns:200px 1fr 270px}.bbody{grid-template-columns:190px 1fr 250px}}
 @media(max-width:820px){.shell{grid-template-columns:1fr}.side{position:relative;height:auto}.auth{grid-template-columns:1fr}.authart{min-height:320px}.authfig{display:none}.pg{padding:24px 18px}.share,.imp{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -218,6 +299,7 @@ PK.NODES={
  install:{c:'start',l:'Plugin added',i:'M9 3.5V8M15 3.5V8M6.5 8h11v3.2a5.5 5.5 0 0 1-11 0zM12 16.7v4.1',d:'The plugin is added to a group.',o:['next'],p:[]},
  send:{c:'act',l:'Send message',i:'M4.5 12L19.5 5L16 19.5L11.5 13.5zM11.5 13.5L19.5 5',d:'Post in a channel as the plugin.',o:['next'],p:[_P('ch','Channel (empty = same)','text',''),_P('text','Message','long','Hello {user}!')]},
  reply:{c:'act',l:'Reply',i:'M9 8L4 12.5L9 17M4.5 12.5H14a6 6 0 0 1 6 6',d:'Answer in the same channel.',o:['next'],p:[_P('text','Message','long','Thanks, {user}.')]},
+ card:{c:'act',l:'Send a widget',i:'M4 5.5h16v13H4zM7.5 9h5M7.5 15.5h3M14.5 12.5h3v3h-3z',d:'Posts a widget card: a title, a big value and a line of text.',o:['next'],p:[_P('ch','Channel (empty = same)','text',''),_P('title','Title','text','Balance'),_P('value','Big value','text','{coins}'),_P('unit','Under the value','text','coins'),_P('text','Text','long','{user}'),_P('tone','Colour','select','accent',[['accent','Clay'],['yellow','Gold'],['green','Green'],['blue','Blue'],['violet','Violet'],['red','Red']])]},
  react:{c:'act',l:'React',i:'M12 20.5a8.5 8.5 0 1 0 0-17a8.5 8.5 0 1 0 0 17M8.5 14c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2M9 9.5v.5M15 9.5v.5',d:'Add a reaction to the message.',o:['next'],p:[_P('key','Reaction','react','star')]},
  pin:{c:'act',l:'Pin message',i:'M14.5 4L20 9.5M15.5 5L9.6 9.2L6.4 9.6L14.4 17.6L14.8 14.4L19 8.5M10 14L4 20',d:'Pin the message to the top.',o:['next'],p:[]},
  notify:{c:'act',l:'Show a notice',i:'M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5L19 18H5zM10 20.5h4',d:'A short notice on screen.',o:['next'],p:[_P('text','Notice','text','{user} did something')]},
@@ -282,6 +364,7 @@ function pkCore(){
   const api={event:ev,members:snap.members,channels:snap.channels,group:snap.group,tmp,fill,
    get picked(){return picked},
    reply(text){out.actions.push({t:'send',ch:chId(''),text:fill(text),at:out.t});return api},
+   card(o={}){out.actions.push({t:'send',ch:chId(o.ch||''),text:fill(o.text||''),card:{title:fill(o.title||''),value:fill(o.value==null?'':o.value),unit:fill(o.unit||''),tone:['accent','yellow','green','blue','violet','red'].includes(o.tone)?o.tone:'accent'},at:out.t});return api},
    send(ch,text){if(text===undefined){text=ch;ch=''}out.actions.push({t:'send',ch:chId(ch),text:fill(text),at:out.t});return api},
    react(key){if(ev.msg)out.actions.push({t:'react',ch:ev.ch&&ev.ch.id,msg:ev.msg.id,key:String(key||'star'),at:out.t});return api},
    pin(){if(ev.msg)out.actions.push({t:'pin',ch:ev.ch&&ev.ch.id,msg:ev.msg.id,at:out.t});return api},
@@ -313,7 +396,7 @@ function pkCore(){
  /* one node, run through the same API a coded plugin uses */
  function step(n,api,ev){const p=n.p||{},cmp=(a,op,b)=>{const x=api.fill(a),y=api.fill(b),nx=parseFloat(x),ny=parseFloat(y),bn=isFinite(nx)&&isFinite(ny);
    switch(op){case'=':return bn?nx===ny:x.toLowerCase()===y.toLowerCase();case'!=':return bn?nx!==ny:x.toLowerCase()!==y.toLowerCase();case'>':return bn&&nx>ny;case'<':return bn&&nx<ny;case'>=':return bn&&nx>=ny;case'<=':return bn&&nx<=ny;case'has':return x.toLowerCase().includes(y.toLowerCase())}return false};
-  switch(n.k){case'send':api.send(p.ch||'',p.text);break;case'reply':api.reply(p.text);break;case'react':api.react(p.key);break;case'pin':api.pin();break;case'notify':api.notify(p.text);break;
+  switch(n.k){case'send':api.send(p.ch||'',p.text);break;case'card':api.card(p);break;case'reply':api.reply(p.text);break;case'react':api.react(p.key);break;case'pin':api.pin();break;case'notify':api.notify(p.text);break;
    case'mkchannel':api.makeChannel(p.name,p.type);break;case'if':return cmp(p.a,p.op,p.b)?'yes':'no';case'chance':return api.chance(p.pct)?'yes':'no';case'cooldown':return api.cooldown(n.id,p.per,p.mins,p.who)?'yes':'no';
    case'hasrole':return api.hasRole(p.who,p.role)?'yes':'no';case'pick':api.pick({from:p.from,role:p.role,notMe:!!p.notme});if(!api.picked)return'stop';break;case'wait':api.wait(p.s);break;case'random':api.random(p.name,p.min,p.max);break;case'text':api.text(p.name,p.value);break;
    case'add':api.add(p.name,p.amount,p.who);break;case'set':api.set(p.name,p.value,p.who);break;case'board':api.leaderboard(p.name,p.n);break;case'giverole':api.giveRole(p.who,p.role);break;case'takerole':api.takeRole(p.who,p.role);break;
@@ -335,7 +418,7 @@ PK.core=pkCore();
 
 /* ---- turning a graph into code: the nodes write the program for you ---- */
 PK.gen=function(pl){const G=pl.graph||{nodes:[],links:[]},q=s=>JSON.stringify(String(s??'')),L=[],seen=new Set();
- const W=n=>{const p=n.p||{};switch(n.k){case'send':return`a.send(${q(p.ch||'here')}, ${q(p.text)})`;case'reply':return`a.reply(${q(p.text)})`;case'react':return`a.react(${q(p.key)})`;case'pin':return'a.pin()';case'notify':return`a.notify(${q(p.text)})`;
+ const W=n=>{const p=n.p||{};switch(n.k){case'send':return`a.send(${q(p.ch||'here')}, ${q(p.text)})`;case'reply':return`a.reply(${q(p.text)})`;case'card':return`a.card({ ch: ${q(p.ch||'')}, title: ${q(p.title)}, value: ${q(p.value)}, unit: ${q(p.unit)}, text: ${q(p.text)}, tone: ${q(p.tone||'accent')} })`;case'react':return`a.react(${q(p.key)})`;case'pin':return'a.pin()';case'notify':return`a.notify(${q(p.text)})`;
   case'mkchannel':return`a.makeChannel(${q(p.name)}, ${q(p.type)})`;case'pick':return`if (!a.pick({ from: ${q(p.from)}, role: ${q(p.role)}, notMe: ${!!p.notme} })) return`;case'wait':return`a.wait(${+p.s||0})`;case'random':return`a.random(${q(p.name)}, ${+p.min||0}, ${+p.max||0})`;case'text':return`a.text(${q(p.name)}, ${q(p.value)})`;
   case'add':return`a.add(${q(p.name)}, ${q(p.amount)}, ${q(p.who)})`;case'set':return`a.set(${q(p.name)}, ${q(p.value)}, ${q(p.who)})`;case'board':return`a.leaderboard(${q(p.name)}, ${+p.n||5})`;case'giverole':return`a.giveRole(${q(p.who)}, ${q(p.role)})`;case'takerole':return`a.takeRole(${q(p.who)}, ${q(p.role)})`;
   case'summarize':return'a.summarize()';case'copyfile':return`a.copyFile(${q(p.ch)})`}return`// ${n.k}`};
@@ -349,9 +432,9 @@ PK.gen=function(pl){const G=pl.graph||{nodes:[],links:[]},q=s=>JSON.stringify(St
 
 /* ---- what a plugin needs, read from its nodes or code ---- */
 PK.info=function(pl){const ks=new Set(),cmds=[],trig=new Set();if(pl.mode==='code'){const c=pl.code||'';const re=/on\(\s*['"](\w+)['"]\s*(?:,\s*\{([^}]*)\})?/g;let m;while((m=re.exec(c))){trig.add(m[1]);if(m[1]==='command'){const nm=(m[2]||'').match(/name\s*:\s*['"]([^'"]+)/);if(nm)cmds.push(nm[1])}}
-  [['send','send'],['reply','send'],['react','react'],['pin','pin'],['giveRole','role'],['takeRole','role'],['makeChannel','mkchannel'],['copyFile','files'],['summarize','files'],['add(','data'],['set(','data'],['notify','notify']].forEach(([w,k])=>{if(c.includes('.'+w))ks.add(k)})}
+  [['send','send'],['reply','send'],['card','send'],['react','react'],['pin','pin'],['giveRole','role'],['takeRole','role'],['makeChannel','mkchannel'],['copyFile','files'],['summarize','files'],['add(','data'],['set(','data'],['notify','notify']].forEach(([w,k])=>{if(c.includes('.'+w))ks.add(k)})}
  else(pl.graph?.nodes||[]).forEach(n=>{const c=PK.NODES[n.k]?.c;if(c==='start'){trig.add(n.k);if(n.k==='command'&&n.p?.name)cmds.push(String(n.p.name).replace(/^\//,''))}
-  ({send:'send',reply:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify'})[n.k]&&ks.add(({send:'send',reply:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify'})[n.k])});
+  ({send:'send',reply:'send',card:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify'})[n.k]&&ks.add(({send:'send',reply:'send',card:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify'})[n.k])});
  const PL={send:'Post messages',react:'Add reactions',pin:'Pin messages',role:'Give and take roles',mkchannel:'Make channels',files:'Read and file shared files',data:'Keep its own values, like coins',notify:'Show notices'};
  return{perms:[...ks].map(k=>PL[k]),cmds:[...new Set(cmds)],trig:[...trig].map(k=>PK.NODES[k]?.l||k),nodes:(pl.graph?.nodes||[]).length}};
 PK.valid=function(pl){if(!pl||pl.f!=='atelier-plugin'||typeof pl.name!=='string'||!pl.id)return'This is not an Atelier plugin.';if(pl.v>PK.VER)return'This plugin needs a newer Atelier.';
@@ -398,21 +481,35 @@ PK.fileInfo=async function(name,type,size,blob){const ext=(String(name).split('.
 
 /* ---- the starter plugins, in both apps ---- */
 PK.STARTERS=(()=>{let i=0;const N=(k,x,y,p={})=>({id:'n'+(++i),k,x,y,p}),Lk=(a,b,ap='next')=>({id:'l'+a.id+b.id+ap,a:a.id,ap,b:b.id});
- const mk=(id,name,desc,pic,size,nodes,links)=>({f:'atelier-plugin',v:1,id,name,desc,pic:{k:pic},size,author:'Atelier',ver:'1.0',mode:'nodes',made:1763200000000,up:1763200000000,starter:true,graph:{nodes,links}});
+ const mk=(id,name,desc,pic,size,nodes,links)=>({f:'atelier-plugin',v:1,id,name,desc,pic:{k:pic},size,author:'Atelier',ver:'1.1',mode:'nodes',made:1763200000000,up:1763300000000,starter:true,graph:{nodes,links}});
  i=0;let a=N('join',40,60),b=N('send',340,60,{ch:'',text:'Welcome to {group}, {user}! Say hi here and look around the channels.'}),c=N('react',640,60,{key:'love'}),d=N('install',40,260),e=N('send',340,260,{ch:'',text:'Welcome is on. Everyone who joins gets a warm hello.'});
  const welcome=mk('atelier.welcome','Welcome','Greets every new member with a message in the group.','wave','small',[a,b,c,d,e],[Lk(a,b),Lk(d,e)]);
  i=0;const d1=N('daily',40,40),d2=N('add',330,40,{name:'coins',amount:'10',who:'user'}),d3=N('react',620,40,{key:'coin'}),
-  c1=N('command',40,230,{name:'coins'}),c2=N('reply',330,230,{text:'{user}, you have {coins} coins.'}),
-  t1=N('command',40,400,{name:'top'}),t2=N('board',330,400,{name:'coins',n:5}),t3=N('reply',620,400,{text:'Most coins:\n{leaderboard}'}),
+  c1=N('command',40,230,{name:'coins'}),c2=N('card',330,230,{ch:'',title:'Balance',value:'{coins}',unit:'coins',text:'{user}, keep going. A star on your message pays a coin.',tone:'yellow'}),
+  t1=N('command',40,400,{name:'top'}),t2=N('board',330,400,{name:'coins',n:5}),t3=N('card',620,400,{ch:'',title:'Most coins',value:'',unit:'',text:'{leaderboard}',tone:'yellow'}),
   r1=N('reaction',40,570,{key:'star'}),r2=N('add',330,570,{name:'coins',amount:'1',who:'author'}),
   g1=N('command',40,740,{name:'give'}),g2=N('if',330,740,{a:'{coins}',op:'>=',b:'{arg2}'}),g3=N('if',620,700,{a:'{arg2}',op:'>',b:'0'}),g4=N('add',910,660,{name:'coins',amount:'-{arg2}',who:'user'}),g5=N('add',1200,660,{name:'coins',amount:'{arg2}',who:'arg'}),g6=N('reply',1490,660,{text:'{user} gave {arg2} coins to {arg1}.'}),g7=N('reply',620,880,{text:'You need at least {arg2} coins for that, {user}.'}),g8=N('reply',910,800,{text:'Give a number, like /give Ana 5.'}),
   i1=N('install',40,930),i2=N('send',330,930,{ch:'',text:'Coins is on. Everyone gets 10 coins a day. Type /coins, /top or /give name amount. A star on a message gives its author a coin.'});
  const coins=mk('atelier.coins','Coins','A small economy: daily coins, stars that pay, a leaderboard and giving coins to others.','coin','big',[d1,d2,d3,c1,c2,t1,t2,t3,r1,r2,g1,g2,g3,g4,g5,g6,g7,g8,i1,i2],[Lk(d1,d2),Lk(d2,d3),Lk(c1,c2),Lk(t1,t2),Lk(t2,t3),Lk(r1,r2),Lk(g1,g2),Lk(g2,g3,'yes'),Lk(g2,g7,'no'),Lk(g3,g4,'yes'),Lk(g3,g8,'no'),Lk(g4,g5),Lk(g5,g6),Lk(i1,i2)]);
- i=0;const s1=N('command',40,80,{name:'leader'}),s2=N('cooldown',330,80,{per:'day',mins:10,who:'group'}),s3=N('pick',620,40,{from:'all',role:'',notme:false}),s4=N('giverole',910,40,{who:'picked',role:'Leader'}),s5=N('add',1200,40,{name:'coins',amount:'25',who:'picked'}),s6=N('send',1490,40,{ch:'',text:'{picked} is today\'s leader and gets 25 coins. Lead well!'}),s7=N('reply',620,220,{text:'We already have a leader today. Try again tomorrow.'});
+ i=0;const s1=N('command',40,80,{name:'leader'}),s2=N('cooldown',330,80,{per:'day',mins:10,who:'group'}),s3=N('pick',620,40,{from:'all',role:'',notme:false}),s4=N('giverole',910,40,{who:'picked',role:'Leader'}),s5=N('add',1200,40,{name:'coins',amount:'25',who:'picked'}),s6=N('card',1490,40,{ch:'',title:'Leader of the day',value:'{picked}',unit:'+25 coins',text:'Lead well! Ask {picked} where to start today.',tone:'violet'}),s7=N('reply',620,220,{text:'We already have a leader today. Try again tomorrow.'});
  const spot=mk('atelier.spotlight','Spotlight','Type /leader to choose a leader of the day: a role and 25 coins.','crown','small',[s1,s2,s3,s4,s5,s6,s7],[Lk(s1,s2),Lk(s2,s3,'yes'),Lk(s2,s7,'no'),Lk(s3,s4),Lk(s4,s5),Lk(s5,s6)]);
- i=0;const f1=N('file',40,60),f2=N('summarize',330,60),f3=N('reply',620,60,{text:'{summary}'}),f4=N('if',910,60,{a:'{channel}',op:'!=',b:'files'}),f5=N('copyfile',1200,20,{ch:'files'}),f6=N('reply',1490,20,{text:'I filed a copy in #files.'});
+ i=0;const f1=N('file',40,60),f2=N('summarize',330,60),f3=N('card',620,60,{ch:'',title:'{file}',value:'',unit:'',text:'{summary}',tone:'green'}),f4=N('if',910,60,{a:'{channel}',op:'!=',b:'files'}),f5=N('copyfile',1200,20,{ch:'files'}),f6=N('reply',1490,20,{text:'I filed a copy in #files.'});
  const files=mk('atelier.files','File helper','Describes every shared file and files a copy in #files.','files','small',[f1,f2,f3,f4,f5,f6],[Lk(f1,f2),Lk(f2,f3),Lk(f3,f4),Lk(f4,f5,'yes'),Lk(f5,f6)]);
  return[welcome,coins,spot,files]})();
+
+/* ---- plugin messages are widgets: a card with the plugin's picture, a title, a big value, ranked rows ---- */
+PK.guess=function(text){const t=String(text||''),L=t.split('\n'),rows=[],rest=[];let title='';
+ L.forEach(l=>{const m=l.match(/^\s*(\d+)\.\s+(.+?):\s*(-?\d+(?:[.,]\d+)?)\s*$/);if(m)rows.push([m[2],m[3]]);else if(l.trim())rest.push(l)});
+ if(rows.length>=1&&rest.length&&/:\s*$/.test(rest[0])){title=rest.shift().replace(/:\s*$/,'')}
+ const st=rows.length||t.length>70?null:t.match(/(-?\d+(?:[.,]\d+)?)\s+(coins?|points?|stars?|rolls?|xp|votes?)\b/i);
+ return{title,value:st?st[1]:'',unit:st?st[2]:'',text:rest.join('\n'),rows}};
+PK.fmt=t=>PK.esc(t).replace(/(^|\s)(\/[a-z0-9-]+)/gi,'$1<span class="cmdt">$2</span>').replace(/(^|\s)#([a-z0-9čšž-]+)/gi,'$1<span class="chm">#$2</span>');
+PK.plCard=function(m,pl){const c=m.card?{...m.card,text:m.text||'',rows:[]}:PK.guess(m.text);if(m.card&&c.text){const g=PK.guess(c.text);if(g.rows.length){c.rows=g.rows;c.text=g.text}}
+ const mx=Math.max(1,...c.rows.map(r=>Math.abs(parseFloat(String(r[1]).replace(',','.'))||0)));const tone=c.tone||'violet';
+ return`<div class="plw" style="--pt:var(--${tone==='accent'?'accent':tone})"><div class="plwh">${PK.picHtml(pl||{},'sm')}<b>${PK.esc(pl?.name||'Plugin')}</b><span class="pltag">Plugin</span></div>
+ ${c.title?`<div class="plwt">${PK.esc(c.title)}</div>`:''}${c.value!==''&&c.value!=null?`<div class="plwv"><b>${PK.esc(c.value)}</b>${c.unit?`<span>${PK.esc(c.unit)}</span>`:''}</div>`:''}
+ ${c.rows.length?`<div class="plwr">${c.rows.slice(0,10).map((r,i)=>`<div class="${i===0?'top':''}"><i>${i+1}</i><span>${PK.esc(r[0])}</span><b>${PK.esc(r[1])}</b><em style="width:${Math.round(Math.abs(parseFloat(String(r[1]).replace(',','.'))||0)/mx*100)}%"></em></div>`).join('')}</div>`:''}
+ ${c.text?`<p class="plwx">${PK.fmt(c.text)}</p>`:''}</div>`};
 
 /* ============ ATELIER · ART ============
    One ink line, one accent. Icons on a 24 grid, characters on a 100 grid, avatars on a 40 grid. */
@@ -536,6 +633,76 @@ function clockSVG(frac,phase){const R=118,C=2*Math.PI*R,ticks=[];for(let i=0;i<6
  <circle class="arc" cx="150" cy="150" r="${R}" fill="none" stroke="var(--phase)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 150 150)"/>
  <circle class="knob" cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="9" fill="var(--bg)" stroke="var(--phase)" stroke-width="4"/></svg>`}
 
+/* ============ ILLUSTRATIONS: the welcome tour and the builder plaque ============
+   Drawn like Atelier's characters: one ink line, one clay accent, no faces, open strokes. Each scene moves a little
+   (bricks settle, code types itself, messages pop, a QR code travels), and holds still when motion is reduced. */
+const SK='class="sk"',SA='class="sa"';
+const fgr=(p)=>`<g class="fg">${p.map(d=>{if(d[0]==='O'){const [x,y,r]=d.slice(1).split(' ');return`<circle cx="${x}" cy="${y}" r="${r}"/>`}return`<path d="${d}"/>`}).join('')}</g>`;
+const brick=(x,y,w,label,sub,col,cls='')=>`<g class="brk ${cls}" transform="translate(${x} ${y})"><rect width="${w}" height="44" rx="11" class="bk"/><rect width="${w}" height="4" rx="2" style="fill:${col}"/><circle cx="0" cy="22" r="4" class="bp"/><circle cx="${w}" cy="22" r="4" class="bp"/><text x="14" y="20" class="bt1">${label}</text><text x="14" y="34" class="bkt2">${sub}</text></g>`;
+function sceneNodes(){return`<svg viewBox="0 0 520 380" class="scene s-nodes" role="img" aria-label="A builder stacks node blocks like bricks while another fits lines of code together">
+ <path d="M24 338H496" class="gnd"/><path d="M40 344h8M70 344h8M100 344h8M380 344h8M410 344h8" class="gnd2"/>
+ ${brick(40,290,140,'COMMAND','/hello','var(--accent)')}${brick(52,242,140,'ADD TO VALUE','coins + 10','var(--yellow)')}${brick(40,194,140,'REPLY','Hello {user}!','var(--blue)')}
+ <path d="M180 312C204 312 204 264 192 264M192 264C214 264 210 216 180 216" class="wire2"/>
+ <g class="lift">${brick(48,112,140,'REACT','coin','var(--green)')}<path d="M118 160V184" class="guide"/></g>
+ <path d="M60 188h16M100 188h16M140 188h16" class="snap"/>
+ ${fgr(['O226 118 9','M227 128C226 152 224 186 220 226','M220 226L206 282L200 336','M220 226L236 280L246 336','M196 336h10M244 336h12','M226 142L206 128L190 134','M226 150L208 158L190 150'])}
+ <g class="code" transform="translate(268 132)"><rect width="168" height="150" rx="14" class="cbk"/><circle cx="16" cy="16" r="3.5" class="cd1"/><circle cx="28" cy="16" r="3.5" class="cd2"/><circle cx="40" cy="16" r="3.5" class="cd3"/>
+  <g class="cl l1"><rect x="12" y="34" width="144" height="22" rx="7" class="cln"/><text x="20" y="49" class="ct1"><tspan class="ck">on</tspan>(<tspan class="cs">'command'</tspan>,</text></g>
+  <g class="cl l2"><rect x="24" y="62" width="132" height="22" rx="7" class="cln cacc"/><text x="32" y="77" class="ct1">a.reply(<tspan class="cs">'Hello!'</tspan>)</text></g>
+  <g class="cl l3"><rect x="12" y="90" width="60" height="22" rx="7" class="cln"/><text x="20" y="105" class="ct1">})</text></g><rect x="78" y="94" width="2" height="14" class="caret"/>
+  <text x="12" y="138" class="cnote">HELLO WORLD, ATELIER STYLE</text></g>
+ <g class="push"><rect x="452" y="194" width="34" height="22" rx="7" class="cln cacc"/></g>
+ <rect x="452" y="300" width="44" height="38" rx="5" class="crate"/><path d="M452 312h44M474 300v38" class="crate2"/>
+ ${fgr(['O480 226 9','M479 236C478 258 476 280 474 298','M474 298L452 300L446 336','M474 298L486 316L490 336','M440 336h10M486 336h10','M478 252L462 236L456 206','M478 260L464 250L454 214'])}
+ <text x="40" y="372" class="lbl">NODES</text><text x="268" y="372" class="lbl">OR CODE</text></svg>`}
+function sceneBench(){return`<svg viewBox="0 0 520 380" class="scene s-bench" role="img" aria-label="A builder presses Next day on a test bench while a pretend group chats and earns coins">
+ <path d="M24 338H496" class="gnd"/>
+ <circle cx="428" cy="70" r="28" class="clk"/><path d="M428 70V52" class="hand1"/><path d="M428 70L442 76" class="hand2"/><circle cx="428" cy="70" r="2.5" class="cdot"/><text x="404" y="118" class="lbl">DAY 2</text>
+ <rect x="70" y="250" width="360" height="12" rx="4" class="sbench"/><path d="M90 262L80 338M410 262L420 338M110 262V300H390V262" class="bleg"/>
+ <rect x="112" y="98" width="200" height="140" rx="16" class="scr"/><path d="M200 238V250M180 250h40" class="stand"/>
+ <text x="126" y="120" class="sch"># general</text>
+ <g class="msgp m1"><rect x="126" y="130" width="96" height="22" rx="10" class="bub1"/><text x="136" y="145" class="bt3">morning team</text></g>
+ <g class="msgp m2"><rect x="186" y="158" width="112" height="22" rx="10" class="bub2"/><text x="196" y="173" class="bt3 cmd">/coins</text></g>
+ <g class="msgp m3"><rect x="126" y="186" width="130" height="40" rx="11" class="bub3"/><rect x="126" y="186" width="4" height="40" rx="2" class="pstrip"/><text x="138" y="201" class="bt4">COINS · PLUGIN</text><text x="138" y="219" class="bt5">10 coins</text></g>
+ <g class="coin c1"><circle cx="268" cy="214" r="9" class="cn"/><path d="M268 209v10" class="cnl"/></g><g class="coin c2"><circle cx="286" cy="206" r="7" class="cn"/><path d="M286 202v8" class="cnl"/></g>
+ <g transform="translate(330 222)"><rect width="88" height="26" rx="8" class="pan"/><rect x="8" y="7" width="20" height="12" rx="4" class="kb"/><rect x="34" y="7" width="20" height="12" rx="4" class="kb"/><rect x="60" y="7" width="20" height="12" rx="4" class="kb press"/></g>
+ ${fgr(['O462 146 9','M461 156C460 184 458 212 456 244','M456 244L446 290L440 336','M456 244L470 290L478 336','M432 336h10M476 336h10','M460 172L432 196L404 232','M460 180L470 210L466 236'])}
+ <text x="70" y="372" class="lbl">TEST BENCH</text><text x="330" y="212" class="lbl sm">JOIN  REACT  DAY</text></svg>`}
+function scenePhone(){const q=[[0,0],[1,0],[2,0],[0,1],[2,1],[0,2],[1,2],[2,2],[4,0],[5,1],[4,2],[3,4],[5,4],[0,4],[1,5],[4,5],[2,3]];
+ return`<svg viewBox="0 0 520 380" class="scene s-phone" role="img" aria-label="A laptop shows a QR code and a phone held by a builder scans it into a group">
+ <path d="M24 338H496" class="gnd"/>
+ <rect x="40" y="110" width="210" height="136" rx="12" class="scr"/><path d="M24 260h242l-12-14H36z" class="base"/>
+ <rect x="56" y="134" width="64" height="26" rx="7" class="mn"/><rect x="56" y="186" width="64" height="26" rx="7" class="mn"/><path d="M120 147C140 147 136 199 120 199" class="wire2"/><text x="64" y="151" class="bt6">COMMAND</text><text x="64" y="203" class="bt6">WIDGET</text>
+ <g transform="translate(160 136)" class="qr"><rect width="72" height="72" rx="8" class="qrb"/>${q.map(([x,y])=>`<rect x="${8+x*9.5}" y="${8+y*9.5}" width="8" height="8" rx="1.5" class="qrd"/>`).join('')}</g>
+ <path d="M236 172C292 150 322 150 372 170" class="beam"/><circle r="4" class="pkt"><animateMotion dur="2.2s" repeatCount="indefinite" path="M236 172C292 150 322 150 372 170"/></circle>
+ <rect x="364" y="116" width="84" height="164" rx="16" class="phone"/><rect x="372" y="128" width="68" height="140" rx="10" class="pscr"/><rect x="396" y="120" width="20" height="4" rx="2" class="notch"/>
+ <rect x="378" y="136" width="56" height="14" rx="6" class="chpl"/><text x="384" y="146" class="bt7"># general</text>
+ <g class="msgp m1"><rect x="378" y="158" width="56" height="44" rx="9" class="bub3"/><rect x="378" y="158" width="3" height="44" rx="1.5" class="pstrip"/><text x="385" y="171" class="bt8">COINS</text><text x="385" y="190" class="bt9">10</text></g>
+ <g class="msgp m2"><rect x="384" y="208" width="18" height="12" rx="5" class="rxc"/><rect x="406" y="208" width="18" height="12" rx="5" class="rxc"/></g>
+ <g class="msgp m3"><circle cx="384" cy="238" r="6" class="av1"/><circle cx="398" cy="238" r="6" class="av2"/><circle cx="412" cy="238" r="6" class="av3"/></g>
+ <rect x="372" y="140" width="68" height="2" class="scan"/>
+ ${fgr(['O488 140 9','M487 150C486 180 484 212 482 244','M482 244L470 290L464 336','M482 244L496 290L500 336','M456 336h10M496 336h10','M486 168L466 184L448 198','M486 176L470 214L448 236'])}
+ <text x="40" y="372" class="lbl">COMPUTER</text><text x="364" y="372" class="lbl">PHONE</text></svg>`}
+const TOUR=[[sceneNodes,'Nodes or code','Stack blocks like bricks and the code writes itself. Or write it yourself, line by line.'],[sceneBench,'A test bench','A pretend group with members, channels and a clock. Press Next day and watch the coins come in.'],[scenePhone,'Straight to your phone','Show a QR code, scan it in Atelier, and the plugin is in your group.']];
+function tourHtml(){return`<div class="tour" id="tour" aria-roledescription="carousel" aria-label="What Atelier Plugins does"><div class="tslides" id="tS" tabindex="0">${TOUR.map(([f,h,p],i)=>`<section class="tslide" aria-roledescription="slide" aria-label="${i+1} of ${TOUR.length}: ${h}"><div class="tart">${f()}</div><div class="tcap"><span class="tag">0${i+1} / 0${TOUR.length}</span><h2>${h}</h2><p>${p}</p></div></section>`).join('')}</div>
+ <div class="tnav"><button type="button" class="icon-btn" id="tP" aria-label="Previous">${ic('back',2)}</button><div class="tdots">${TOUR.map((_,i)=>`<button type="button" data-i="${i}" aria-label="Show ${i+1}" class="${i?'':'on'}"><i></i></button>`).join('')}</div><button type="button" class="icon-btn tnext" id="tN" aria-label="Next">${ic('back',2)}</button></div></div>`}
+function bindTour(){const S=$('#tS');if(!S)return;let idx=0,hold=0,tm=0;const n=TOUR.length;
+ const show=i=>{idx=(i+n)%n;S.scrollTo({left:idx*S.clientWidth,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})};
+ const mark=()=>{const i=Math.round(S.scrollLeft/Math.max(1,S.clientWidth));idx=i;$$('.tdots button').forEach((b,k)=>b.classList.toggle('on',k===i));$$('.tslide').forEach((s,k)=>s.classList.toggle('on',k===i))};
+ S.addEventListener('scroll',()=>{clearTimeout(S._t);S._t=setTimeout(mark,60)},{passive:true});mark();
+ const user=()=>{hold=Date.now()};$('#tP').onclick=()=>{user();show(idx-1)};$('#tN').onclick=()=>{user();show(idx+1)};$$('.tdots button').forEach(b=>b.onclick=()=>{user();show(+b.dataset.i)});
+ S.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){user();show(idx+1)}if(e.key==='ArrowLeft'){user();show(idx-1)}});S.addEventListener('pointerdown',user);S.addEventListener('wheel',user,{passive:true});
+ const T=$('#tour');let over=false;T.onmouseenter=()=>over=true;T.onmouseleave=()=>over=false;
+ tm=setInterval(()=>{if(!document.body.contains(S))return clearInterval(tm);if(over||Date.now()-hold<12000||H.set?.tourAuto===false)return;show(idx+1)},6500)}
+/* the plaque: a builder holds up their license */
+function plaqueScene(no){return`<svg viewBox="0 0 360 300" class="scene s-plaque" role="img" aria-label="A builder holds up a plaque that says Builder">
+ <path d="M30 282H330" class="gnd"/><g class="spark s1"><path d="M70 70v12M64 76h12"/></g><g class="spark s2"><path d="M296 52v10M291 57h10"/></g><g class="spark s3"><path d="M300 150v8M296 154h8"/></g>
+ <g class="raise"><rect x="104" y="40" width="152" height="96" rx="14" class="plq"/><rect x="112" y="48" width="136" height="80" rx="9" class="plq2"/>
+  <g transform="translate(120 58) scale(.55)"><path d="${MARK_A}" class="pa"/><path d="M12.6 34.2C18 31.8 22.6 31.2 26 31.2C31.8 31.2 37.4 32.6 42.2 30.4C44 29.6 45.4 27.4 45.6 24.8" class="ppb"/><rect x="41.4" y="16.6" width="8.4" height="8" rx="2.2" class="pp"/><path d="M43.6 16.6V13.2M47.6 16.6V13.2" class="ppb"/></g>
+  <text x="156" y="80" class="pt1">BUILDER</text><text x="156" y="96" class="pt2">ATELIER PLUGINS</text><text x="124" y="118" class="pt3">${esc(no||'')}</text>
+  ${fgr(['M150 136L146 160','M210 136L214 160'])}</g>
+ ${fgr(['O180 152 10','M180 164C180 190 179 214 178 236','M178 236L164 262L160 282','M178 236L192 262L198 282','M152 282h10M196 282h10','M180 178L160 170L148 158','M180 178L200 170L212 158'])}</svg>`}
+
 /* ============ ATELIER PLUGINS: the desktop hub ============
    Sign in, get a builder license, then build plugins with nodes or code, test them on a pretend group, and send
    them to Atelier with QR codes, a file, a link or (on this computer) the inbox Atelier reads by itself.
@@ -543,18 +710,26 @@ function clockSVG(frac,phase){const R=118,C=2*Math.PI*R,ticks=[];for(let i=0;i<6
 const HK='atelier-plugins-v1',INBOX='atelier-plugin-inbox',APP_URL='https://lipovseknejc2-lab.github.io/944488/atelier/';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=PK.esc,uid=()=>Math.random().toString(36).slice(2,9);
-Object.assign(ICON,{code:'M8.5 7L3.5 12L8.5 17M15.5 7L20.5 12L15.5 17M13.5 4.5L10.5 19.5',nodes:'M4 5h6v5H4zM14 14h6v5h-6zM10 7.5h2a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2',play:'M7 4.8v14.4L19 12z',
+Object.assign(ICON,{key:'M8 15.5a4 4 0 1 0 0-8a4 4 0 1 0 0 8M11.4 9.6L20 9.6M17 9.6V13M20 9.6V12',code:'M8.5 7L3.5 12L8.5 17M15.5 7L20.5 12L15.5 17M13.5 4.5L10.5 19.5',nodes:'M4 5h6v5H4zM14 14h6v5h-6zM10 7.5h2a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2',play:'M7 4.8v14.4L19 12z',
  dash:'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z',lib:'M4.5 4.5h4v15h-4zM10 4.5h4v15h-4zM15.5 5.4l3.8-1l3.4 14.4l-3.8 1z',globe:'M12 20.5a8.5 8.5 0 1 0 0-17a8.5 8.5 0 1 0 0 17M3.5 12h17M12 3.5c2.4 2.4 3.5 5.2 3.5 8.5s-1.1 6.1-3.5 8.5c-2.4-2.4-3.5-5.2-3.5-8.5s1.1-6.1 3.5-8.5',
  license:'M4 5.5h16v13H4zM7.5 9.5h6M7.5 12.5h4M16.5 14.5a1.6 1.6 0 1 0 0-3.2a1.6 1.6 0 1 0 0 3.2M15.3 15.8L15 18.5L16.5 17.6L18 18.5L17.7 15.8',undo:ICON.undo||'M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-2',redo:ICON.redo||'M15 14l5-5l-5-5M20 9H10a6 6 0 0 0 0 12h2',
  fit:'M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5',minus:'M5 12h14',zoom:'M10.5 17a6.5 6.5 0 1 0 0-13a6.5 6.5 0 1 0 0 13M15.3 15.3l5.2 5.2M8 10.5h5M10.5 8v5',sun:ICON.sun||'M12 4v2M12 18v2M4 12h2M18 12h2M12 16a4 4 0 1 0 0-8a4 4 0 1 0 0 8',clock:'M12 20.5a8.5 8.5 0 1 0 0-17a8.5 8.5 0 1 0 0 17M12 7.5V12l3 2',save:'M5 4.5h11l3 3v12H5zM8 4.5v5h7v-5M8 19.5v-6h8v6'});
 /* ---- state ---- */
-function hfix(h){h=h||{};h.plugins=Array.isArray(h.plugins)?h.plugins:[];h.stats=h.stats||{};h.log=Array.isArray(h.log)?h.log:[];h.sims=h.sims||{};h.v=1;return h}
+function hfix(h){h=h||{};h.np=h.np||{total:0,days:{},by:{}};h.set=Object.assign({accent:'clay',surface:'charcoal',grid:'lines',wire:'curve',snap:true,ndw:'regular',cfs:13.5,tourAuto:true,calm:false,ini:'clay'},h.set||{});if(h.lic){h.lic.codes=h.lic.codes||[];h.lic.log=h.lic.log||[{k:'Issued',at:h.lic.at}];h.lic.seat=h.lic.seat||'s1'}h.plugins=Array.isArray(h.plugins)?h.plugins:[];h.stats=h.stats||{};h.log=Array.isArray(h.log)?h.log:[];h.sims=h.sims||{};h.v=1;return h}
 let H=(()=>{try{return hfix(JSON.parse(localStorage.getItem(HK)||'null'))}catch(e){return hfix(null)}})();
 let _st=0;function save(){try{localStorage.setItem(HK,JSON.stringify(H));stamp('Saved')}catch(e){toast('Could not save here. The browser storage is full or blocked.')}}
 const saveSoon=()=>{clearTimeout(_st);stamp('Saving…');_st=setTimeout(save,350)};
 function stamp(t){const el=$('#svst');if(el)el.textContent=t}
 function logAct(k,pid){H.log.push({k,pid,at:Date.now()});if(H.log.length>3000)H.log=H.log.slice(-2400);const s=H.stats[pid]=H.stats[pid]||{sends:0,tests:0};if(k==='send')s.sends++;if(k==='test')s.tests++}
 const V={view:'dash',cur:null,sel:null,selL:null,z:1,pan:{x:60,y:60},tab:'gen',hist:[],fut:[],lit:new Set(),q:'',f:'all',rx:null};
+/* ---- node points: what you build here earns points, for what comes next ---- */
+const NPT={node:['Blocks placed',2],wire:['Wires',1],plugin:['New plugins',10],test:['Test runs',1],send:['Sent to phones',5],import:['Imports',3],public:['Made public',8],code:['Code sessions',3],daily:['Days building',5]};
+const NPL=[[0,'Apprentice'],[200,'Builder'],[1000,'Engineer'],[5000,'Architect'],[20000,'Master builder']];
+const npDay=()=>new Date().toISOString().slice(0,10);
+function np(k,n=1){const t=NPT[k];if(!t||!H.np)return;const v=t[1]*n;H.np.total+=v;H.np.by[k]=(H.np.by[k]||0)+v;const d=npDay();H.np.days[d]=(H.np.days[d]||0)+v;const ks=Object.keys(H.np.days);if(ks.length>90)ks.sort().slice(0,ks.length-90).forEach(x=>delete H.np.days[x]);
+ saveSoon();const pill=$('#npP');if(pill){pill.querySelector('b').textContent=H.np.total.toLocaleString('en-GB');const f=document.createElement('span');f.className='npfly';f.textContent='+'+v;pill.appendChild(f);setTimeout(()=>f.remove(),900)}}
+const npLevel=t=>{let i=0;NPL.forEach((l,k)=>{if(t>=l[0])i=k});const nx=NPL[i+1];return{name:NPL[i][1],i,next:nx,pct:nx?Math.round((t-NPL[i][0])/(nx[0]-NPL[i][0])*100):100}};
+const npIcon=(s=16)=>`<svg class="npi" viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true"><rect x="4.5" y="6.5" width="11" height="11" rx="3"/><circle cx="4.5" cy="12" r="2"/><circle cx="15.5" cy="12" r="2"/><path d="M17.5 12h3"/></svg>`;
 const plOf=id=>H.plugins.find(p=>p.id===id);
 const curPl=()=>plOf(V.cur);
 const nodesOf=pl=>(pl.graph=pl.graph||{nodes:[],links:[]});
@@ -569,42 +744,34 @@ function closeModal(){const m=$('#modal');_onClose.forEach(f=>{try{f()}catch(e){
 addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal'))closeModal()});
 /* ---- account and license ---- */
 const licNo=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',r=n=>Array.from({length:n},()=>a[Math.floor(Math.random()*a.length)]).join('');return`AP-${r(4)}-${r(4)}`};
-function vSignin(){return`<div class="auth"><div class="authart">${gridArt()}<div class="authlogo">${hubMark(64)}<div><b>Atelier Plugins</b><span>Build what your groups need.</span></div></div>
- <div class="authfig">${figure('reach',{acc:'var(--accent)'})}</div><ul class="authpts"><li><b>Nodes or code.</b> Connect blocks and the code writes itself, or write it yourself.</li><li><b>A test bench.</b> A pretend group with members, channels and a clock.</li><li><b>Straight to your phone.</b> Show a QR code and scan it in Atelier.</li></ul></div>
+function vSignin(){return`<div class="auth"><div class="authart">${gridArt()}<div class="authlogo">${hubMark(56)}<div><b>Atelier Plugins</b><span>Build what your groups need.</span></div></div>${tourHtml()}</div>
  <form class="authf" id="siF"><span class="tag">Step 1 of 2</span><h1>Sign in</h1><p class="sub">Your name goes on your license and on the plugins you make.</p>
  <label for="siN">Name</label><input id="siN" required maxlength="40" autocomplete="name" value="${esc(H.acct?.name||'')}"><label for="siE">Email</label><input id="siE" type="email" required maxlength="80" autocomplete="email" value="${esc(H.acct?.email||'')}"><label for="siS">Studio name <em>optional</em></label><input id="siS" maxlength="40" placeholder="Shown as the author" value="${esc(H.acct?.studio||'')}">
  <button class="btn primary full big" type="submit">Continue</button><p class="sub sm">Atelier Plugins keeps everything on this computer.</p></form></div>`}
-function gridArt(){return`<svg class="gridart" viewBox="0 0 600 800" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><pattern id="g1" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="currentColor" stroke-width=".5" opacity=".14"/></pattern><pattern id="g2" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M100 0H0V100" fill="none" stroke="currentColor" stroke-width=".8" opacity=".22"/></pattern></defs><rect width="600" height="800" fill="url(#g1)"/><rect width="600" height="800" fill="url(#g2)"/>
- <g fill="none" stroke="var(--accent)" stroke-width="1.6"><rect x="60" y="200" width="150" height="64" rx="12"/><rect x="330" y="140" width="170" height="64" rx="12"/><rect x="330" y="290" width="170" height="64" rx="12"/><path d="M210 232C270 232 270 172 330 172M210 232C270 232 270 322 330 322"/></g><g fill="var(--accent)"><circle cx="210" cy="232" r="4.5"/><circle cx="330" cy="172" r="4.5"/><circle cx="330" cy="322" r="4.5"/></g>
- <g fill="currentColor" font-family="ui-monospace,Menlo,monospace" font-size="9.5" letter-spacing="1.4" opacity=".55"><text x="60" y="190">N-01 COMMAND</text><text x="330" y="130">N-02 ADD TO VALUE</text><text x="330" y="280">N-03 REPLY</text><text x="72" y="236" opacity=".8">/coins</text><text x="342" y="176" opacity=".8">coins + 10</text><text x="342" y="326" opacity=".8">You have {coins}</text></g>
- <g stroke="currentColor" opacity=".3" stroke-width=".8"><path d="M60 284V296M210 284V296M60 290H210"/></g><text x="112" y="306" fill="currentColor" opacity=".35" font-family="ui-monospace,Menlo,monospace" font-size="8" letter-spacing="1.2">150 PX</text></svg>`}
-function vLicense(){const L=H.lic;return`<div class="auth lic"><div class="licwrap"><span class="tag">Step 2 of 2</span><h1>Your builder license</h1><p class="sub">Licenses go to some builders. While Atelier Plugins is being tested, everyone gets one.</p>${licCard(L,true)}
- <div class="row"><button class="btn primary big" id="licOk">${ic('check',2)} Accept and open the studio</button><button class="btn big" onclick="H.lic=null;H.acct=null;save();render()">Back</button></div></div></div>`}
-function licCard(L,fresh){const n=H.acct||{};return`<div class="liccard ${fresh?'fresh':''}"><div class="licperf" aria-hidden="true"></div><div class="lichead">${hubMark(30)}<div><b>Atelier Plugins</b><span>Builder license</span></div><span class="licno">${esc(L.no)}</span></div>
- <div class="licbody"><div class="licfig">${figure('write',{acc:'var(--accent)'})}</div><dl><dt>Holder</dt><dd>${esc(n.name||'')}</dd><dt>Studio</dt><dd>${esc(n.studio||n.name||'')}</dd><dt>Issued</dt><dd>${new Date(L.at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</dd><dt>Tier</dt><dd>Builder · test period</dd></dl>
- <ul class="licrights"><li>${ic('check',2.2)} Build plugins with nodes and code</li><li>${ic('check',2.2)} Test them on the bench</li><li>${ic('check',2.2)} Share them with Atelier</li></ul></div>
- <div class="licfoot"><span class="licsig">${esc((n.name||'').split(' ')[0])}</span><span class="licbar" aria-hidden="true">${Array.from({length:42},(_,i)=>`<i style="width:${1+((L.no.charCodeAt(i%L.no.length)*7+i)%3)}px"></i>`).join('')}</span>
- <svg class="licseal" viewBox="0 0 100 100" aria-hidden="true"><defs><path id="sealp" d="M50 50m-36 0a36 36 0 1 1 72 0a36 36 0 1 1-72 0"/></defs><circle cx="50" cy="50" r="46" class="s1"/><circle cx="50" cy="50" r="27" class="s2"/><text><textPath href="#sealp">ATELIER PLUGINS · BUILDER · ATELIER PLUGINS · BUILDER ·</textPath></text><g transform="translate(29 29) scale(.75)">${hubMark(56).replace(/<\/?svg[^>]*>/g,'')}</g></svg></div></div>`}
+function gridArt(){return`<svg class="gridart" aria-hidden="true"><defs><pattern id="g1" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="currentColor" stroke-width=".5" opacity=".12"/></pattern><pattern id="g2" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M100 0H0V100" fill="none" stroke="currentColor" stroke-width=".8" opacity=".18"/></pattern></defs><rect width="100%" height="100%" fill="url(#g1)"/><rect width="100%" height="100%" fill="url(#g2)"/></svg>`}
+function vLicense(){const L=H.lic;return`<div class="auth lic"><div class="licwrap"><div class="plqart">${plaqueScene(L.no)}</div><span class="tag">Step 2 of 2</span><h1>You are a builder</h1><p class="sub">Licenses go to some builders. While Atelier Plugins is in its test period, everyone gets one. Your license, its key and its codes are in License.</p>
+ <div class="row"><button class="btn primary big" id="licOk">${ic('nodes',2)} Start creating</button><button class="btn big" onclick="H.lic=null;H.acct=null;save();render()">Back</button></div></div></div>`}
 /* ---- the shell ---- */
-const NAV=[['dash','Dashboard','dash'],['studio','Studio','nodes'],['library','Library','lib'],['public','Public plugins','globe'],['test','Test bench','play'],['lic','License','license']];
+const NAV=[['dash','Dashboard','dash'],['studio','Studio','nodes'],['library','Library','lib'],['public','Public plugins','globe'],['test','Test bench','play'],['lic','License','license'],['set','Settings','gear']];
 function go(v,cur){if(cur&&cur!==V.cur){V.cur=cur;V.hist=[];V.fut=[];V._fit=1;V.rx=null}V.view=v;V.sel=null;V.selL=null;render();scrollTo(0,0)}
-function vShell(inner){const n=H.acct||{};return`<div class="shell v-${V.view}"><aside class="side"><div class="brand">${hubMark(30)}<div><b>Atelier Plugins</b><span>Builder</span></div></div>
+function vShell(inner){const n=H.acct||{};return`<div class="shell v-${V.view}"><aside class="side"><div class="brand">${hubMark(30)}<div><b>Atelier Plugins</b><span>${esc(npLevel(H.np.total).name)}</span></div></div><button class="nppill" id="npP" onclick="go('dash');setTimeout(()=>{const e=$('#npSec');e&&e.scrollIntoView({behavior:'smooth'})},60)" title="Node points">${npIcon(16)}<b>${H.np.total.toLocaleString('en-GB')}</b><span>node points</span></button>
  <nav>${NAV.map(([k,l,i])=>`<button class="nv ${V.view===k?'on':''}" onclick="go('${k}')" ${V.view===k?'aria-current="page"':''}>${ic(i,1.8)}<span>${l}</span>${k==='library'?`<em>${H.plugins.length}</em>`:''}</button>`).join('')}</nav>
  <button class="btn primary full" onclick="newPlugin()">${ic('plus',2)} New plugin</button><button class="btn full" onclick="importPlugin()">${ic('scan',2)} Import from a phone</button>
- <div class="acct"><span class="aini">${esc((n.name||'?').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase())}</span><div><b>${esc(n.name||'')}</b><span>${esc(H.lic?.no||'')}</span></div></div><a class="sidelink" href="${APP_URL}" target="_blank" rel="noopener">${ic('link',1.8)} Open Atelier</a></aside>
+ <div class="acct"><span class="aini" style="--ac:var(--${({clay:'accent',gold:'yellow',moss:'green',sky:'blue',iris:'violet',rose:'red'})[H.set.ini]||'accent'})">${esc((n.name||'?').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase())}</span><div><b>${esc(n.name||'')}</b><span>${esc(H.lic?.no||'')}</span></div></div><a class="sidelink" href="${APP_URL}" target="_blank" rel="noopener">${ic('link',1.8)} Open Atelier</a></aside>
  <main class="main" id="main">${inner}</main></div>`}
-function render(){const app=$('#app');if(!H.acct){app.innerHTML=vSignin();bindSignin();return}if(!H.lic||!H.lic.ok){if(!H.lic){H.lic={no:licNo(),at:Date.now(),ok:false};save()}app.innerHTML=vLicense();$('#licOk').onclick=()=>{H.lic.ok=true;save();go('dash');toast('License accepted. Welcome, '+H.acct.name.split(' ')[0]+'.')};return}
+function render(){const app=$('#app');if(!H.acct){app.innerHTML=vSignin();bindSignin();return}if(!H.lic||!H.lic.ok){if(!H.lic){H.lic={no:licNo(),at:Date.now(),ok:false,codes:[],log:[{k:'Issued',at:Date.now()}],seat:'s1'};save()}app.innerHTML=vLicense();$('#licOk').onclick=()=>{H.lic.ok=true;licLog('Activated on this computer');save();go('dash');toast('Welcome to the workshop, '+H.acct.name.split(' ')[0]+'.')};return}
  if((V.view==='studio'||V.view==='test')&&!curPl())V.view=H.plugins.length?'library':'dash';
- const view={dash:vDash,library:vLibrary,public:vPublic,studio:vStudio,test:vTest,lic:vLic}[V.view]||vDash;app.innerHTML=vShell(view());const a=V._after;V._after=[];(a||[]).forEach(f=>f())}
+ if(H.np.lastDay!==npDay()){H.np.lastDay=npDay();np('daily')}
+ const view={dash:vDash,library:vLibrary,public:vPublic,studio:vStudio,test:vTest,lic:vLic,set:vSet}[V.view]||vDash;app.innerHTML=vShell(view());const a=V._after;V._after=[];(a||[]).forEach(f=>f())}
 const after=f=>(V._after=V._after||[]).push(f);
-function bindSignin(){$('#siF').onsubmit=e=>{e.preventDefault();H.acct={name:$('#siN').value.trim(),email:$('#siE').value.trim(),studio:$('#siS').value.trim(),at:Date.now()};save();render()}}
+function bindSignin(){bindTour();$('#siF').onsubmit=e=>{e.preventDefault();H.acct={name:$('#siN').value.trim(),email:$('#siE').value.trim(),studio:$('#siS').value.trim(),at:Date.now()};save();render()}}
 /* ---- dashboard ---- */
 function vDash(){const n=H.acct.name.split(' ')[0],hr=new Date().getHours(),hi=hr<5?'Working late':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
  const sends=H.log.filter(x=>x.k==='send'),tests=H.log.filter(x=>x.k==='test'),wk=Date.now()-7*864e5,nodes=H.plugins.reduce((a,p)=>a+(p.graph?.nodes?.length||0),0);
  const days=Array.from({length:14},(_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-13+i);const a=d.getTime(),b=a+864e5;return{d,s:sends.filter(x=>x.at>=a&&x.at<b).length,t:tests.filter(x=>x.at>=a&&x.at<b).length}}),mx=Math.max(4,...days.map(x=>x.s+x.t));
  const rec=H.plugins.slice().sort((a,b)=>b.up-a.up).slice(0,4);
  return`<div class="pg"><header class="hd"><div><span class="hand">${hi}, ${esc(n)}</span><h1>Dashboard</h1></div><div class="hdr"><span class="licchip">${ic('license',1.8)} ${esc(H.lic.no)}</span></div></header>
- <div class="tiles"><div class="tile"><div class="lab" style="--lc:var(--accent)">${ic('lib',2)}<span>Plugins</span></div><b class="big">${H.plugins.length}</b><span class="sub">${H.plugins.filter(p=>p.size==='big').length} big · ${H.plugins.filter(p=>p.size!=='big').length} small</span></div>
+ ${npSection()}<div class="tiles"><div class="tile"><div class="lab" style="--lc:var(--accent)">${ic('lib',2)}<span>Plugins</span></div><b class="big">${H.plugins.length}</b><span class="sub">${H.plugins.filter(p=>p.size==='big').length} big · ${H.plugins.filter(p=>p.size!=='big').length} small</span></div>
   <div class="tile"><div class="lab" style="--lc:var(--blue)">${ic('qr',2)}<span>Sent to phones</span></div><b class="big">${sends.length}</b><span class="sub">${sends.filter(x=>x.at>wk).length} this week · QR codes, files and links</span></div>
   <div class="tile"><div class="lab" style="--lc:var(--green)">${ic('play',2)}<span>Test runs</span></div><b class="big">${tests.length}</b><span class="sub">${tests.filter(x=>x.at>wk).length} this week on the bench</span></div>
   <div class="tile"><div class="lab" style="--lc:var(--violet)">${ic('nodes',2)}<span>Nodes placed</span></div><b class="big">${nodes}</b><span class="sub">across ${plural(H.plugins.filter(p=>p.mode!=='code').length,'node plugin')}</span></div></div>
@@ -627,8 +794,6 @@ function vLibrary(){const L=filt(H.plugins.slice().sort((a,b)=>b.up-a.up));retur
 function vPublic(){const L=filt([...PK.STARTERS,...H.plugins.filter(p=>p.pub)]);return`<div class="pg"><header class="hd"><div><span class="tag">Browse</span><h1>Public plugins</h1></div></header>${bar()}
  <div class="card note">${ic('globe',1.8)}<p>Starters from Atelier and the plugins you mark as public. Plugins from other builders appear here once Atelier Plugins goes online.</p></div>
  ${L.length?`<div class="pgrid">${L.map(p=>pCard(p,true)).join('')}</div>`:`<div class="card empty"><div><h3>Nothing matches</h3><p class="sub">Try another filter.</p></div></div>`}</div>`}
-function vLic(){return`<div class="pg"><header class="hd"><div><span class="tag">Account</span><h1>License</h1></div></header><div class="licpage">${licCard(H.lic)}<div class="card"><h3>During the test period</h3><ul class="dots"><li>Every builder gets a license.</li><li>Plugins stay on your computer until you send them.</li><li>Atelier runs plugins in a sealed box: they can only post, react, pin, give roles, file files, make channels and keep their own values.</li><li>Real install counts and plugins from other builders come when Atelier Plugins goes online.</li></ul>
- <div class="row"><button class="btn" onclick="signOut()">Sign out</button></div></div></div></div>`}
 function signOut(){if(!confirm('Sign out? Your plugins stay on this computer.'))return;H.acct=null;H.lic=null;save();render()}
 /* ---- making plugins ---- */
 function blank(mode,name){const id='p'+Date.now().toString(36)+uid().slice(0,3);return{f:'atelier-plugin',v:1,id,name:name||'New plugin',desc:'',pic:{k:PK.PICS[Math.floor(Math.random()*PK.PICS.length)][0]},size:'small',author:H.acct.studio||H.acct.name,ver:'1.0',mode:mode||'nodes',made:Date.now(),up:Date.now(),
@@ -639,12 +804,76 @@ function newPlugin(mode){modal(`<div class="mh"><h2>New plugin</h2><button class
  <div class="flabel">Build it with</div><div class="choose"><label><input type="radio" name="npM" value="nodes" ${mode!=='code'?'checked':''}><span>${ic('nodes',1.8)}<b>Nodes</b><em>Connect blocks on a canvas. The code writes itself.</em></span></label><label><input type="radio" name="npM" value="code" ${mode==='code'?'checked':''}><span>${ic('code',1.8)}<b>Code</b><em>JavaScript with the Atelier API, in a sealed box.</em></span></label></div>
  <div class="flabel">Size</div><div class="seg wide"><label><input type="radio" name="npS" value="small" checked><span>Small: one job</span></label><label><input type="radio" name="npS" value="big"><span>Big: a whole system</span></label></div>
  <div class="row end"><button class="btn" data-close>Cancel</button><button class="btn primary" id="npGo">Create</button></div>`,'sm');
- $('#npGo').onclick=()=>{const pl=blank($('[name=npM]:checked').value,$('#npN').value.trim()||'New plugin');pl.size=$('[name=npS]:checked').value;H.plugins.push(pl);save();closeModal();V.pan={x:60,y:60};V.z=1;V.hist=[];V.fut=[];go('studio',pl.id)};$('#npN').onkeydown=e=>{if(e.key==='Enter')$('#npGo').click()}}
+ $('#npGo').onclick=()=>{const pl=blank($('[name=npM]:checked').value,$('#npN').value.trim()||'New plugin');pl.size=$('[name=npS]:checked').value;H.plugins.push(pl);np('plugin');save();closeModal();V.pan={x:60,y:60};V.z=1;V.hist=[];V.fut=[];go('studio',pl.id)};$('#npN').onkeydown=e=>{if(e.key==='Enter')$('#npGo').click()}}
 function useStarter(id){const s=PK.STARTERS.find(x=>x.id===id)||plOf(id);if(!s)return;const c=JSON.parse(JSON.stringify(s));c.id='p'+Date.now().toString(36)+uid().slice(0,3);c.name=s.name+(plOf(id)?' copy':'');delete c.starter;c.author=H.acct.studio||H.acct.name;c.made=c.up=Date.now();c.pub=false;
  if(!c.code)c.code=PK.gen(c);H.plugins.push(c);save();V.hist=[];V.fut=[];V.z=.8;V.pan={x:40,y:40};go('studio',c.id);toast(s.name+' is in your library. Change anything.')}
 function dupPlugin(id){useStarter(id)}
 function delPlugin(id){const p=plOf(id);if(!p||!confirm(`Delete ${p.name}? This cannot be undone.`))return;H.plugins=H.plugins.filter(x=>x.id!==id);delete H.stats[id];delete H.sims[id];save();render();toast('Deleted')}
 function touch(pl){pl.up=Date.now();saveSoon()}
+
+/* ============ LICENSE, NODE POINTS AND SETTINGS ============ */
+function licLog(k){if(!H.lic)return;(H.lic.log=H.lic.log||[]).unshift({k,at:Date.now()});if(H.lic.log.length>60)H.lic.log.length=60}
+const SEATS=3;
+const fmtDate=t=>new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+const monthStart=()=>{const d=new Date();d.setDate(1);d.setHours(0,0,0,0);return d.getTime()};
+const b64e=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const b64d=s=>JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((s.length+3)%4)))));
+/* a short checksum so a mistyped code is caught */
+const ck=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h.toString(36).slice(-4).toUpperCase()};
+function vLic(){const L=H.lic,n=H.acct,ms=monthStart(),lg=H.log.filter(x=>x.at>=ms),days=Math.max(1,Math.ceil((Date.now()-L.at)/864e5)),used=1+L.codes.filter(c=>c.used).length,show=V.key;
+ const meters=[['Plugins built',H.plugins.length,'lib','var(--accent)'],['Test runs this month',lg.filter(x=>x.k==='test').length,'play','var(--green)'],['Sent this month',lg.filter(x=>x.k==='send').length,'qr','var(--blue)'],['Node points this month',Object.entries(H.np.days).filter(([d])=>new Date(d).getTime()>=ms).reduce((a,[,v])=>a+v,0),'nodes','var(--violet)']];
+ after(bindLic);
+ return`<div class="pg"><header class="hd"><div><span class="tag">Account</span><h1>License</h1></div><div class="hdr"><span class="lstat"><i></i>Active</span></div></header>
+ <div class="lgrid"><section class="card lhero"><div class="lplq">${plaqueScene(L.no)}</div><div class="linfo"><div class="lab" style="--lc:var(--accent)">${ic('license',2)}<span>Builder license</span></div>
+  <dl><dt>Holder</dt><dd>${esc(n.name)}</dd><dt>Studio</dt><dd>${esc(n.studio||n.name)}</dd><dt>Tier</dt><dd>Builder · test period</dd><dt>Issued</dt><dd>${fmtDate(L.at)} · day ${days}</dd><dt>Computers</dt><dd>${used} of ${SEATS}</dd></dl>
+  <div class="lkey"><span class="mono" id="lkV">${show?esc(L.no):esc(L.no.slice(0,5)+'••-••'+L.no.slice(-2))}</span><button class="icon-btn sm" id="lkS" aria-label="${show?'Hide':'Show'} the key">${ic('eye')}</button><button class="icon-btn sm" id="lkC" aria-label="Copy the key">${ic('copy')}</button></div></div></section>
+ <section class="card"><div class="sh"><h2>Usage</h2><span class="sub sm">No limits during the test period</span></div>${meters.map(([l,v,i,c])=>`<div class="meter" style="--mc:${c}">${ic(i,1.8)}<div class="grow"><div class="mrow2"><span>${l}</span><b class="mono">${v.toLocaleString('en-GB')}</b></div><div class="mbar"><i style="width:${Math.min(100,Math.round(Math.log10(v+1)/3*100))}%"></i></div></div></div>`).join('')}</section></div>
+ <div class="lgrid"><section class="card"><div class="sh"><h2>Computers and codes</h2><button class="btn sm" id="lcNew" ${used+L.codes.filter(c=>!c.used).length>=SEATS?'disabled':''}>${ic('plus',2)} Code for another computer</button></div>
+  <p class="sub sm">Use one license on up to ${SEATS} computers. Make a code here, then redeem it in Atelier Plugins on the other computer.</p>
+  <div class="seats"><div class="seat on">${ic('dash',1.8)}<div class="grow"><b>This computer</b><span class="mono">${esc(L.seat.toUpperCase())} · ${esc(navigator.platform||'Computer')} · since ${fmtDate(L.at)}</span></div><span class="pill">In use</span></div>
+  ${L.codes.map(c=>`<div class="seat">${ic('key',1.8)}<div class="grow"><b>${esc(c.label)}</b><span class="mono">${esc(c.short)} · made ${fmtDate(c.at)}</span></div><button class="btn sm" data-show="${c.id}">${ic('qr',2)} Show</button><button class="icon-btn sm" data-rev="${c.id}" aria-label="Take back ${esc(c.label)}">${ic('trash')}</button></div>`).join('')}</div></section>
+ <section class="card"><div class="sh"><h2>Redeem a code</h2></div><p class="sub sm">Got a code from Atelier Plugins on your other computer? Paste it here to use the same license.</p><textarea id="lcIn" rows="3" placeholder="APL1." spellcheck="false" class="mono"></textarea><div class="row"><button class="btn primary" id="lcGo">${ic('check',2)} Redeem</button><button class="btn" id="lcExp">${ic('download',2)} Download license file</button><label class="btn">${ic('upload',2)} Restore from file<input type="file" id="lcImp" accept=".json,application/json" hidden></label></div></section></div>
+ <div class="lgrid"><section class="card"><div class="sh"><h2>License log</h2></div><div class="llog">${(L.log||[]).slice(0,14).map(e=>`<div><span class="mono">${new Date(e.at).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span><b>${esc(e.k)}</b></div>`).join('')}</div></section>
+ <section class="card"><h3>During the test period</h3><ul class="dots"><li>Every builder gets a license, free.</li><li>Plugins stay on your computer until you send them.</li><li>Atelier runs plugins in a sealed box: they can only post, react, pin, give roles, file files, make channels and keep their own values.</li><li>Codes are checked on this computer. Online checks, real install counts and plugins from other builders come when Atelier Plugins goes online.</li></ul><div class="row"><button class="btn" onclick="signOut()">Sign out</button></div></section></div></div>`}
+function licCode(c){return'APL1.'+b64e({no:H.lic.no,name:H.acct.name,studio:H.acct.studio||'',at:H.lic.at,seat:c.seat,id:c.id})}
+function bindLic(){const L=H.lic;$('#lkS').onclick=()=>{V.key=!V.key;if(V.key)licLog('Key shown');render()};$('#lkC').onclick=()=>{try{navigator.clipboard.writeText(L.no)}catch(e){}licLog('Key copied');save();toast('License key copied')};
+ $('#lcNew').onclick=()=>{modal(`<div class="mh"><h2>A code for another computer</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div><p class="sub">Name the computer so you know which code is which. You have ${SEATS} seats.</p><form id="lcF"><label class="flabel" for="lcL">Computer</label><input id="lcL" value="Laptop" maxlength="40" autocomplete="off"><div class="row end"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" id="lcMk">${ic('key',2)} Make the code</button></div></form>`);const f=$('#lcF');$('#lcL').select();f.onsubmit=e=>{e.preventDefault();mkCode($('#lcL').value)}};
+ const mkCode=label=>{const id=uid(),seat='s'+(L.codes.length+2),c={id,seat,label:label.trim()||'Other computer',at:Date.now()};c.short=ck(licCode(c))+'-'+seat.toUpperCase();L.codes.push(c);licLog('Code made for '+c.label);save();closeModal();render();codeModal(c)};
+ $$('[data-show]').forEach(b=>b.onclick=()=>codeModal(L.codes.find(c=>c.id===b.dataset.show)));
+ $$('[data-rev]').forEach(b=>b.onclick=()=>{const c=L.codes.find(x=>x.id===b.dataset.rev);if(!confirm(`Take back the code for ${c.label}?`))return;L.codes=L.codes.filter(x=>x!==c);licLog('Code taken back: '+c.label);save();render()});
+ $('#lcGo').onclick=()=>{const t=$('#lcIn').value.trim();try{if(!t.startsWith('APL1.'))throw 0;const o=b64d(t.slice(5));if(!/^AP-\w{4}-\w{4}$/.test(o.no))throw 0;if(!confirm(`Use the license ${o.no} of ${o.name} on this computer?`))return;
+  H.lic={...H.lic,no:o.no,at:o.at,seat:o.seat,codes:[],ok:true};licLog('Redeemed a code from '+o.name);save();V.key=true;render();toast('This computer now uses '+o.no)}catch(e){toast('That code does not look right')}};
+ $('#lcExp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({f:'atelier-plugins-license',v:1,no:L.no,at:L.at,holder:H.acct.name,studio:H.acct.studio||'',seat:L.seat,saved:Date.now()},null,1)],{type:'application/json'}));a.download='atelier-plugins-license.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);licLog('License file downloaded');save()};
+ $('#lcImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(o.f!=='atelier-plugins-license'||!/^AP-\w{4}-\w{4}$/.test(o.no))throw 0;H.lic={...H.lic,no:o.no,at:o.at,seat:o.seat||'s1',ok:true};licLog('Restored from a file');save();render();toast('License restored')}catch(x){toast('That is not a license file')}}}
+function codeModal(c){const code=licCode(c);modal(`<div class="mh"><h2>Code for ${esc(c.label)}</h2><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div><p class="sub">On the other computer, open Atelier Plugins, then License, and redeem this code. Or scan it there with Import from a phone.</p>
+ <div class="share"><div class="qrbox"><div>${PK.qrSvg(code)}</div><div class="qrmeta mono">${esc(c.short)}</div></div><div><label>Code</label><textarea readonly rows="5" class="mono" id="lcT">${esc(code)}</textarea><div class="row"><button class="btn primary" id="lcCp">${ic('copy',2)} Copy</button></div></div></div>`,'wide');
+ $('#lcCp').onclick=()=>{try{navigator.clipboard.writeText(code)}catch(e){}toast('Code copied')}}
+/* ---- node points on the dashboard ---- */
+function npSection(){const t=H.np.total,lv=npLevel(t),today=H.np.days[npDay()]||0,wk=Object.entries(H.np.days).filter(([d])=>Date.now()-new Date(d).getTime()<7*864e5).reduce((a,[,v])=>a+v,0);
+ const days=Array.from({length:14},(_,i)=>{const d=new Date();d.setDate(d.getDate()-13+i);return H.np.days[d.toISOString().slice(0,10)]||0}),mx=Math.max(10,...days),by=Object.entries(NPT).map(([k,[l]])=>[l,H.np.by[k]||0]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]);
+ return`<section class="card npcard" id="npSec"><div class="sh"><h2>${npIcon(18)} Node points</h2><span class="sub sm">For what comes next in Atelier Plugins</span></div>
+ <div class="npg"><div class="npbig"><b class="mono">${t.toLocaleString('en-GB')}</b><span>${esc(lv.name)}</span><div class="nplv"><i style="width:${lv.pct}%"></i></div><em>${lv.next?`${(lv.next[0]-t).toLocaleString('en-GB')} to ${esc(lv.next[1])}`:'The top level'}</em></div>
+  <div class="npst"><div><span>Today</span><b class="mono">+${today}</b></div><div><span>This week</span><b class="mono">+${wk}</b></div><svg viewBox="0 0 140 40" class="npspark" aria-hidden="true">${days.map((v,i)=>`<rect x="${i*10}" y="${40-v/mx*38}" width="7" height="${Math.max(1,v/mx*38)}" rx="2"/>`).join('')}</svg></div>
+  <div class="npby">${by.length?by.map(([l,v])=>`<div><span>${esc(l)}</span><b class="mono">${v}</b><i style="width:${Math.round(v/by[0][1]*100)}%"></i></div>`).join(''):'<p class="sub sm">Place blocks, connect wires, test and send to earn points.</p>'}</div></div></section>`}
+/* ---- settings: make the workshop yours ---- */
+const ACC={clay:['Clay','#e2825c'],gold:['Gold','#e3b84e'],moss:['Moss','#7cbf6a'],sky:['Sky','#79a9ea'],iris:['Iris','#a690ea'],rose:['Rose','#e86f86']};
+const SURF={charcoal:'Charcoal',graphite:'Graphite',walnut:'Walnut',paper:'Paper'};
+function applySet(){const s=H.set||{},r=document.documentElement;r.dataset.surface=s.surface||'charcoal';r.style.setProperty('--accent',(ACC[s.accent]||ACC.clay)[1]);r.style.setProperty('--ndw',{compact:'190px',regular:'220px',wide:'260px'}[s.ndw]||'220px');r.style.setProperty('--cfs',(s.cfs||13.5)+'px');
+ r.dataset.grid=s.grid||'lines';r.classList.toggle('calm',!!s.calm);const m=document.querySelector('meta[name=theme-color]');if(m)m.content=getComputedStyle(r).getPropertyValue('--bg').trim()||'#141311'}
+function vSet(){const s=H.set,seg=(k,L)=>`<div class="seg">${L.map(([v,l])=>`<button class="${String(s[k])===String(v)?'on':''}" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+ after(()=>{$$('[data-k]').forEach(b=>b.onclick=()=>{let v=b.dataset.v;if(v==='true'||v==='false')v=v==='true';else if(!isNaN(+v))v=+v;H.set[b.dataset.k]=v;save();applySet();render()});
+  $$('[data-pf]').forEach(i=>i.oninput=()=>{H.acct[i.dataset.pf]=i.value;saveSoon()});$('#setR').onclick=()=>{if(!confirm('Put every setting back?'))return;delete H.set;H=hfix(H);save();applySet();render()}});
+ return`<div class="pg"><header class="hd"><div><span class="tag">Workshop</span><h1>Settings</h1></div></header><div class="setgrid">
+ <section class="card"><h2>Look</h2><div class="flabel">Accent</div><div class="accs">${Object.entries(ACC).map(([k,[l,c]])=>`<button class="acc ${s.accent===k?'on':''}" data-k="accent" data-v="${k}" style="--c:${c}" aria-label="${l}"><i></i><span>${l}</span></button>`).join('')}</div>
+  <div class="flabel">Surface</div><div class="surfs">${Object.entries(SURF).map(([k,l])=>`<button class="surf sf-${k} ${s.surface===k?'on':''}" data-k="surface" data-v="${k}"><i><em></em><em></em></i><span>${l}</span></button>`).join('')}</div>
+  <div class="flabel">Initials colour</div><div class="accs sm">${Object.entries(ACC).map(([k,[l,c]])=>`<button class="acc ${s.ini===k?'on':''}" data-k="ini" data-v="${k}" style="--c:${c}" aria-label="${l}"><i></i></button>`).join('')}</div></section>
+ <section class="card"><h2>Canvas</h2><div class="flabel">Grid</div>${seg('grid',[['lines','Lines'],['dots','Dots'],['none','Plain']])}<div class="flabel">Wires</div>${seg('wire',[['curve','Curved'],['straight','Straight'],['elbow','Elbow']])}
+  <div class="flabel">Block width</div>${seg('ndw',[['compact','Compact'],['regular','Regular'],['wide','Wide']])}<div class="flabel">Snap blocks to the grid</div>${seg('snap',[[true,'On'],[false,'Off']])}
+  <div class="wprev">${['curve','straight','elbow'].map(w=>`<svg viewBox="0 0 120 50" class="${s.wire===w?'on':''}"><rect x="2" y="8" width="26" height="16" rx="4"/><rect x="92" y="28" width="26" height="16" rx="4"/><path d="${wirePathFor(w,[28,16],[92,36])}"/></svg>`).join('')}</div></section>
+ <section class="card"><h2>Code</h2><div class="flabel">Text size</div>${seg('cfs',[[12,'Small'],[13.5,'Regular'],[15,'Large'],[16.5,'Larger']])}<pre class="cfprev mono">on('command', { name: 'hello' }, a => {\n  a.reply('Hello {user}!')\n})</pre></section>
+ <section class="card"><h2>Motion</h2><div class="flabel">Welcome pictures move by themselves</div>${seg('tourAuto',[[true,'On'],[false,'Off']])}<div class="flabel">Calm motion</div>${seg('calm',[[false,'Off'],[true,'On']])}<p class="sub sm">Calm motion stops the moving pictures, wire flows and glows.</p></section>
+ <section class="card"><h2>Profile</h2><label for="pfN">Name</label><input id="pfN" data-pf="name" value="${esc(H.acct.name)}" maxlength="40"><label for="pfS">Studio name</label><input id="pfS" data-pf="studio" value="${esc(H.acct.studio||'')}" maxlength="40"><label for="pfE">Email</label><input id="pfE" data-pf="email" type="email" value="${esc(H.acct.email||'')}" maxlength="80"></section>
+ <section class="card"><h2>Everything</h2><p class="sub">Settings stay on this computer.</p><div class="row"><button class="btn" id="setR">${ic('undo',2)} Put settings back</button></div></section></div></div>`}
 
 /* ============ THE STUDIO: nodes on a canvas, or code ============ */
 const CATC=Object.fromEntries(PK.CATS.map(c=>[c[0],c[2]]));
@@ -659,7 +888,9 @@ function nodeHtml(n,i){const d=PK.NODES[n.k];if(!d)return'';const st=d.c==='star
  <div class="ndh">${st?'':'<i class="pin in" data-in title="In"></i>'}<span class="ndi"><svg viewBox="0 0 24 24"><path d="${d.i}"/></svg></span><b>${esc(d.l)}</b><em>${esc(n.id.toUpperCase().replace('N','N-'))}</em></div>
  ${d.p.length?`<div class="ndb">${nodeSum(n)}</div>`:`<div class="ndb dsc">${esc(d.d)}</div>`}
  <div class="ndo">${d.o.map(o=>`<div class="po po-${o}"><span>${o==='next'?(st?'when it happens':'then'):o}</span><i class="pin out" data-port="${o}" title="Drag to connect"></i></div>`).join('')}</div></div>`}
-function wirePath(a,b){const dx=Math.max(50,Math.abs(b[0]-a[0])*.5);return`M${a[0]} ${a[1]}C${a[0]+dx} ${a[1]} ${b[0]-dx} ${b[1]} ${b[0]} ${b[1]}`}
+function wirePathFor(st,a,b){if(st==='straight')return`M${a[0]} ${a[1]}L${b[0]} ${b[1]}`;if(st==='elbow'){const mx=Math.max(a[0]+18,(a[0]+b[0])/2);return`M${a[0]} ${a[1]}H${mx}V${b[1]}H${b[0]}`}const dx=Math.max(50,Math.abs(b[0]-a[0])*.5);return`M${a[0]} ${a[1]}C${a[0]+dx} ${a[1]} ${b[0]-dx} ${b[1]} ${b[0]} ${b[1]}`}
+const wirePath=(a,b)=>wirePathFor(H.set?.wire||'curve',a,b);
+const snapv=v=>H.set?.snap===false?Math.round(v):Math.round(v/10)*10;
 function pinXY(el){const w=$('#world').getBoundingClientRect(),r=el.getBoundingClientRect();return[(r.left+r.width/2-w.left)/V.z,(r.top+r.height/2-w.top)/V.z]}
 function drawWires(){const pl=curPl(),svg=$('#wires');if(!svg||!pl)return;const G=nodesOf(pl);
  svg.innerHTML=G.links.map(l=>{const a=$(`.nd[data-n="${l.a}"] .pin.out[data-port="${l.ap||'next'}"]`),b=$(`.nd[data-n="${l.b}"] .pin.in`);if(!a||!b)return'';const d=wirePath(pinXY(a),pinXY(b));
@@ -707,7 +938,7 @@ function inspector(){const pl=curPl(),G=nodesOf(pl);
   return`<label for="${id}">${esc(x.l)}</label>${x.t==='long'?`<textarea id="${id}" data-p="${x.k}" rows="3">${esc(v)}</textarea>`:`<input id="${id}" data-p="${x.k}" ${x.t==='num'?'type="number"':''} value="${esc(v)}" ${n.k==='command'&&x.k==='name'?'pattern="[a-zA-Z0-9-]+"':''}>`}${x.t==='text'||x.t==='long'?`<div class="tpls" data-for="${id}">${TPL.slice(0,x.t==='long'?15:8).map(t=>`<button type="button">${t}</button>`).join('')}</div>`:''}`}).join('')}
  <div class="row"><button class="btn sm" onclick="dupSel()">${ic('copy',2)} Duplicate</button><button class="btn sm danger" onclick="delSel()">${ic('trash',2)} Delete</button></div>`}
 function bindInspector(){const pl=curPl(),G=nodesOf(pl),n=G.nodes.find(x=>x.id===V.sel),box=$('#insp');if(!box)return;
- if(!n&&!V.selL){const D=$('#ipD');if(D){D.oninput=()=>{pl.desc=D.value;touch(pl)};$('#ipA').oninput=e=>{pl.author=e.target.value;touch(pl)};$('#ipV').oninput=e=>{pl.ver=e.target.value;touch(pl)};$('#ipP').onchange=e=>{pl.pub=e.target.checked;touch(pl);toast(pl.pub?'Shown in Public plugins':'Hidden from Public plugins')}}return}
+ if(!n&&!V.selL){const D=$('#ipD');if(D){D.oninput=()=>{pl.desc=D.value;touch(pl)};$('#ipA').oninput=e=>{pl.author=e.target.value;touch(pl)};$('#ipV').oninput=e=>{pl.ver=e.target.value;touch(pl)};$('#ipP').onchange=e=>{pl.pub=e.target.checked;if(pl.pub&&!pl._pubd){pl._pubd=1;np('public')}touch(pl);toast(pl.pub?'Shown in Public plugins':'Hidden from Public plugins')}}return}
  if(!n)return;let snapped=false;const upd=(k,v)=>{if(!snapped){snap();snapped=true}n.p=n.p||{};n.p[k]=v;touch(pl);const el=$(`.nd[data-n="${n.id}"]`);if(el){const t=document.createElement('div');t.innerHTML=nodeHtml(n);el.replaceWith(t.firstElementChild)}requestAnimationFrame(drawWires);refreshGen()};
  $$('[data-p]',box).forEach(el=>{const k=el.dataset.p,d=PK.NODES[n.k].p.find(x=>x.k===k);el.addEventListener(el.type==='checkbox'||el.tagName==='SELECT'?'change':'input',()=>{let v=el.type==='checkbox'?el.checked:el.value;if(d.t==='num')v=+v||0;if(n.k==='command'&&k==='name')v=String(v).replace(/^\//,'').replace(/\s+/g,'-').toLowerCase();upd(k,v);if(el.tagName==='SELECT'&&['per','from'].includes(k))renderInsp()})});
  $$('[data-rv]',box).forEach(b=>b.onclick=()=>{upd('key',b.dataset.rv);$$('[data-rv]',box).forEach(x=>x.classList.toggle('on',x===b))});
@@ -724,7 +955,7 @@ function validate(pl){if(pl.mode==='code'){try{new Function('on','atelier',pl.co
   if(n.k==='command'&&!String(n.p?.name||'').trim())out.push({lvl:'err',id:n.id,t:'A command needs a name.'});if((n.k==='send'||n.k==='reply')&&!String(n.p?.text||'').trim())out.push({lvl:'warn',id:n.id,t:`${d.l} (${n.id.toUpperCase()}) has an empty message.`})});
  const cmds=G.nodes.filter(n=>n.k==='command').map(n=>n.p?.name);cmds.filter((c,i)=>cmds.indexOf(c)!==i).forEach(c=>out.push({lvl:'warn',t:`The command /${c} is used twice. Both run.`}));return out}
 /* ---- canvas interaction ---- */
-function addNode(k,x,y,from){const pl=curPl(),G=nodesOf(pl);snap();const d=PK.NODES[k],n={id:nid(G),k,x:Math.round(x/10)*10,y:Math.round(y/10)*10,p:Object.fromEntries(d.p.map(p=>[p.k,p.def]))};G.nodes.push(n);
+function addNode(k,x,y,from){const pl=curPl(),G=nodesOf(pl);snap();const d=PK.NODES[k],n={id:nid(G),k,x:Math.round(x/10)*10,y:Math.round(y/10)*10,p:Object.fromEntries(d.p.map(p=>[p.k,p.def]))};G.nodes.push(n);np('node');
  const src=from&&G.nodes.find(z=>z.id===from);if(src&&d.c!=='start'){const port=PK.NODES[src.k].o[0];G.links.push({id:'l'+uid(),a:src.id,ap:port,b:n.id})}V.sel=n.id;V.selL=null;touch(pl);
  /* keep the new block in view */
  const c=$('#cv')?.getBoundingClientRect();if(c){const sx=n.x*V.z+V.pan.x,sy=n.y*V.z+V.pan.y;if(sx<20||sx+230*V.z>c.width-20)V.pan.x=c.width/2-(n.x+110)*V.z;if(sy<20||sy+140*V.z>c.height-20)V.pan.y=c.height/2-(n.y+60)*V.z}render()}
@@ -740,13 +971,13 @@ function bindCanvas(){const pl=curPl(),G=nodesOf(pl),cv=$('#cv'),world=$('#world
   mode='pan';o=[V.pan.x,V.pan.y];cv.setPointerCapture(e.pointerId);cv.classList.add('panning')};
  cv.onpointermove=e=>{if(!mode)return;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>3)moved=true;
   if(mode==='pan'){V.pan.x=o[0]+dx;V.pan.y=o[1]+dy;applyView()}
-  else if(mode==='node'&&moved){if(!V._ns){snap();V._ns=1}const n=G.nodes.find(x=>x.id===node);n.x=Math.round((o[0]+dx/V.z)/10)*10;n.y=Math.round((o[1]+dy/V.z)/10)*10;const el=$(`.nd[data-n="${node}"]`);el.style.left=n.x+'px';el.style.top=n.y+'px';el.classList.add('drag');if(!V._wq)V._wq=requestAnimationFrame(()=>{V._wq=0;drawWires()})}
+  else if(mode==='node'&&moved){if(!V._ns){snap();V._ns=1}const n=G.nodes.find(x=>x.id===node);n.x=snapv(o[0]+dx/V.z);n.y=snapv(o[1]+dy/V.z);const el=$(`.nd[data-n="${node}"]`);el.style.left=n.x+'px';el.style.top=n.y+'px';el.classList.add('drag');if(!V._wq)V._wq=requestAnimationFrame(()=>{V._wq=0;drawWires()})}
   else if(mode==='wire'){const w=world.getBoundingClientRect(),p=[(e.clientX-w.left)/V.z,(e.clientY-w.top)/V.z];tmp.setAttribute('d',wirePath(o,p));const h=document.elementFromPoint(e.clientX,e.clientY)?.closest('.nd');$$('.nd.tgt').forEach(x=>x!==h&&x.classList.remove('tgt'));if(h&&h.dataset.n!==node&&!h.classList.contains('st'))h.classList.add('tgt')}};
  cv.onpointerup=e=>{const m=mode;mode=null;V._ns=0;cv.classList.remove('panning');$$('.nd.drag').forEach(x=>x.classList.remove('drag'));
   if(m==='pan'&&!moved&&(V.sel||V.selL)){V.sel=null;V.selL=null;$$('.nd.sel,.wire.sel').forEach(x=>x.classList.remove('sel'));renderInsp()}
   if(m==='node'&&moved){touch(pl);drawWires()}
   if(m==='wire'){tmp&&tmp.remove();const h=document.elementFromPoint(e.clientX,e.clientY)?.closest('.nd');$$('.nd.tgt').forEach(x=>x.classList.remove('tgt'));
-   if(h&&h.dataset.n!==node&&!h.classList.contains('st')){if(!G.links.some(l=>l.a===node&&(l.ap||'next')===port&&l.b===h.dataset.n)){snap();G.links.push({id:'l'+uid(),a:node,ap:port,b:h.dataset.n});touch(pl);drawWires();$('.cvhint').textContent=`${G.nodes.length} NODES · ${G.links.length} WIRES · DRAG FROM A DOT TO CONNECT`;refreshGen()}}
+   if(h&&h.dataset.n!==node&&!h.classList.contains('st')){if(!G.links.some(l=>l.a===node&&(l.ap||'next')===port&&l.b===h.dataset.n)){snap();G.links.push({id:'l'+uid(),a:node,ap:port,b:h.dataset.n});np('wire');touch(pl);drawWires();$('.cvhint').textContent=`${G.nodes.length} NODES · ${G.links.length} WIRES · DRAG FROM A DOT TO CONNECT`;refreshGen()}}
    else if(!moved)toast('Drag the dot onto another block to connect them')}};
  cv.onwheel=e=>{e.preventDefault();const r=cv.getBoundingClientRect();if(e.ctrlKey||e.metaKey)zoomAt(Math.exp(-e.deltaY*.01),e.clientX-r.left,e.clientY-r.top);else{V.pan.x-=e.deltaX;V.pan.y-=e.deltaY;applyView()}};
  cv.ondragover=e=>{e.preventDefault()};cv.ondrop=e=>{e.preventDefault();const k=e.dataTransfer.getData('text/atelier-node');if(!PK.NODES[k])return;const w=world.getBoundingClientRect();addNode(k,(e.clientX-w.left)/V.z-100,(e.clientY-w.top)/V.z-24)};
@@ -773,7 +1004,7 @@ const API=[['on(kind, filter, a => {})','Runs when something happens. Kinds: joi
 function apiRef(){return`<aside class="apiref" aria-label="API reference"><div class="ih"><span class="tag">Reference</span><h3>The Atelier API</h3></div><p class="sub sm">Click one to put it in your code. Coded plugins run in a sealed box: no internet, no access to Atelier, two seconds at most.</p>${API.map((a,i)=>`<button class="apii" data-i="${i}"><code>${esc(a[0])}</code><span>${esc(a[1])}</span></button>`).join('')}</aside>`}
 function bindCode(){const pl=curPl(),T=$('#cedT'),Hh=$('#cedH'),Gt=$('#cedG');T.value=pl.code||'';$('#stN').oninput=e=>{pl.name=e.target.value;touch(pl)};let sn=false;
  const sync=()=>{Hh.innerHTML=hl(T.value)+'\n';Gt.innerHTML=T.value.split('\n').map((_,i)=>`<span>${i+1}</span>`).join('');Hh.scrollTop=T.scrollTop;Hh.scrollLeft=T.scrollLeft;Gt.scrollTop=T.scrollTop;const m=$('#cedM');try{new Function('on','atelier',T.value);m.className='cedmsg ok';m.innerHTML=`${ic('check',2)} Looks right. ${PK.info({mode:'code',code:T.value}).cmds.map(c=>'/'+c).join(' ')}`}catch(e){m.className='cedmsg err';m.innerHTML=`${ic('close',2)} ${esc(e.message)}`}};
- T.oninput=()=>{if(!sn){snap();sn=true}pl.code=T.value;touch(pl);sync()};T.onscroll=()=>{Hh.scrollTop=T.scrollTop;Hh.scrollLeft=T.scrollLeft;Gt.scrollTop=T.scrollTop};
+ T.oninput=()=>{if(!sn){snap();sn=true}pl.code=T.value;touch(pl);sync();if(Date.now()-(V._cpt||0)>18e4){V._cpt=Date.now();np('code')}};T.onscroll=()=>{Hh.scrollTop=T.scrollTop;Hh.scrollLeft=T.scrollLeft;Gt.scrollTop=T.scrollTop};
  T.onkeydown=e=>{if(e.key==='Tab'){e.preventDefault();const s=T.selectionStart;T.value=T.value.slice(0,s)+'  '+T.value.slice(T.selectionEnd);T.selectionStart=T.selectionEnd=s+2;T.oninput()}};sync();
  $$('.apii').forEach(b=>b.onclick=()=>{const t=API[+b.dataset.i][2],s=T.selectionStart;T.value=T.value.slice(0,s)+t+T.value.slice(T.selectionEnd);T.focus();T.selectionStart=T.selectionEnd=s+t.length;T.oninput()})}
 
@@ -787,12 +1018,12 @@ const simSnap=()=>{const s=sim();return{group:{id:'test',name:'Test group'},me:'
 const simMem=id=>sim().members.find(m=>m.id===id);
 let _simQ=Promise.resolve();
 function simFire(ev,label){_simQ=_simQ.then(()=>simRun(ev,label)).catch(e=>console.warn(e));return _simQ}
-async function simRun(ev,label){const pl=curPl(),s=sim();ev.now=simNow();const r=await PK.run(pl,ev,simSnap(),s.store);s.store=r.store||s.store;logAct('test',pl.id);
+async function simRun(ev,label){const pl=curPl(),s=sim();ev.now=simNow();const r=await PK.run(pl,ev,simSnap(),s.store);s.store=r.store||s.store;logAct('test',pl.id);np('test');
  const nodes=[...new Set((r.trace||[]).map(t=>t.id))],er=r.err||(r.trace||[]).find(t=>t.err)?.err||null;if(nodes.length||er||!['message','keyword','daily'].includes(ev.k))s.log.unshift({at:Date.now(),label,nodes,acts:(r.actions||[]).length,err:r.err||(r.trace||[]).find(t=>t.err)?.err||null});if(s.log.length>60)s.log.length=60;
  V.lit=new Set(nodes);clearTimeout(V._lt);V._lt=setTimeout(()=>{V.lit=new Set()},4000);
  (r.actions||[]).forEach(a=>a.at?setTimeout(()=>{simAct(pl,a,ev);benchRefresh()},Math.min(a.at,8000)):simAct(pl,a,ev));saveSoon();benchRefresh()}
 function simAct(pl,a,ev){const s=sim(),chOk=id=>s.channels.find(c=>c.id===id)?id:'general',push=(ch,m)=>{(s.msgs[ch]=s.msgs[ch]||[]).push(m);if(s.msgs[ch].length>200)s.msgs[ch].shift()};
- switch(a.t){case'send':push(chOk(a.ch),{id:uid(),from:'pl',text:a.text,at:simNow()});break;
+ switch(a.t){case'send':push(chOk(a.ch),{id:uid(),from:'pl',text:a.text,card:a.card||null,at:simNow()});break;
   case'react':{const m=(s.msgs[a.ch]||[]).find(x=>x.id===a.msg);if(m){m.rx=m.rx||{};const L=m.rx[a.key]=m.rx[a.key]||[];if(!L.includes('pl'))L.push('pl')}break}
   case'pin':{const m=(s.msgs[a.ch]||[]).find(x=>x.id===a.msg);if(m)m.pin=true;break}
   case'role':{const m=simMem(a.who);if(m){if(a.on&&!m.roles.some(r=>r.toLowerCase()===a.role.toLowerCase()))m.roles.push(a.role);if(!a.on)m.roles=m.roles.filter(r=>r.toLowerCase()!==a.role.toLowerCase())}break}
@@ -814,7 +1045,8 @@ function vTest(){const pl=curPl(),s=sim(),ch=s.channels.find(c=>c.id===s.ch)||s.
   <div class="flabel">What ran</div><div class="blog">${s.log.length?s.log.map(l=>`<div class="bl ${l.err?'err':''}"><b>${esc(l.label)}</b><span class="mono">${l.nodes.length?plural(l.nodes.length,'step'):'nothing matched'} · ${plural(l.acts,'action')}</span>${l.err?`<em>${esc(l.err)}</em>`:''}${l.nodes.length&&curPl().mode!=='code'?`<div class="blc">${l.nodes.slice(0,8).map(n=>`<button class="mono" onclick="V.lit=new Set(${esc(JSON.stringify(l.nodes))});V.sel='${n}';go('studio')">${n.toUpperCase()}</button>`).join('')}</div>`:''}</div>`).join(''):'<p class="sub sm">Every event and the steps it took show here.</p>'}</div></aside></div></div>`}
 function simVars(){const s=sim(),cols=new Set();Object.values(s.store.m||{}).forEach(o=>Object.keys(o).forEach(k=>!k.startsWith('_')&&cols.add(k)));return{cols:[...cols].slice(0,5),g:Object.entries(s.store.g||{}).filter(([k])=>!k.startsWith('_'))}}
 function bMsg(m,ch){const s=sim(),pl=curPl(),me=m.from==='me',p=m.from==='pl'?null:simMem(m.from);
- return`<div class="bmsg ${me?'me':''} ${m.from==='pl'?'pl':''} ${V.rx&&V.rx!==true?'pickable':''}" data-m="${m.id}">${m.from==='pl'?PK.picHtml(pl,'sm'):`<span class="bav" style="--c:${p?.col||'var(--muted)'}">${esc((p?.name||'?')[0])}</span>`}<div class="bb"><div class="bw">${m.from==='pl'?`${esc(pl.name)} <span class="pltag">Plugin</span>`:esc(p?.name.split(' ')[0]||'')}${m.pin?` <span class="mono pinm">PINNED</span>`:''}</div>${m.file?`<div class="bfile">${ic('file',1.8)}<div><b>${esc(m.file.name)}</b><span>${esc(m.file.kind)} · ${esc(m.file.sizeText)}</span></div></div>`:''}${m.text?`<div class="bt2">${esc(m.text)}</div>`:''}
+ if(m.from==='pl'&&!m.file)return`<div class="bmsg pl plonly ${V.rx&&V.rx!==true?'pickable':''}" data-m="${m.id}">${PK.plCard(m,pl)}${m.rx&&Object.keys(m.rx).length?`<div class="rxs">${Object.entries(m.rx).map(([k,v])=>`<span class="rx">${PK.rxHtml(k)}<b>${v.length}</b></span>`).join('')}</div>`:''}</div>`;
+ return`<div class="bmsg ${me?'me':''} ${m.from==='pl'?'pl':''} ${V.rx&&V.rx!==true?'pickable':''}" data-m="${m.id}">${m.from==='pl'?PK.picHtml(pl,'sm'):`<span class="bav" style="--c:${p?.col||'var(--muted)'}">${esc((p?.name||'?')[0])}</span>`}<div class="bb"><div class="bw">${m.from==='pl'?`${esc(pl.name)} <span class="pltag">Plugin</span>`:esc(p?.name.split(' ')[0]||'')}${m.pin?` <span class="mono pinm">PINNED</span>`:''}</div>${m.file?`<div class="bfile">${ic('file',1.8)}<div><b>${esc(m.file.name)}</b><span>${esc(m.file.kind)} · ${esc(m.file.sizeText)}</span></div></div>`:''}${m.from==='pl'&&(m.text||m.card)?PK.plCard(m,pl):m.text?`<div class="bt2">${PK.fmt(m.text)}</div>`:''}
  ${m.rx&&Object.keys(m.rx).length?`<div class="rxs">${Object.entries(m.rx).map(([k,v])=>`<span class="rx">${PK.rxHtml(k)}<b>${v.length}</b></span>`).join('')}</div>`:''}</div></div>`}
 function benchRefresh(){if(V.view!=='test')return;const y=$('#bM')?.scrollTop;render();const b=$('#bM');if(b)b.scrollTop=b.scrollHeight}
 function benchSend(text,as){const s=sim(),ch=s.channels.find(c=>c.id===s.ch),m={id:uid(),from:as,text,at:simNow()},u=simMem(as);(s.msgs[ch.id]=s.msgs[ch.id]||[]).push(m);
@@ -823,7 +1055,7 @@ function benchSend(text,as){const s=sim(),ch=s.channels.find(c=>c.id===s.ch),m={
  const day=new Date(simNow()).toDateString();if(s.day[u.id]!==day){s.day[u.id]=day;simFire({...base,k:'daily'},`First message today, ${u.name.split(' ')[0]}`)}
  simFire({...base,k:'message'},`Message by ${u.name.split(' ')[0]}`);simFire({...base,k:'keyword'},'Words checked');benchRefresh()}
 function bindBench(){const s=sim(),b=$('#bM');if(b)b.scrollTop=b.scrollHeight;
- $('#bC').onsubmit=e=>{e.preventDefault();const v=$('#bI').value;if(!v.trim())return;s.as=$('#bAs').value;benchSend(v,s.as);setTimeout(()=>{const i=$('#bI');if(i)i.focus()},30)};$('#bI').focus();
+ $('#bI').addEventListener('input',e=>e.target.classList.toggle('cmdin',e.target.value.startsWith('/')));$('#bC').onsubmit=e=>{e.preventDefault();const v=$('#bI').value;if(!v.trim())return;s.as=$('#bAs').value;benchSend(v,s.as);setTimeout(()=>{const i=$('#bI');if(i)i.focus()},30)};$('#bI').focus();
  $('#bF').onchange=async e=>{const f=e.target.files[0];if(!f)return;const ch=s.channels.find(c=>c.id===s.ch),u=simMem($('#bAs').value),file=await PK.fileInfo(f.name,f.type,f.size,f),m={id:uid(),from:u.id,text:'',file,at:simNow()};(s.msgs[ch.id]=s.msgs[ch.id]||[]).push(m);
   simFire({k:'file',user:{id:u.id,name:u.name},ch:{id:ch.id,name:ch.name},msg:{id:m.id},text:'',file},`${f.name} shared by ${u.name.split(' ')[0]}`)};
  $$('.bpick [data-rk]').forEach(x=>x.onclick=()=>{V.rx=x.dataset.rk;render()});
@@ -843,7 +1075,7 @@ async function shareModal(id,pubId){const pl=id?plOf(id):PK.STARTERS.find(x=>x.i
  <ol class="steps"><li><b>On your phone</b>, open Atelier, go to <em>Chat</em>, then <em>Groups</em>, then <em>Plugins</em>, and tap <em>Scan</em>.</li><li><b>Point it at the code.</b> ${parts.length>1?`This plugin needs ${parts.length} codes. They change by themselves, and Atelier collects them in any order.`:'One code is all it takes.'}</li><li><b>Tap Add</b>, then add it to a group.</li></ol></div>
  <div class="row wrap"><button class="btn" id="sIn">${ic('send',2)} Send to Atelier on this computer</button><button class="btn" id="sCp">${ic('copy',2)} Copy the code</button><button class="btn" id="sDl">${ic('download',2)} Download file</button>${code.length<1800?`<button class="btn" id="sLk">${ic('link',2)} Copy a link</button>`:''}</div>`,'wide');
  if(parts.length>1){tm=setInterval(()=>{k=(k+1)%parts.length;const q=$('#sQ');if(!q)return clearInterval(tm);q.innerHTML=PK.qrSvg(parts[k]);$('#sQN').textContent=k+1},900);onClose(()=>clearInterval(tm))}
- const mark=()=>{if(id){logAct('send',id);save()}};mark();
+ const mark=()=>{if(id){logAct('send',id);np('send');save()}};mark();
  $('#sIn').onclick=()=>{let L=[];try{L=JSON.parse(localStorage.getItem(INBOX)||'[]')}catch(e){}L.push(code);try{localStorage.setItem(INBOX,JSON.stringify(L.slice(-20)));toast('Sent. Open Atelier in this browser and it arrives.');mark()}catch(e){toast('Could not reach Atelier here')}};
  $('#sCp').onclick=()=>{try{navigator.clipboard.writeText(code)}catch(e){}toast('Code copied. Paste it in Atelier: Plugins, Scan, Paste a code.');mark()};
  $('#sDl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(PK.clean(pl),null,1)],{type:'application/json'}));a.download=pl.name.replace(/[^\w-]+/g,'-').toLowerCase()+'.atelier-plugin.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);mark()};
@@ -855,10 +1087,10 @@ function importPlugin(){let stop=null;const col=PK.collector();
  if(navigator.mediaDevices?.getUserMedia)stop=PK.scan($('#iV'),$('#iC'),t=>{const r=col.add(t);if(r.done)take(r.done);else if(r.got)$('#iP').textContent=`Code ${r.got} of ${r.n}`},()=>{$('#iH').textContent='No camera here. Paste the code instead.'});else $('#iH').textContent='No camera here. Paste the code instead.';
  onClose(()=>{if(stop)stop()});setTimeout(()=>{const h=$('#iH');if(h&&$('#iV')?.srcObject)h.textContent='Show the code to the camera'},1500);
  $('#iGo').onclick=()=>{const v=$('#iT').value.trim();if(v)take(v)};$('#iF').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const pl=JSON.parse(await f.text()),bad=PK.valid(pl);if(bad)return toast(bad);addImported(PK.clean(pl));closeModal()}catch(x){toast('That file is not a plugin')}}}
-function addImported(pl){const ex=plOf(pl.id);if(ex&&!confirm(`${pl.name} is already in your library. Replace it?`))return;pl.graph=pl.graph||{nodes:[],links:[]};if(pl.mode==='code'&&!pl.code)pl.code='';delete pl.starter;H.plugins=H.plugins.filter(p=>p.id!==pl.id);H.plugins.push(pl);save();go('studio',pl.id);toast(pl.name+' imported')}
+function addImported(pl){const ex=plOf(pl.id);if(ex&&!confirm(`${pl.name} is already in your library. Replace it?`))return;pl.graph=pl.graph||{nodes:[],links:[]};if(pl.mode==='code'&&!pl.code)pl.code='';delete pl.starter;H.plugins=H.plugins.filter(p=>p.id!==pl.id);H.plugins.push(pl);np('import');save();go('studio',pl.id);toast(pl.name+' imported')}
 
 /* start */
-render();
+applySet();render();
 if('serviceWorker' in navigator&&location.protocol==='https:')addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 
 </script>
