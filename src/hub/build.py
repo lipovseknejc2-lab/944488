@@ -10,7 +10,7 @@ for sub in ('latin','latin-ext'):
     F.append(ff(glob.glob(A+f'fonts/fontsource-newsreader-*/package/files/newsreader-{sub}-400-normal.woff2')[0],'Newsreader',400,sub))
     for w in (400,500,600,700): F.append(ff(glob.glob(A+f'fonts/fontsource-instrument-sans-*/package/files/instrument-sans-{sub}-{w}-normal.woff2')[0],'Instrument Sans',w,sub))
     F.append(ff(A+f'f/package/files/caveat-{sub}-600-normal.woff2','Caveat',600,sub))
-JS=['../plugkit/vendor/qrcode.min.js','../plugkit/vendor/jsqr.min.js','../plugkit/pk.js',A+'art.js','scenes.js','hub.js','account.js','studio.js','bench.js','boot.js']
+JS=['../plugkit/vendor/qrcode.min.js','../plugkit/vendor/jsqr.min.js','../plugkit/pk.js',A+'art.js','scenes.js','hub.js','account.js','groups.js','studio.js','bench.js','boot.js']
 js='\n'.join(open(f).read() for f in JS)
 out=open('shell.html').read().replace('/*FONTS*/','\n'.join(F))+'<script>\n'+js+'\n</script>\n</body>\n</html>\n'
 open('dist/hub.html','w').write(out);print(len(out)//1024,'KB')

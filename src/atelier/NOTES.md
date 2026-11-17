@@ -83,3 +83,9 @@ JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `reset
 - Message text goes through `PK.fmt`: `/commands` become glowing `.cmdt` chips and `#channels` turn blue (`.chm`). The composer gets `cmdin` while it starts with `/`.
 - The Plugins page (from Groups) lists them, scans QR codes, opens pasted codes and files. A group's page lists its plugins with switches.
 - Reactions: press and hold a message; ten drawn reactions or any emoji from the keyboard.
+
+## One account, private plugins, bots (November 2026)
+- `acctSync()` writes localStorage `atelier-account` (id and first name only) and sets `S.me.acc`. Onboarding fills in the first name when the hub made the account first.
+- `plugLink()` shows the account link (`ATL1`, `plugLinkData()`) for the hub: groups you manage, their plugins, and the plugins private edits came from.
+- Private plugins (`priv`) arrive by QR, paste or the inbox. `plugCheck()` checks the group, the right to manage it, and (without `lic`) `PK.guard` against the plugin in `from`; `plugApplyPriv()` swaps the instance and keeps its store.
+- Bots: `PK.runAll` in `plugRun`, `plugHere()` leaves out bots switched off in the group (`inst.botsOff`), `botRows()` in the member list, `plugBot()`, `botsHide()`. Blurred messages use `m.mod` (`modHtml`, `modText`, `modUndo`). Pop-ups: `plugPop()`.

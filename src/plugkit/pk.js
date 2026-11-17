@@ -11,7 +11,9 @@ PK.VER=1;
 /* ---- starters: what a plugin listens for ---- */
 PK.TRIG=['join','message','keyword','command','reaction','daily','timer','file','role','install'];
 /* ---- the node catalogue: [category, label, icon path, description, outputs, params] ---- */
-PK.CATS=[['start','Starters','var(--accent)'],['act','Actions','var(--blue)'],['logic','Logic','var(--violet)'],['data','Data and economy','var(--yellow)'],['files','Files and roles','var(--green)']];
+PK.CATS=[['start','Starters','var(--accent)'],['act','Actions','var(--blue)'],['logic','Logic','var(--violet)'],['data','Data and economy','var(--yellow)'],['files','Files and roles','var(--green)'],['bot','Bots and moderation','var(--red)']];
+const TONES=[['accent','Clay'],['yellow','Gold'],['green','Green'],['blue','Blue'],['violet','Violet'],['red','Red']];
+PK.LANGS=[['en','English'],['sl','Slovenian'],['hr','Croatian or Serbian (Latin)'],['de','German'],['es','Spanish'],['fr','French'],['it','Italian'],['ru','Russian or other Cyrillic'],['el','Greek'],['ar','Arabic'],['zh','Chinese'],['ja','Japanese'],['ko','Korean']];
 const _P=(k,l,t='text',def='',o)=>({k,l,t,def,o});
 const WHO=[['user','Who did it'],['picked','Picked member'],['author','Message author'],['arg','Name in the command'],['me','The owner']];
 PK.NODES={
@@ -27,7 +29,7 @@ PK.NODES={
  install:{c:'start',l:'Plugin added',i:'M9 3.5V8M15 3.5V8M6.5 8h11v3.2a5.5 5.5 0 0 1-11 0zM12 16.7v4.1',d:'The plugin is added to a group.',o:['next'],p:[]},
  send:{c:'act',l:'Send message',i:'M4.5 12L19.5 5L16 19.5L11.5 13.5zM11.5 13.5L19.5 5',d:'Post in a channel as the plugin.',o:['next'],p:[_P('ch','Channel (empty = same)','text',''),_P('text','Message','long','Hello {user}!')]},
  reply:{c:'act',l:'Reply',i:'M9 8L4 12.5L9 17M4.5 12.5H14a6 6 0 0 1 6 6',d:'Answer in the same channel.',o:['next'],p:[_P('text','Message','long','Thanks, {user}.')]},
- card:{c:'act',l:'Send a widget',i:'M4 5.5h16v13H4zM7.5 9h5M7.5 15.5h3M14.5 12.5h3v3h-3z',d:'Posts a widget card: a title, a big value and a line of text.',o:['next'],p:[_P('ch','Channel (empty = same)','text',''),_P('title','Title','text','Balance'),_P('value','Big value','text','{coins}'),_P('unit','Under the value','text','coins'),_P('text','Text','long','{user}'),_P('tone','Colour','select','accent',[['accent','Clay'],['yellow','Gold'],['green','Green'],['blue','Blue'],['violet','Violet'],['red','Red']])]},
+ card:{c:'act',l:'Send a widget',i:'M4 5.5h16v13H4zM7.5 9h5M7.5 15.5h3M14.5 12.5h3v3h-3z',d:'Posts a widget card: a title, a big value and a line of text.',o:['next'],p:[_P('ch','Channel (empty = same)','text',''),_P('title','Title','text','Balance'),_P('value','Big value','text','{coins}'),_P('unit','Under the value','text','coins'),_P('text','Text','long','{user}'),_P('tone','Colour','select','accent',[['accent','Clay'],['yellow','Gold'],['green','Green'],['blue','Blue'],['violet','Violet'],['red','Red']]),_P('style','Look','select','glass',[['glass','Glass'],['solid','Solid'],['outline','Outline'],['banner','Banner']]),_P('size','Size','select','md',[['sm','Small'],['md','Medium'],['lg','Large']])]},
  react:{c:'act',l:'React',i:'M12 20.5a8.5 8.5 0 1 0 0-17a8.5 8.5 0 1 0 0 17M8.5 14c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2M9 9.5v.5M15 9.5v.5',d:'Add a reaction to the message.',o:['next'],p:[_P('key','Reaction','react','star')]},
  pin:{c:'act',l:'Pin message',i:'M14.5 4L20 9.5M15.5 5L9.6 9.2L6.4 9.6L14.4 17.6L14.8 14.4L19 8.5M10 14L4 20',d:'Pin the message to the top.',o:['next'],p:[]},
  notify:{c:'act',l:'Show a notice',i:'M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5L19 18H5zM10 20.5h4',d:'A short notice on screen.',o:['next'],p:[_P('text','Notice','text','{user} did something')]},
@@ -46,7 +48,14 @@ PK.NODES={
  giverole:{c:'files',l:'Give role',i:'M12 3.2L19 6v5.4c0 4.4-3 7.7-7 9.4c-4-1.7-7-5-7-9.4V6zM12 8.5v6M9 11.5h6',d:'Gives a role, made if missing.',o:['next'],p:[_P('who','Member','select','user',WHO),_P('role','Role','text','Leader')]},
  takerole:{c:'files',l:'Take role',i:'M12 3.2L19 6v5.4c0 4.4-3 7.7-7 9.4c-4-1.7-7-5-7-9.4V6zM9 11.5h6',d:'Takes a role away.',o:['next'],p:[_P('who','Member','select','user',WHO),_P('role','Role','text','Leader')]},
  summarize:{c:'files',l:'Describe file',i:'M7 3.5h7l4 4v13H7zM10 11h5M10 14h5M10 17h3',d:'Saves a short description as {summary}.',o:['next'],p:[]},
- copyfile:{c:'files',l:'Copy file to channel',i:'M8 8h11v12H8zM5 16V4h11',d:'Files the shared file in another channel.',o:['next'],p:[_P('ch','Channel','text','files')]}};
+ copyfile:{c:'files',l:'Copy file to channel',i:'M8 8h11v12H8zM5 16V4h11',d:'Files the shared file in another channel.',o:['next'],p:[_P('ch','Channel','text','files')]},
+ words:{c:'bot',l:'Has words',i:'M4 6h16M4 12h10M4 18h7M16 15l4 4M20 15l-4 4',d:'Checks the message for any of these words. The words found are {found}.',o:['yes','no'],p:[_P('words','Words, separated by commas','long','')]},
+ lang:{c:'bot',l:'Language is',i:'M12 20a8 8 0 1 0 0-16a8 8 0 1 0 0 16M4 12h16M12 4c2.4 2.4 3.4 5 3.4 8s-1 5.6-3.4 8M12 4c-2.4 2.4-3.4 5-3.4 8s1 5.6 3.4 8',d:'Guesses the language of the message. The guess is {lang}.',o:['yes','no'],p:[_P('lang','Language','select','en',PK.LANGS)]},
+ blur:{c:'bot',l:'Blur the message',i:'M3 12s3.5-6 9-6s9 6 9 6s-3.5 6-9 6s-9-6-9-6M4 20L20 4',d:'Blurs the message for everyone. People can tap to read it, and the owner can undo it.',o:['next'],p:[_P('mode','How','select','blur',[['blur','Blur all of it'],['words','Blur only the words found'],['hide','Hide it']]),_P('reason','Reason shown','text','Language')]},
+ warn:{c:'bot',l:'Warn someone',i:'M12 4l9 16H3zM12 10v4M12 17v.5',d:'Counts a warning as {warnings} and posts a red widget.',o:['next'],p:[_P('who','Who','select','user',WHO),_P('text','Warning','text','{user}, please keep it kind.')]},
+ readfile:{c:'bot',l:'Read the file',i:'M7 3.5h7l4 4v13H7zM10 12h5M10 15h5M14 3.5v4h4',d:'Reads the shared file: {file.words}, {file.lines} and {file.first}. Goes on by the kind of file.',o:['text','image','other'],p:[]},
+ sortfile:{c:'bot',l:'Sort files',i:'M4 6h7M4 12h7M4 18h7M15 6l3 3l3-3M18 9v10',d:'Copies each shared file to a channel by its kind.',o:['next'],p:[_P('img','Pictures to','text','gallery'),_P('doc','Documents to','text','files'),_P('other','Everything else to','text','files')]},
+ popup:{c:'bot',l:'Show a pop-up',i:'M5 6h14v11H5zM9 20h6M8.5 10h7M8.5 13h4',d:'Opens a designed pop-up with a picture, a title and text. Good for wins and welcomes.',o:['next'],p:[_P('who','For','select','user',[['user','Who did it'],['everyone','Everyone in the group']]),_P('style','Look','select','celebrate',[['celebrate','Celebrate'],['welcome','Welcome'],['prize','Prize'],['notice','Notice']]),_P('pic','Picture','select','plugin',[['plugin','The plugin picture']]),_P('title','Title','text','You won'),_P('text','Text','long','{user}, you got 25 coins.'),_P('button','Button','text','Thanks'),_P('tone','Colour','select','accent',TONES),_P('confetti','Confetti','bool',true)]}};
 PK.ORDER=Object.keys(PK.NODES);
 /* the reactions of Atelier: drawn, not typed. [key,label,colour,svg] */
 PK.REACTS=[['love','Love','var(--red)','<path class="f" d="M12 19.6C6.8 16.2 3.8 13.2 3.8 9.6C3.8 7.2 5.7 5.3 8 5.3C9.7 5.3 11.1 6.2 12 7.6C12.9 6.2 14.3 5.3 16 5.3C18.3 5.3 20.2 7.2 20.2 9.6C20.2 13.2 17.2 16.2 12 19.6Z"/><path class="s" d="M8.2 8.4C7.4 8.6 6.8 9.2 6.6 10"/>'],
@@ -66,7 +75,8 @@ PK.rxHtml=k=>k.startsWith('u:')?`<span class="rxu">${String(k.slice(2)).replace(
 PK.PICS=[['spark','var(--accent)','M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.6 2.6M15.4 15.4L18 18M6 18l2.6-2.6M15.4 8.6L18 6'],['coin','var(--yellow)','M12 20a8 8 0 1 0 0-16a8 8 0 1 0 0 16M12 8v8M9.8 10c.4-.8 1.2-1.2 2.2-1.2c1.2 0 2 .7 2 1.6c0 2.2-4.2 1.3-4.2 3.4c0 .9.9 1.4 2.2 1.4c1 0 1.8-.4 2.2-1.2'],
  ['wave','var(--blue)','M3 14c2.5-4 4.5-4 7 0s4.5 4 7 0c1-1.6 2-2.4 4-2.4M3 9c2.5-4 4.5-4 7 0'],['gear','var(--violet)','M12 15a3 3 0 1 0 0-6a3 3 0 1 0 0 6M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M5.5 18.5l1.8-1.8M16.7 7.3l1.8-1.8'],
  ['bell','var(--accent)','M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5L19 18H5zM10 20.5h4'],['leaf','var(--green)','M5 19C5 10 10 5 19 5C19 14 14 19 5 19ZM5 19L13 11'],['bolt','var(--yellow)','M13 3L5 13.5h6L10 21l8-10.5h-6z'],['book','var(--blue)','M4.5 5.5c2.6-1 5-1 7.5.5c2.5-1.5 4.9-1.5 7.5-.5v13c-2.6-1-5-1-7.5.5c-2.5-1.5-4.9-1.5-7.5-.5zM12 6v13'],
- ['crown','var(--yellow)','M4.5 17.5L3.6 7.8L8.6 11.4L12 5.2L15.4 11.4L20.4 7.8L19.5 17.5ZM5 20.5H19'],['chat','var(--green)','M4 5.5h16v10H9l-5 4z'],['files','var(--green)','M3.5 7.5V18.5H20.5V9H11.5L9.5 6.5H3.5Z'],['shield','var(--violet)','M12 3.2L19 6v5.4c0 4.4-3 7.7-7 9.4c-4-1.7-7-5-7-9.4V6z']];
+ ['crown','var(--yellow)','M4.5 17.5L3.6 7.8L8.6 11.4L12 5.2L15.4 11.4L20.4 7.8L19.5 17.5ZM5 20.5H19'],['chat','var(--green)','M4 5.5h16v10H9l-5 4z'],['files','var(--green)','M3.5 7.5V18.5H20.5V9H11.5L9.5 6.5H3.5Z'],['shield','var(--violet)','M12 3.2L19 6v5.4c0 4.4-3 7.7-7 9.4c-4-1.7-7-5-7-9.4V6z'],['globe','var(--blue)','M12 20a8 8 0 1 0 0-16a8 8 0 1 0 0 16M4 12h16M12 4c2.4 2.4 3.4 5 3.4 8s-1 5.6-3.4 8M12 4c-2.4 2.4-3.4 5-3.4 8s1 5.6 3.4 8']];
+PK.NODES.popup.p.find(x=>x.k==='pic').o.push(...PK.PICS.map(x=>[x[0],x[0][0].toUpperCase()+x[0].slice(1)]));
 PK.picHtml=(pl,cls='')=>{const p=pl&&pl.pic||{};if(p.img&&/^data:image\/(png|jpeg|webp);base64,/.test(p.img))return`<span class="pkpic img ${cls}"><img src="${p.img}" alt=""></span>`;const d=PK.PICS.find(x=>x[0]===p.k)||PK.PICS[0];
  return`<span class="pkpic ${cls}" style="--pc:${d[1]}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d[2]}"/></svg></span>`};
 PK.esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -75,6 +85,13 @@ PK.esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;
 function pkCore(){
  const P='atelier-plugin';
  const num=v=>{const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:0};
+ const TONEK=['accent','yellow','green','blue','violet','red'];
+ /* a small language guess: the script first, then the most common short words */
+ function pkLang(t){t=String(t||'').toLowerCase();if(!t.trim())return'';const c=re=>(t.match(re)||[]).length;
+  if(c(/[\u3040-\u30ff]/g))return'ja';if(c(/[\uac00-\ud7af]/g))return'ko';if(c(/[\u4e00-\u9fff]/g))return'zh';if(c(/[\u0600-\u06ff]/g))return'ar';if(c(/[\u0370-\u03ff]/g))return'el';if(c(/[\u0400-\u04ff]/g))return'ru';
+  const W={en:'the and is are you to of it that this what have with for not was',sl:'je in da se na ne za so pa ki bo tudi kaj sem si smo ali to',hr:'je i da se na ne za su ali što kako sam si smo to biti',de:'der die das und ist nicht ich du sie ein eine zu mit auf für',es:'el la los las que de y es en un una por para no con',fr:'le la les et est que de un une pour pas je tu vous il avec',it:'il la che di e un una per non sono è con ho del gli'},w=t.split(/[^\p{L}]+/u).filter(Boolean),sc={};
+  Object.entries(W).forEach(([k,v])=>{const S=new Set(v.split(' '));sc[k]=w.filter(x=>S.has(x)).length});if(/[čšž]/.test(t)){sc.sl+=1.5;sc.hr+=1.5}if(/[ćđ]/.test(t))sc.hr+=2;if(/[ßäöü]/.test(t))sc.de+=2;if(/ñ|¿|¡/.test(t))sc.es+=2;if(/[çœ]|[éèê]/.test(t))sc.fr+=1.5;if(/[àìòù]/.test(t))sc.it+=1.5;
+  const best=Object.entries(sc).sort((a,b)=>b[1]-a[1])[0];return best&&best[1]>0?best[0]:'en'}
  function makeApi(ev,snap,store,out){store.g=store.g||{};store.m=store.m||{};const tmp={};let picked=null;
   const mem=id=>snap.members.find(x=>x.id===id);
   const byName=n=>{n=String(n||'').replace(/^@/,'').toLowerCase().trim();if(!n)return null;return snap.members.find(x=>x.name.toLowerCase()===n)||snap.members.find(x=>x.name.toLowerCase().split(' ')[0]===n)||snap.members.find(x=>x.name.toLowerCase().startsWith(n))};
@@ -92,7 +109,7 @@ function pkCore(){
   const api={event:ev,members:snap.members,channels:snap.channels,group:snap.group,tmp,fill,
    get picked(){return picked},
    reply(text){out.actions.push({t:'send',ch:chId(''),text:fill(text),at:out.t});return api},
-   card(o={}){out.actions.push({t:'send',ch:chId(o.ch||''),text:fill(o.text||''),card:{title:fill(o.title||''),value:fill(o.value==null?'':o.value),unit:fill(o.unit||''),tone:['accent','yellow','green','blue','violet','red'].includes(o.tone)?o.tone:'accent'},at:out.t});return api},
+   card(o={}){out.actions.push({t:'send',ch:chId(o.ch||''),text:fill(o.text||''),card:{title:fill(o.title||''),value:fill(o.value==null?'':o.value),unit:fill(o.unit||''),tone:['accent','yellow','green','blue','violet','red'].includes(o.tone)?o.tone:'accent',style:['glass','solid','outline','banner'].includes(o.style)?o.style:'glass',size:['sm','md','lg'].includes(o.size)?o.size:'md'},at:out.t});return api},
    send(ch,text){if(text===undefined){text=ch;ch=''}out.actions.push({t:'send',ch:chId(ch),text:fill(text),at:out.t});return api},
    react(key){if(ev.msg)out.actions.push({t:'react',ch:ev.ch&&ev.ch.id,msg:ev.msg.id,key:String(key||'star'),at:out.t});return api},
    pin(){if(ev.msg)out.actions.push({t:'pin',ch:ev.ch&&ev.ch.id,msg:ev.msg.id,at:out.t});return api},
@@ -114,6 +131,13 @@ function pkCore(){
    wait(s){out.t+=Math.max(0,Math.min(30,num(s)))*1000;return api},
    random(name,min,max){const a=Math.ceil(num(min)),b=Math.floor(num(max));const v=a+Math.floor(Math.random()*(Math.max(a,b)-a+1));tmp[String(name).toLowerCase()]=v;return v},
    text(name,value){tmp[String(name).toLowerCase()]=fill(value);return tmp[String(name).toLowerCase()]},
+   hasWords(list,text){const t=' '+String(text??ev.text??'').toLowerCase()+' ',L=String(fill(list)||'').split(',').map(w=>w.trim().toLowerCase()).filter(Boolean),f=L.filter(w=>new RegExp('(^|[^\\p{L}])'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'($|[^\\p{L}])','u').test(t));tmp.found=f.join(', ');tmp._found=f;return f.length>0},
+   lang(text){const l=pkLang(String(text??ev.text??''));tmp.lang=l;return l},
+   blur(mode,reason){if(ev.msg)out.actions.push({t:'blur',ch:ev.ch&&ev.ch.id,msg:ev.msg.id,mode:['blur','words','hide'].includes(mode)?mode:'blur',reason:fill(reason||'').slice(0,60),words:(tmp._found||[]).slice(0,20),at:out.t});return api},
+   warn(who,text){const id=whoId(who||'user');if(!id)return api;store.m[id]=store.m[id]||{};store.m[id].warnings=num(store.m[id].warnings)+1;tmp.warnings=store.m[id].warnings;const m=mem(id);out.actions.push({t:'send',ch:chId(''),text:fill(text||''),card:{title:'Warning',value:String(tmp.warnings),unit:tmp.warnings===1?'warning':'warnings',tone:'red',style:'outline',size:'sm'},at:out.t});return api},
+   readFile(){const f=ev.file;if(!f)return'other';return f.kind==='image'?'image':/text|PDF|document/.test(f.kind)||f.words?'text':'other'},
+   sortFile(img,doc,other){const k=api.readFile();api.copyFile(k==='image'?img:k==='text'?doc:other);return api},
+   popup(o={}){out.actions.push({t:'popup',who:o.who==='everyone'?'all':(ev.user&&ev.user.id),style:['celebrate','welcome','prize','notice'].includes(o.style)?o.style:'celebrate',pic:String(o.pic||'plugin'),title:fill(o.title||'').slice(0,80),text:fill(o.text||'').slice(0,400),button:fill(o.button||'OK').slice(0,24),tone:TONEK.includes(o.tone)?o.tone:'accent',confetti:o.confetti!==false,at:out.t});return api},
    leaderboard(name,n){const L=snap.members.map(m=>({m,v:num(mv(m.id,name))})).sort((a,b)=>b.v-a.v).slice(0,Math.max(1,num(n)||5));const s=L.map((x,i)=>`${i+1}. ${x.m.name.split(' ')[0]}: ${x.v}`).join('\n');tmp.leaderboard=s;return s}};
   return api}
  /* when does a starter fire for this event */
@@ -128,7 +152,9 @@ function pkCore(){
    case'mkchannel':api.makeChannel(p.name,p.type);break;case'if':return cmp(p.a,p.op,p.b)?'yes':'no';case'chance':return api.chance(p.pct)?'yes':'no';case'cooldown':return api.cooldown(n.id,p.per,p.mins,p.who)?'yes':'no';
    case'hasrole':return api.hasRole(p.who,p.role)?'yes':'no';case'pick':api.pick({from:p.from,role:p.role,notMe:!!p.notme});if(!api.picked)return'stop';break;case'wait':api.wait(p.s);break;case'random':api.random(p.name,p.min,p.max);break;case'text':api.text(p.name,p.value);break;
    case'add':api.add(p.name,p.amount,p.who);break;case'set':api.set(p.name,p.value,p.who);break;case'board':api.leaderboard(p.name,p.n);break;case'giverole':api.giveRole(p.who,p.role);break;case'takerole':api.takeRole(p.who,p.role);break;
-   case'summarize':api.summarize();break;case'copyfile':api.copyFile(p.ch);break}return'next'}
+   case'summarize':api.summarize();break;case'copyfile':api.copyFile(p.ch);break;
+   case'words':return api.hasWords(p.words)?'yes':'no';case'lang':return api.lang()===p.lang?'yes':'no';case'blur':api.blur(p.mode,p.reason);break;case'warn':api.warn(p.who,p.text);break;
+   case'readfile':api.summarize();return api.readFile();case'sortfile':api.sortFile(p.img,p.doc,p.other);break;case'popup':api.popup(p);break}return'next'}
  function runGraph(pl,ev,snap,store){const out={actions:[],trace:[],t:0},api=makeApi(ev,snap,store,out),G=pl.graph||{nodes:[],links:[]};let steps=0;
   const walk=id=>{const n=G.nodes.find(x=>x.id===id);if(!n||++steps>400)return;let port='next';try{port=step(n,api,ev)}catch(e){out.trace.push({id,err:String(e.message||e)});return}out.trace.push({id,port});
    G.links.filter(l=>l.a===id&&(l.ap||'next')===port).forEach(l=>walk(l.b))};
@@ -146,13 +172,13 @@ PK.core=pkCore();
 
 /* ---- turning a graph into code: the nodes write the program for you ---- */
 PK.gen=function(pl){const G=pl.graph||{nodes:[],links:[]},q=s=>JSON.stringify(String(s??'')),L=[],seen=new Set();
- const W=n=>{const p=n.p||{};switch(n.k){case'send':return`a.send(${q(p.ch||'here')}, ${q(p.text)})`;case'reply':return`a.reply(${q(p.text)})`;case'card':return`a.card({ ch: ${q(p.ch||'')}, title: ${q(p.title)}, value: ${q(p.value)}, unit: ${q(p.unit)}, text: ${q(p.text)}, tone: ${q(p.tone||'accent')} })`;case'react':return`a.react(${q(p.key)})`;case'pin':return'a.pin()';case'notify':return`a.notify(${q(p.text)})`;
+ const W=n=>{const p=n.p||{};switch(n.k){case'send':return`a.send(${q(p.ch||'here')}, ${q(p.text)})`;case'reply':return`a.reply(${q(p.text)})`;case'card':return`a.card({ ch: ${q(p.ch||'')}, title: ${q(p.title)}, value: ${q(p.value)}, unit: ${q(p.unit)}, text: ${q(p.text)}, tone: ${q(p.tone||'accent')}, style: ${q(p.style||'glass')}, size: ${q(p.size||'md')} })`;case'react':return`a.react(${q(p.key)})`;case'pin':return'a.pin()';case'notify':return`a.notify(${q(p.text)})`;
   case'mkchannel':return`a.makeChannel(${q(p.name)}, ${q(p.type)})`;case'pick':return`if (!a.pick({ from: ${q(p.from)}, role: ${q(p.role)}, notMe: ${!!p.notme} })) return`;case'wait':return`a.wait(${+p.s||0})`;case'random':return`a.random(${q(p.name)}, ${+p.min||0}, ${+p.max||0})`;case'text':return`a.text(${q(p.name)}, ${q(p.value)})`;
   case'add':return`a.add(${q(p.name)}, ${q(p.amount)}, ${q(p.who)})`;case'set':return`a.set(${q(p.name)}, ${q(p.value)}, ${q(p.who)})`;case'board':return`a.leaderboard(${q(p.name)}, ${+p.n||5})`;case'giverole':return`a.giveRole(${q(p.who)}, ${q(p.role)})`;case'takerole':return`a.takeRole(${q(p.who)}, ${q(p.role)})`;
-  case'summarize':return'a.summarize()';case'copyfile':return`a.copyFile(${q(p.ch)})`}return`// ${n.k}`};
- const cond=n=>{const p=n.p||{};switch(n.k){case'if':return`compare(a.fill(${q(p.a)}), ${q(p.op)}, a.fill(${q(p.b)}))`;case'chance':return`a.chance(${+p.pct||0})`;case'cooldown':return`a.cooldown(${q(n.id)}, ${q(p.per)}, ${+p.mins||0}, ${q(p.who)})`;case'hasrole':return`a.hasRole(${q(p.who)}, ${q(p.role)})`}};
+  case'summarize':return'a.summarize()';case'copyfile':return`a.copyFile(${q(p.ch)})`;case'blur':return`a.blur(${q(p.mode)}, ${q(p.reason)})`;case'warn':return`a.warn(${q(p.who)}, ${q(p.text)})`;case'sortfile':return`a.sortFile(${q(p.img)}, ${q(p.doc)}, ${q(p.other)})`;case'popup':return`a.popup({ who: ${q(p.who)}, style: ${q(p.style)}, pic: ${q(p.pic)}, title: ${q(p.title)}, text: ${q(p.text)}, button: ${q(p.button)}, tone: ${q(p.tone)}, confetti: ${p.confetti!==false} })`}return`// ${n.k}`};
+ const cond=n=>{const p=n.p||{};switch(n.k){case'if':return`compare(a.fill(${q(p.a)}), ${q(p.op)}, a.fill(${q(p.b)}))`;case'chance':return`a.chance(${+p.pct||0})`;case'cooldown':return`a.cooldown(${q(n.id)}, ${q(p.per)}, ${+p.mins||0}, ${q(p.who)})`;case'hasrole':return`a.hasRole(${q(p.who)}, ${q(p.role)})`;case'words':return`a.hasWords(${q(p.words)})`;case'lang':return`a.lang() === ${q(p.lang)}`}};
  const body=(id,port,ind,depth)=>{const out=[];G.links.filter(l=>l.a===id&&(l.ap||'next')===port).forEach(l=>{const n=G.nodes.find(x=>x.id===l.b);if(!n||depth>40)return;const pad='  '.repeat(ind);
-   if(PK.NODES[n.k]?.o.length===2){out.push(`${pad}if (${cond(n)}) {`,...body(n.id,'yes',ind+1,depth+1),`${pad}} else {`,...body(n.id,'no',ind+1,depth+1),`${pad}}`)}else{out.push(pad+W(n));out.push(...body(n.id,'next',ind,depth+1))}});return out};
+   if(n.k==='readfile'){out.push(`${pad}a.summarize()`,`${pad}const kind = a.readFile()`,`${pad}if (kind === "text") {`,...body(n.id,'text',ind+1,depth+1),`${pad}} else if (kind === "image") {`,...body(n.id,'image',ind+1,depth+1),`${pad}} else {`,...body(n.id,'other',ind+1,depth+1),`${pad}}`)}else if(PK.NODES[n.k]?.o.length===2){out.push(`${pad}if (${cond(n)}) {`,...body(n.id,'yes',ind+1,depth+1),`${pad}} else {`,...body(n.id,'no',ind+1,depth+1),`${pad}}`)}else{out.push(pad+W(n));out.push(...body(n.id,'next',ind,depth+1))}});return out};
  L.push(`// ${pl.name||'Plugin'}: written by the nodes. Edit it as code to go further.`);let usesCmp=false;
  G.nodes.filter(n=>PK.NODES[n.k]?.c==='start').forEach(n=>{const p=n.p||{},f=Object.keys(p).length?' '+JSON.stringify(p)+',':'';const b=body(n.id,'next',1,0);if(b.some(x=>x.includes('compare(')))usesCmp=true;L.push('',`on(${q(n.k)},${f} a => {`,...(b.length?b:['  // nothing connected yet']),'})')});
  if(usesCmp)L.push('','function compare(x, op, y) {','  const a = parseFloat(x), b = parseFloat(y), n = isFinite(a) && isFinite(b)','  if (op === "=") return n ? a === b : x.toLowerCase() === y.toLowerCase()','  if (op === "!=") return n ? a !== b : x.toLowerCase() !== y.toLowerCase()','  if (op === "has") return x.toLowerCase().includes(y.toLowerCase())','  return n && (op === ">" ? a > b : op === "<" ? a < b : op === ">=" ? a >= b : a <= b)','}');
@@ -160,25 +186,83 @@ PK.gen=function(pl){const G=pl.graph||{nodes:[],links:[]},q=s=>JSON.stringify(St
 
 /* ---- what a plugin needs, read from its nodes or code ---- */
 PK.info=function(pl){const ks=new Set(),cmds=[],trig=new Set();if(pl.mode==='code'){const c=pl.code||'';const re=/on\(\s*['"](\w+)['"]\s*(?:,\s*\{([^}]*)\})?/g;let m;while((m=re.exec(c))){trig.add(m[1]);if(m[1]==='command'){const nm=(m[2]||'').match(/name\s*:\s*['"]([^'"]+)/);if(nm)cmds.push(nm[1])}}
-  [['send','send'],['reply','send'],['card','send'],['react','react'],['pin','pin'],['giveRole','role'],['takeRole','role'],['makeChannel','mkchannel'],['copyFile','files'],['summarize','files'],['add(','data'],['set(','data'],['notify','notify']].forEach(([w,k])=>{if(c.includes('.'+w))ks.add(k)})}
+  [['send','send'],['reply','send'],['card','send'],['react','react'],['pin','pin'],['giveRole','role'],['takeRole','role'],['makeChannel','mkchannel'],['copyFile','files'],['summarize','files'],['add(','data'],['set(','data'],['notify','notify'],['blur(','mod'],['warn(','send'],['popup(','popup'],['sortFile','files'],['readFile','files']].forEach(([w,k])=>{if(c.includes('.'+w))ks.add(k)})}
  else(pl.graph?.nodes||[]).forEach(n=>{const c=PK.NODES[n.k]?.c;if(c==='start'){trig.add(n.k);if(n.k==='command'&&n.p?.name)cmds.push(String(n.p.name).replace(/^\//,''))}
-  ({send:'send',reply:'send',card:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify'})[n.k]&&ks.add(({send:'send',reply:'send',card:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify'})[n.k])});
- const PL={send:'Post messages',react:'Add reactions',pin:'Pin messages',role:'Give and take roles',mkchannel:'Make channels',files:'Read and file shared files',data:'Keep its own values, like coins',notify:'Show notices'};
+  ({send:'send',reply:'send',card:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify',blur:'mod',warn:'send',popup:'popup',readfile:'files',sortfile:'files'})[n.k]&&ks.add(({send:'send',reply:'send',card:'send',react:'react',pin:'pin',giverole:'role',takerole:'role',mkchannel:'mkchannel',copyfile:'files',summarize:'files',add:'data',set:'data',board:'data',notify:'notify',blur:'mod',warn:'send',popup:'popup',readfile:'files',sortfile:'files'})[n.k])});
+ const PL={send:'Post messages',react:'Add reactions',pin:'Pin messages',role:'Give and take roles',mkchannel:'Make channels',files:'Read and file shared files',data:'Keep its own values, like coins',notify:'Show notices',mod:'Blur and hide messages',popup:'Show pop-ups'};
  return{perms:[...ks].map(k=>PL[k]),cmds:[...new Set(cmds)],trig:[...trig].map(k=>PK.NODES[k]?.l||k),nodes:(pl.graph?.nodes||[]).length}};
+/* plugins with bots: the bots' commands, triggers and permissions count too */
+{const one=PK.info;PK.info=function(pl){const a=one(pl);(pl.bots||[]).forEach(b=>{const x=one(b);a.perms=[...new Set([...a.perms,...x.perms])];a.cmds=[...new Set([...a.cmds,...x.cmds])];a.trig=[...new Set([...a.trig,...x.trig])];a.nodes+=x.nodes});a.bots=(pl.bots||[]).length;return a}}
+PK.botPl=(pl,b)=>({id:pl.id+'/'+b.id,name:b.name,pic:b.pic||pl.pic,mode:b.mode,graph:b.graph,code:b.code,bot:b.id,of:pl.name});
+PK.botHere=(b,ev)=>b.on!==false&&(b.scope!=='channels'||!!(ev.ch&&(b.chs||[]).includes(String(ev.ch.name).toLowerCase())));
+PK.botWhere=b=>b.scope==='channels'?(b.chs||[]).length?b.chs.map(c=>'#'+c).join(', '):'No channels yet':'The whole group';
+/* run a plugin and then each of its bots that works here; values are shared, so a bot can read the plugin's coins */
+PK.runAll=async function(pl,ev,snap,store){const out=[];let st=store||{};const r=await PK.run(pl,ev,snap,st);st=r.store||st;out.push({as:pl,r});
+ for(const b of pl.bots||[]){if(!PK.botHere(b,ev))continue;const bp=PK.botPl(pl,b),x=await PK.run(bp,ev,snap,st);st=x.store||st;out.push({as:bp,r:x})}return{runs:out,store:st,err:out.map(o=>o.r.err).filter(Boolean)[0]||null}};
 PK.valid=function(pl){if(!pl||pl.f!=='atelier-plugin'||typeof pl.name!=='string'||!pl.id)return'This is not an Atelier plugin.';if(pl.v>PK.VER)return'This plugin needs a newer Atelier.';
- if(pl.mode==='code'){if(typeof pl.code!=='string'||pl.code.length>60000)return'The code is missing or too long.'}else{const G=pl.graph;if(!G||!Array.isArray(G.nodes)||!Array.isArray(G.links))return'The nodes are missing.';if(G.nodes.length>300)return'Too many nodes.';if(G.nodes.some(n=>!PK.NODES[n.k]))return'This plugin uses blocks this Atelier does not know.'}return''};
+ if(pl.mode==='code'){if(typeof pl.code!=='string'||pl.code.length>60000)return'The code is missing or too long.'}else{const G=pl.graph;if(!G||!Array.isArray(G.nodes)||!Array.isArray(G.links))return'The nodes are missing.';if(G.nodes.length>300)return'Too many nodes.';if(G.nodes.some(n=>!PK.NODES[n.k]))return'This plugin uses blocks this Atelier does not know.'}
+ if(pl.bots!=null){if(!Array.isArray(pl.bots)||pl.bots.length>8)return'Too many bots.';for(const b of pl.bots){if(b.mode==='code'){if(typeof b.code!=='string'||b.code.length>30000)return'A bot has no code.'}else{const G=b.graph;if(!G||!Array.isArray(G.nodes)||!Array.isArray(G.links)||G.nodes.length>200)return'A bot has no nodes.';if(G.nodes.some(n=>!PK.NODES[n.k]))return'A bot uses blocks this Atelier does not know.'}}}return''};
+PK.cleanGraph=G=>({nodes:G.nodes.map(n=>({id:String(n.id).slice(0,20),k:n.k,x:+n.x||0,y:+n.y||0,p:Object.fromEntries(Object.entries(n.p||{}).slice(0,12).map(([k,v])=>[String(k).slice(0,20),typeof v==='boolean'||typeof v==='number'?v:String(v).slice(0,600)]))})),links:G.links.map(l=>({id:String(l.id).slice(0,20),a:String(l.a),ap:String(l.ap||'next'),b:String(l.b)}))});
+/* a bot: part of a plugin, with its own name and picture, running in some channels or the whole group */
+PK.cleanBot=b=>{const o={id:String(b.id||'b1').slice(0,20),name:String(b.name||'Bot').slice(0,30),about:String(b.about||'').slice(0,160),pic:b.pic&&b.pic.k&&PK.PICS.some(x=>x[0]===b.pic.k)?{k:b.pic.k}:b.pic&&b.pic.img&&/^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(b.pic.img)&&b.pic.img.length<40000?{img:b.pic.img}:{k:'bolt'},scope:b.scope==='channels'?'channels':'group',chs:(Array.isArray(b.chs)?b.chs:[]).map(c=>String(c).replace(/^#/,'').toLowerCase().trim().slice(0,30)).filter(Boolean).slice(0,20),on:b.on!==false,mode:b.mode==='code'?'code':'nodes'};
+ if(o.mode==='code')o.code=String(b.code||'').slice(0,30000);else o.graph=PK.cleanGraph(b.graph&&Array.isArray(b.graph.nodes)?b.graph:{nodes:[],links:[]});return o};
 PK.clean=function(pl){const o={f:'atelier-plugin',v:PK.VER,id:String(pl.id).slice(0,40),name:String(pl.name||'Plugin').slice(0,40),desc:String(pl.desc||'').slice(0,240),size:pl.size==='big'?'big':'small',author:String(pl.author||'').slice(0,40),ver:String(pl.ver||'1.0').slice(0,12),mode:pl.mode==='code'?'code':'nodes',made:+pl.made||Date.now(),up:+pl.up||Date.now(),pic:pl.pic&&pl.pic.img&&/^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(pl.pic.img)&&pl.pic.img.length<40000?{img:pl.pic.img}:{k:PK.PICS.some(x=>x[0]===pl.pic?.k)?pl.pic.k:'spark'}};
- if(o.mode==='code')o.code=String(pl.code||'');else o.graph={nodes:pl.graph.nodes.map(n=>({id:String(n.id).slice(0,20),k:n.k,x:+n.x||0,y:+n.y||0,p:Object.fromEntries(Object.entries(n.p||{}).slice(0,12).map(([k,v])=>[String(k).slice(0,20),typeof v==='boolean'||typeof v==='number'?v:String(v).slice(0,600)]))})),links:pl.graph.links.map(l=>({id:String(l.id).slice(0,20),a:String(l.a),ap:String(l.ap||'next'),b:String(l.b)}))};return o};
+ PK.meta(o,pl);
+ if(o.mode==='code')o.code=String(pl.code||'');else o.graph=PK.cleanGraph(pl.graph);if(Array.isArray(pl.bots)&&pl.bots.length)o.bots=pl.bots.slice(0,8).map(PK.cleanBot);return o};
+
+/* ---- details, credit and private edits ----
+   Every plugin can carry rules, a how-to, tags and a category. A plugin built from someone else's public plugin keeps
+   base: {id,name,author} for good, so its credit always shows. A private plugin (scope 'private', priv {gid,gname}) works
+   in one group only. Without a builder license a private edit carries lock: the blocks it came with stay, the name and
+   picture stay, and only a few safe blocks may be added. PK.guard checks that, in the hub and again on the phone. */
+PK.PCATS=[['economy','Economy','coin'],['welcome','Welcome and members','wave'],['roles','Roles and moderation','shield'],['fun','Fun and games','spark'],['files','Files','files'],['tools','Tools','gear'],['events','Events and reminders','bell']];
+PK.LIMITS={max:6,total:40,text:300,amount:1000,mins:30,block:['giverole','takerole','mkchannel','copyfile','pin','timer','message','wait']};
+const _s=(v,n)=>String(v==null?'':v).slice(0,n);
+PK.meta=function(o,pl){o.rules=_s(pl.rules,600);o.howto=_s(pl.howto,600);o.tags=(Array.isArray(pl.tags)?pl.tags:[]).map(t=>_s(t,20).trim()).filter(Boolean).slice(0,6);
+ o.cat=PK.PCATS.some(c=>c[0]===pl.cat)?pl.cat:'';if(pl.by)o.by=_s(pl.by,40);if(pl.lic)o.lic=true;
+ if(pl.base&&pl.base.id)o.base={id:_s(pl.base.id,40),name:_s(pl.base.name,40),author:_s(pl.base.author,40),ver:_s(pl.base.ver,12)};
+ if(pl.from&&pl.from.id)o.from={id:_s(pl.from.id,40),ver:_s(pl.from.ver,12)};
+ if(pl.priv&&pl.priv.gid)o.scope='private',o.priv={gid:_s(pl.priv.gid,40),gname:_s(pl.priv.gname,40)};
+ if(pl.lock&&Array.isArray(pl.lock.nodes))o.lock={nodes:pl.lock.nodes.slice(0,300).map(x=>_s(x,20)),links:(pl.lock.links||[]).slice(0,600).map(x=>_s(x,20)),max:Math.min(PK.LIMITS.max,+pl.lock.max||PK.LIMITS.max)};
+ if(pl.pub)o.pub=true;return o};
+PK.privId=(baseId,gid)=>(String(baseId).split('~')[0].slice(0,24)+'~'+String(gid)).slice(0,40);
+/* a guarded private edit of base: returns {ok, issues, added, max, left} */
+PK.guard=function(pl,base){const L=PK.LIMITS,out=[],lk=pl.lock||{nodes:[],links:[]},max=lk.max||L.max;
+ if(!base)return{ok:false,issues:['The plugin it was made from is missing.'],added:0,max,left:0};
+ if(pl.mode==='code'||base.mode==='code')out.push('Coded plugins need a builder license to change.');
+ if(pl.name!==base.name)out.push('The name stays '+base.name+'.');
+ if(JSON.stringify(pl.pic||{})!==JSON.stringify(base.pic||{}))out.push('The picture stays the same.');
+ const N=pl.graph?.nodes||[],BL=new Set((pl.graph?.links||[]).map(l=>l.id)),byId=new Map(N.map(n=>[n.id,n]));
+ (base.graph?.nodes||[]).forEach(b=>{const n=byId.get(b.id);if(!n)out.push(`A block it came with (${PK.NODES[b.k]?.l||b.k}) was removed.`);else if(n.k!==b.k)out.push('A block it came with changed its kind.')});
+ (base.graph?.links||[]).forEach(l=>{if(!BL.has(l.id))out.push('A wire it came with was removed.')});
+ const baseIds=new Set((base.graph?.nodes||[]).map(n=>n.id)),added=N.filter(n=>!baseIds.has(n.id));
+ if(added.length>max)out.push(`Private edits can add ${max} blocks. This one adds ${added.length}.`);
+ if(N.length>L.total)out.push(`A private edit can have ${L.total} blocks at most.`);
+ added.forEach(n=>{if(L.block.includes(n.k))out.push(`${PK.NODES[n.k]?.l||n.k} needs a builder license.`)});
+ N.forEach(n=>{Object.entries(n.p||{}).forEach(([k,v])=>{if(typeof v==='string'&&v.length>L.text)out.push('Texts in private edits stay under '+L.text+' letters.');
+  if(n.k==='add'&&k==='amount'&&/^-?\d+(\.\d+)?$/.test(String(v).trim())&&Math.abs(+v)>L.amount)out.push(`Add to value can move at most ${L.amount} at once.`);
+  if(n.k==='timer'&&k==='mins'&&+v<L.mins)out.push(`Timers run every ${L.mins} minutes or more.`)})});
+ const bb=base.bots||[],pb=pl.bots||[];if(pb.some(b=>!bb.some(x=>x.id===b.id)))out.push('New bots need a builder license.');
+ bb.forEach(b=>{const x=pb.find(y=>y.id===b.id);if(!x){out.push('A bot it came with was removed.');return}if(x.name!==b.name||JSON.stringify(x.pic||{})!==JSON.stringify(b.pic||{}))out.push('Bot names and pictures stay.');if(x.mode==='code'||b.mode==='code'){if(x.code!==b.code)out.push('Coded bots need a builder license to change.');return}
+  const xs=new Map((x.graph?.nodes||[]).map(n=>[n.id,n]));(b.graph?.nodes||[]).forEach(n=>{const y=xs.get(n.id);if(!y||y.k!==n.k)out.push('A block in '+b.name+' was removed.')});if((x.graph?.nodes||[]).length>(b.graph?.nodes||[]).length)out.push('Blocks can be added to the plugin, not to its bots.')});
+ const issues=[...new Set(out)];return{ok:!issues.length,issues,added:added.length,max,left:Math.max(0,max-added.length)}};
+/* the credit line every derived plugin keeps */
+PK.credit=pl=>pl&&pl.base&&pl.base.name?`Based on ${pl.base.name}${pl.base.author?' by '+pl.base.author:''}`:'';
 
 /* ---- sending plugins: compressed text, split into QR codes when long ---- */
 const b64u={enc:u8=>{let s='';for(let i=0;i<u8.length;i+=8192)s+=String.fromCharCode.apply(null,u8.subarray(i,i+8192));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')},dec:s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}};
 async function pkPipe(u8,Kind,fmt){const s=new Blob([u8]).stream().pipeThrough(new Kind(fmt));return new Uint8Array(await new Response(s).arrayBuffer())}
 PK.encode=async function(pl){const j=new TextEncoder().encode(JSON.stringify(PK.clean(pl)));try{if(typeof CompressionStream==='function')return'ATP1z'+b64u.enc(await pkPipe(j,CompressionStream,'deflate-raw'))}catch(e){}return'ATP1r'+b64u.enc(j)};
+/* a link: your Atelier account and the groups you manage, so the hub can edit their plugins ("ATL1") */
+PK.encodeLink=async function(o){const j=new TextEncoder().encode(JSON.stringify(o));try{if(typeof CompressionStream==='function')return'ATL1z'+b64u.enc(await pkPipe(j,CompressionStream,'deflate-raw'))}catch(e){}return'ATL1r'+b64u.enc(j)};
+PK.decodeLink=async function(s){s=String(s||'').trim();const m=s.match(/ATL1([zr])([A-Za-z0-9_-]+)/);if(!m)throw new Error('No Atelier link in this code.');let u=b64u.dec(m[2]);if(m[1]==='z')u=await pkPipe(u,DecompressionStream,'deflate-raw');
+ const o=JSON.parse(new TextDecoder().decode(u));if(!o||o.f!=='atelier-link'||!Array.isArray(o.groups))throw new Error('This is not an Atelier link.');
+ return{f:'atelier-link',acc:_s(o.acc,40),name:_s(o.name,40),at:+o.at||Date.now(),groups:o.groups.slice(0,60).map(g=>({id:_s(g.id,40),name:_s(g.name,40),plugins:(g.plugins||[]).slice(0,40).map(i=>({iid:_s(i.iid,20),pid:_s(i.pid,40),on:!!i.on}))})),plugins:(o.plugins||[]).slice(0,60).filter(p=>!PK.valid(p)).map(PK.clean)}};
 PK.decode=async function(s){s=String(s||'').trim();const m=s.match(/ATP1([zr])([A-Za-z0-9_-]+)/);if(!m)throw new Error('No plugin in this code.');let u=b64u.dec(m[2]);if(m[1]==='z'){if(typeof DecompressionStream!=='function')throw new Error('This browser cannot open packed plugins.');u=await pkPipe(u,DecompressionStream,'deflate-raw')}
  const pl=JSON.parse(new TextDecoder().decode(u)),bad=PK.valid(pl);if(bad)throw new Error(bad);return PK.clean(pl)};
 /* QR parts: "ATQ:<set>:<i>/<n>:<chunk>". One part when it fits. */
 PK.parts=function(code,size=900){const n=Math.max(1,Math.ceil(code.length/size)),set=Math.random().toString(36).slice(2,6);if(n===1)return[code];return Array.from({length:n},(_,i)=>`ATQ:${set}:${i+1}/${n}:${code.slice(i*size,(i+1)*size)}`)};
-PK.collector=function(){const sets={};return{add(t){t=String(t||'');if(/^ATP1/.test(t)||/ATP1[zr]/.test(t)&&!t.startsWith('ATQ:'))return{done:t.slice(t.indexOf('ATP1'))};const m=t.match(/^ATQ:(\w+):(\d+)\/(\d+):(.*)$/s);if(!m)return{bad:true};const s=sets[m[1]]=sets[m[1]]||{n:+m[3],p:{}};s.p[m[2]]=m[4];const got=Object.keys(s.p).length;
+PK.collector=function(){const sets={};return{add(t){t=String(t||'');if(!t.startsWith('ATQ:')){const k=t.search(/AT[PL]1[zr]/);if(k>=0)return{done:t.slice(k)}}const m=t.match(/^ATQ:(\w+):(\d+)\/(\d+):(.*)$/s);if(!m)return{bad:true};const s=sets[m[1]]=sets[m[1]]||{n:+m[3],p:{}};s.p[m[2]]=m[4];const got=Object.keys(s.p).length;
   if(got===s.n)return{done:Array.from({length:s.n},(_,i)=>s.p[i+1]).join('')};return{got,n:s.n}}}};
 PK.qrSvg=function(text,cls=''){const q=qrcode(0,'L');q.addData(text,'Byte');q.make();const n=q.getModuleCount();let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c} ${r}h1v1h-1z`;
  return`<svg class="pkqr ${cls}" viewBox="-2 -2 ${n+4} ${n+4}" shape-rendering="crispEdges" role="img" aria-label="QR code"><rect x="-2" y="-2" width="${n+4}" height="${n+4}" fill="#fff"/><path d="${d}" fill="#151413"/></svg>`};
@@ -223,7 +307,35 @@ PK.STARTERS=(()=>{let i=0;const N=(k,x,y,p={})=>({id:'n'+(++i),k,x,y,p}),Lk=(a,b
  const spot=mk('atelier.spotlight','Spotlight','Type /leader to choose a leader of the day: a role and 25 coins.','crown','small',[s1,s2,s3,s4,s5,s6,s7],[Lk(s1,s2),Lk(s2,s3,'yes'),Lk(s2,s7,'no'),Lk(s3,s4),Lk(s4,s5),Lk(s5,s6)]);
  i=0;const f1=N('file',40,60),f2=N('summarize',330,60),f3=N('card',620,60,{ch:'',title:'{file}',value:'',unit:'',text:'{summary}',tone:'green'}),f4=N('if',910,60,{a:'{channel}',op:'!=',b:'files'}),f5=N('copyfile',1200,20,{ch:'files'}),f6=N('reply',1490,20,{text:'I filed a copy in #files.'});
  const files=mk('atelier.files','File helper','Describes every shared file and files a copy in #files.','files','small',[f1,f2,f3,f4,f5,f6],[Lk(f1,f2),Lk(f2,f3),Lk(f3,f4),Lk(f4,f5,'yes'),Lk(f5,f6)]);
- return[welcome,coins,spot,files]})();
+ i=0;const u1=N('command',40,60,{name:'rules'}),u2=N('card',330,60,{ch:'',title:'Group rules',value:'',unit:'',text:'1. Be kind and specific.\n2. Keep each channel on its topic.\n3. Share files in #files.\n4. Ask before you invite others.',tone:'blue'}),u3=N('join',40,240),u4=N('wait',330,240,{s:3}),u5=N('send',620,240,{ch:'',text:'{user}, the rules are one command away: type /rules.'});
+ const rules=mk('atelier.rules','Rules','Type /rules to see the group rules as a widget. New members get a nudge to read them.','book','small',[u1,u2,u3,u4,u5],[Lk(u1,u2),Lk(u3,u4),Lk(u4,u5)]);
+ i=0;const k1=N('keyword',40,60,{word:'thanks, thank you',ch:''}),k2=N('add',330,60,{name:'thanks',amount:'1',who:'user'}),k3=N('react',620,60,{key:'love'}),k4=N('command',40,240,{name:'thanks'}),k5=N('board',330,240,{name:'thanks',n:5}),k6=N('card',620,240,{ch:'',title:'Most thankful',value:'',unit:'',text:'{leaderboard}',tone:'accent'});
+ const thanks=mk('atelier.thanks','Thank you','Counts every thank you with a heart, and /thanks shows who says it most.','wave','small',[k1,k2,k3,k4,k5,k6],[Lk(k1,k2),Lk(k2,k3),Lk(k4,k5),Lk(k5,k6)]);
+ i=0;const q1=N('command',40,60,{name:'roll'}),q2=N('random',330,60,{name:'roll',min:1,max:6}),q3=N('card',620,60,{ch:'',title:'Dice',value:'{roll}',unit:'out of 6',text:'{user} rolled the dice.',tone:'violet'}),q4=N('if',910,60,{a:'{roll}',op:'=',b:'6'}),q5=N('react',1200,60,{key:'star'}),q6=N('popup',1490,60,{who:'user',style:'prize',pic:'spark',title:'A six',text:'{user}, that is the top roll. Here is a star.',button:'Nice',tone:'violet',confetti:true});
+ const dice=mk('atelier.dice','Dice','Type /roll for a number from 1 to 6. A six earns a star.','spark','small',[q1,q2,q3,q4,q5,q6],[Lk(q1,q2),Lk(q2,q3),Lk(q3,q4),Lk(q4,q5,'yes'),Lk(q5,q6)]);
+ i=0;const p1=N('daily',40,60),p2=N('cooldown',330,60,{per:'day',mins:10,who:'group'}),p3=N('card',620,20,{ch:'',title:'Question of the day',value:'',unit:'',text:'What is one thing you want to finish today?',tone:'green'});
+ const prompt=mk('atelier.prompt','Daily question','Opens each day with one question, so the group starts talking.','bell','small',[p1,p2,p3],[Lk(p1,p2),Lk(p2,p3,'yes')]);
+ /* Guard: a plugin made of bots. Tidy files, keep words kind, keep #general in one language. */
+ i=0;const wa1=N('command',40,60,{name:'warnings'}),wa2=N('card',330,60,{ch:'',title:'Warnings',value:'{user.warnings}',unit:'so far',text:'{user}, three warnings and the owner is told.',tone:'red',style:'outline',size:'sm'});
+ const B=(id,name,about,pic,scope,chs,nodes,links)=>({id,name,about,pic:{k:pic},scope,chs,on:true,mode:'nodes',graph:{nodes,links}});
+ i=0;const ta1=N('file',40,60),ta2=N('readfile',330,60),ta3=N('sortfile',620,60,{img:'gallery',doc:'files',other:'files'}),ta4=N('send',620,220,{ch:'',text:'Filed {file} ({file.words} words).'});
+ const tidy=B('tidy','Tidy','Reads every shared file and sorts it: pictures to #gallery, the rest to #files.','files','group',[],[ta1,ta2,ta3,ta4],[Lk(ta1,ta2),Lk(ta2,ta3,'image'),Lk(ta2,ta3,'other'),Lk(ta2,ta3,'text'),Lk(ta2,ta4,'text')]);
+ i=0;const kb1=N('message',40,60,{ch:''}),kb2=N('words',330,60,{words:'stupid, idiot, shut up, hate you'}),kb3=N('blur',620,20,{mode:'words',reason:'Kind words'}),kb4=N('warn',910,20,{who:'user',text:'{user}, please keep it kind.'});
+ const kind=B('kind','Kind words','Blurs unkind words and counts a warning.','shield','group',[],[kb1,kb2,kb3,kb4],[Lk(kb1,kb2),Lk(kb2,kb3,'yes'),Lk(kb3,kb4)]);
+ i=0;const gb1=N('message',40,60,{ch:''}),gb2=N('lang',330,60,{lang:'en'}),gb3=N('blur',620,140,{mode:'blur',reason:'English only here'}),gb4=N('cooldown',910,140,{per:'hour',mins:10,who:'user'}),gb5=N('send',1200,140,{ch:'',text:'{user}, #general is in English, so everyone can follow.'});
+ const one=B('lang','One language','Keeps #general in English. Other languages are blurred with a note.','globe','channels',['general'],[gb1,gb2,gb3,gb4,gb5],[Lk(gb1,gb2),Lk(gb2,gb3,'no'),Lk(gb3,gb4),Lk(gb4,gb5,'yes')]);
+ const guard=mk('atelier.guard','Guard','Three bots that keep a group tidy: files sorted, kind words, one language in #general.','shield','big',[wa1,wa2],[Lk(wa1,wa2)]);guard.bots=[tidy,kind,one];
+ const M={welcome:['welcome',['members','greeting'],'Posts in the channel where people join. Works in any group.','Add it to a group. Change the words in the Send message block to fit your group.'],
+  coins:['economy',['coins','economy','leaderboard'],'Coins have no value outside the group. Owners can take the plugin out, and the coins go with it.','Type /coins for your balance, /top for the leaderboard and /give name amount to give coins. A star on a message pays its author a coin.'],
+  spot:['roles',['roles','leader','coins'],'One leader a day. The Leader role is made if the group has none.','Type /leader once a day. Someone gets the Leader role and 25 coins.'],
+  files:['files',['files','tidy'],'It copies files into #files, so the group needs that channel.','Share any file. File helper describes it and files a copy.'],
+  rules:['roles',['rules','members'],'Write your own rules in the widget. Keep them short.','Type /rules. New members are reminded three seconds after they join.'],
+  thanks:['fun',['kindness','leaderboard'],'Counts the words thanks and thank you, once per message.','Say thank you in any channel. Type /thanks for the board.'],
+  dice:['fun',['game','random'],'Numbers are random every time.','Type /roll.'],
+  guard:['roles',['bots','moderation','files','language'],'Bots read messages and files in the group to do their work. They never send anything out of Atelier.','Add it to a group. Tidy, Kind words and One language join the member list as bots. Turn each bot on or off on the plugin page.'],
+  prompt:['events',['daily','questions'],'Asks once a day, on the first message of the day.','Change the question in the widget block, or add more days with a Chance block.']};
+ const all={welcome,coins,spot,files,rules,thanks,dice,prompt,guard};Object.entries(M).forEach(([k,[cat,tags,rules,howto]])=>Object.assign(all[k],{cat,tags,rules,howto}));
+ return[welcome,coins,spot,files,rules,thanks,dice,prompt,guard]})();
 
 /* ---- plugin messages are widgets: a card with the plugin's picture, a title, a big value, ranked rows ---- */
 PK.guess=function(text){const t=String(text||''),L=t.split('\n'),rows=[],rest=[];let title='';
@@ -234,7 +346,15 @@ PK.guess=function(text){const t=String(text||''),L=t.split('\n'),rows=[],rest=[]
 PK.fmt=t=>PK.esc(t).replace(/(^|\s)(\/[a-z0-9-]+)/gi,'$1<span class="cmdt">$2</span>').replace(/(^|\s)#([a-z0-9čšž-]+)/gi,'$1<span class="chm">#$2</span>');
 PK.plCard=function(m,pl){const c=m.card?{...m.card,text:m.text||'',rows:[]}:PK.guess(m.text);if(m.card&&c.text){const g=PK.guess(c.text);if(g.rows.length){c.rows=g.rows;c.text=g.text}}
  const mx=Math.max(1,...c.rows.map(r=>Math.abs(parseFloat(String(r[1]).replace(',','.'))||0)));const tone=c.tone||'violet';
- return`<div class="plw" style="--pt:var(--${tone==='accent'?'accent':tone})"><div class="plwh">${PK.picHtml(pl||{},'sm')}<b>${PK.esc(pl?.name||'Plugin')}</b><span class="pltag">Plugin</span></div>
+ return`<div class="plw s-${['glass','solid','outline','banner'].includes(c.style)?c.style:'glass'} z-${['sm','md','lg'].includes(c.size)?c.size:'md'}" style="--pt:var(--${tone==='accent'?'accent':tone})">${c.style==='banner'?`<div class="plwb">${PK.picHtml(pl||{},'lg')}</div>`:''}<div class="plwh">${PK.picHtml(pl||{},'sm')}<b>${PK.esc(pl?.name||'Plugin')}</b><span class="pltag ${pl&&pl.bot?'bot':''}">${pl&&pl.bot?'Bot':'Plugin'}</span></div>
  ${c.title?`<div class="plwt">${PK.esc(c.title)}</div>`:''}${c.value!==''&&c.value!=null?`<div class="plwv"><b>${PK.esc(c.value)}</b>${c.unit?`<span>${PK.esc(c.unit)}</span>`:''}</div>`:''}
  ${c.rows.length?`<div class="plwr">${c.rows.slice(0,10).map((r,i)=>`<div class="${i===0?'top':''}"><i>${i+1}</i><span>${PK.esc(r[0])}</span><b>${PK.esc(r[1])}</b><em style="width:${Math.round(Math.abs(parseFloat(String(r[1]).replace(',','.'))||0)/mx*100)}%"></em></div>`).join('')}</div>`:''}
  ${c.text?`<p class="plwx">${PK.fmt(c.text)}</p>`:''}</div>`};
+
+/* a designed pop-up from a plugin or a bot: a win, a welcome, a prize or a notice */
+PK.popHtml=function(a,pl){const pic=a.pic&&a.pic!=='plugin'&&PK.PICS.some(x=>x[0]===a.pic)?PK.picHtml({pic:{k:a.pic}},'xl'):PK.picHtml(pl||{},'xl'),tone=a.tone==='accent'?'accent':a.tone||'accent',E=PK.esc;
+ const rays=a.style==='celebrate'||a.style==='prize'?`<svg class="pprays" viewBox="0 0 200 200" aria-hidden="true">${Array.from({length:12},(_,i)=>`<path d="M100 100L${100+96*Math.cos(i*Math.PI/6-.12)} ${100+96*Math.sin(i*Math.PI/6-.12)}L${100+96*Math.cos(i*Math.PI/6+.12)} ${100+96*Math.sin(i*Math.PI/6+.12)}Z"/>`).join('')}</svg>`:'';
+ const conf=a.confetti?`<div class="ppconf" aria-hidden="true">${Array.from({length:18},(_,i)=>`<i style="--x:${(i*53)%100}%;--d:${(i%6)*.12}s;--r:${(i*47)%360}deg;--c:var(--${['accent','yellow','green','blue','violet'][i%5]})"></i>`).join('')}</div>`:'';
+ return`<div class="plpop st-${E(a.style||'celebrate')}" style="--pt:var(--${tone})" role="dialog" aria-modal="true" aria-label="${E(a.title||pl?.name||'Pop-up')}">${conf}<div class="ppart">${rays}<div class="pppic">${pic}</div></div>
+ <div class="ppby">${PK.picHtml(pl||{},'sm')}<span>${E(pl?.name||'Plugin')}</span><b class="pltag ${pl&&pl.bot?'bot':''}">${pl&&pl.bot?'Bot':'Plugin'}</b></div>
+ ${a.title?`<h2>${E(a.title)}</h2>`:''}${a.text?`<p>${PK.fmt(a.text)}</p>`:''}<button class="ppok" data-ppok>${E(a.button||'OK')}</button></div>`};

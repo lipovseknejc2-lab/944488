@@ -14,3 +14,13 @@ A desktop web app for building plugins for Atelier groups. Published at `atelier
 - **Engine rules:** node plugins and coded plugins use the same API (`a.reply`, `a.add`, `a.pick` and so on); the nodes write code with `PK.gen`. Coded plugins only run in the sealed sandbox.
 - **Honesty:** counts show what left this computer (sends, test runs). Real installs and plugins from other builders need the online step; the dashboard and Public plugins say so.
 - **Tests:** `tests/hub.js` (the hub alone) and `tests/bridge.js` (hub and Atelier together, QR codes read both ways). Both run from `src/atelier/tests/run.sh`.
+
+## One account, private plugins, bots (November 2026)
+- **Account:** `acctShared()`/`acctWrite()` keep localStorage `atelier-account` ({id, name, at, apps}) in step with `H.acct.acc`. Sign in shows "Continue as" when Atelier on this site has an account.
+- **License:** no step after sign in. `licensed()` decides. `vClaim()` shows the claim card and what a license changes; `claimLicense()` opens the thumbs-up (`vLicense`, `cheerScene`) and lifts the lock from private edits made before.
+- **Your groups** (`groups.js`): `groupSrc()` merges Atelier's save on this computer (read only, groups you own or manage) with `H.links` (an `ATL1` account link scanned with `importPlugin('link')`). `editFor(gid,pid)` makes a private edit (`priv`, `from`, `base`, and `lock` without a license); `privFor` makes a plugin private for one group; `addToGroup` sends one there. `H.bases` keeps the plugins edits were made from, for `privCheck`.
+- **Studio:** `lockOn(pl)` turns on the limits: the name and picture stay, blocks and wires it came with cannot be deleted, `lockWhy` refuses blocks that need a license and anything past six new ones, the limits bar shows the count. The plugin panel edits category, tags, how to and rules; Public needs a license and keeps the credit.
+- **Bots:** `V.bot` picks the plugin or a bot; `tgt()` and `nodesOf()` follow it, so the canvas, code mode, undo and checks work on the bot. `botAdd`, `botPanel` (name, picture, what it does, where it works, on), `botCopyTo`, `botCode`/`botPaste` (`ATB1.` codes).
+- **Bench:** `PK.runAll`; bot messages carry `as`; blur and pop-ups show; a gallery channel; a hideable Bots list.
+- **Public plugins:** search over names, commands, tags, bots and authors; categories, build, size, Bots and Commands filters; sort; a featured plugin; `pubInfo` details.
+- **Tour:** objects only. `KF` writes the keyframes for one 9-second loop; `alt` marks later phases so a still scene never overlaps. A slide restarts when it comes into view.

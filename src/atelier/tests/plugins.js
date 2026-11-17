@@ -18,7 +18,7 @@ const gid=await ev(()=>S.groups[0].id);
 await go('groups');ok(await ev(()=>{const c=getComputedStyle(document.querySelector('.gtile .gav')).backgroundColor;return !/\/\s*0?\.\d|rgba\([^)]*,\s*0?\.\d+\)|transparent/.test(c)}),T('group pictures are solid, the banner does not show through'));
 ok(await p.isVisible('.ph a.btn:has-text("Plugins")'),T('Groups has a Plugins button'));
 // plugins page
-await p.click('.ph a.btn:has-text("Plugins")');await W(450);ok(await ev(()=>route.k==='plugins'&&document.querySelectorAll('.plcard').length===4),T('Plugins page with four starter plugins'));
+await p.click('.ph a.btn:has-text("Plugins")');await W(450);ok(await ev(()=>route.k==='plugins'&&document.querySelectorAll('.plcard').length===9),T('Plugins page with nine starter plugins'));
 await p.screenshot({path:D+'/shots/plugins-'+theme+'.png'});
 await p.click('.plcard:has-text("Coins")');await W(450);ok(await p.isVisible('.plhero')&&await p.isVisible('.plcmd >> text=/coins'),T('plugin page: what it listens for, what it can do, commands'));
 await p.screenshot({path:D+'/shots/plugin-'+theme+'.png'});
@@ -84,13 +84,34 @@ await p.click('.plhero .btn:has-text("Add to this phone")');await W(400);ok(awai
 // the hub's inbox on the same computer
 await ev(async()=>{localStorage.setItem('atelier-plugin-inbox',JSON.stringify([await PK.encode({...PK.STARTERS[2],id:'t.inbox',name:'From the hub',starter:false})]));dispatchEvent(new Event('focus'))});await W(700);
 ok(await ev(()=>S.plugins.some(x=>x.id==='t.inbox')&&!localStorage.getItem('atelier-plugin-inbox')),T('plugins sent from the hub on this computer arrive by themselves'));
+// one account with Atelier Plugins
+ok(await ev(()=>{const a=JSON.parse(localStorage.getItem('atelier-account'));return a&&a.id===S.me.acc&&a.name==='Nejc'&&!('email' in a)}),T('one account: only an id and the first name are shared'));
+// a private edit of Coins for this group, from the hub
+await ev(async id=>{const b=PK.STARTERS.find(x=>x.id==='atelier.coins'),c=JSON.parse(JSON.stringify(b));Object.assign(c,{id:PK.privId(b.id,id),priv:{gid:id,gname:grp(id).name},from:{id:b.id,ver:b.ver},base:{id:b.id,name:b.name,author:'Atelier',ver:b.ver},lock:{nodes:b.graph.nodes.map(n=>n.id),links:b.graph.links.map(l=>l.id),max:6},ver:'1.1.p1'});delete c.starter;
+ c.graph.nodes.find(n=>n.k==='card'&&n.p.unit==='coins').p.unit='rocks';const bad=JSON.parse(JSON.stringify(c));bad.id=PK.privId('atelier.welcome',id);bad.from={id:'atelier.welcome'};bad.graph.nodes.push({id:'zz',k:'giverole',x:0,y:0,p:{}});
+ localStorage.setItem('atelier-plugin-inbox',JSON.stringify([await PK.encode(c),await PK.encode(bad)]));dispatchEvent(new Event('focus'))},gid);await W(900);
+ok(await ev(id=>{const g=grp(id),i=g.plugins.find(x=>x.pid===PK.privId('atelier.coins',id));return!!i&&!g.plugins.some(x=>x.pid==='atelier.coins')&&Object.keys(i.store.m||{}).length>0},gid),T('a private edit replaces Coins in this group only, and keeps the coins'));
+ok(await ev(id=>!S.plugins.some(x=>x.id===PK.privId('atelier.welcome',id)),gid),T('an edit past the limits is refused'));
+await go('g:'+gid);await W(400);await p.fill('#ci','/coins');await p.press('#ci','Enter');await W(900);ok(await ev(()=>[...document.querySelectorAll('.plw .plwv span')].some(x=>x.textContent==='rocks')),T('the private edit runs: rocks, not coins'));
+// bots: Guard in the member list, blurring, pop-ups, on and off
+await ev(id=>plugAdd(id,'atelier.guard'),gid);await W(800);ok(await ev(id=>{const h=botRows(G(id));return/Kind words/.test(h)&&/One language/.test(h)&&/Tidy/.test(h)},gid),T('bots show under Bots in the member list'));
+await p.fill('#ci','you are stupid');await p.press('#ci','Enter');await W(1100);ok(await ev(()=>!!document.querySelector('.mtx.mw .bw')&&!!document.querySelector('.mmod')),T('a bot blurs unkind words'));
+ok(await ev(()=>[...document.querySelectorAll('.who .pltag.bot, .plw .pltag.bot')].length>0),T('bots post as themselves, marked Bot'));await p.screenshot({path:D+'/shots/bots-'+theme+'.png'});
+await ev(()=>plugPop({style:'prize',pic:'spark',title:'A six',text:'Nejc, that is the top roll.',button:'Nice',tone:'violet',confetti:true},{name:'Dice',pic:{k:'spark'}}));await W(700);ok(await p.isVisible('.plpopw .plpop h2'),T('a designed pop-up from a plugin'));await p.screenshot({path:D+'/shots/popup-'+theme+'.png'});
+await p.click('.ppok');await W(400);ok(await ev(()=>!document.querySelector('.plpopw')),T('and it closes'));
+await ev(id=>{const g=G(id),i=g.plugins.find(x=>x.pid==='atelier.guard');plugBot(id,i.id,'kind')},gid);await W(300);ok(await ev(id=>{const g=G(id);return g.plugins.find(x=>x.pid==='atelier.guard').botsOff.includes('kind')&&!/Kind words/.test(botRows(g))},gid),T('a bot can be switched off in one group'));
+await ev(id=>botsHide(id),gid);ok(await ev(id=>!!S.settings.hideBots[id],gid),T('the Bots section can be hidden'));await ev(id=>botsHide(id),gid);
+// the account link for the hub on a computer
+ok(await ev(async id=>{const L=await PK.decodeLink(await PK.encodeLink(plugLinkData()));return L.acc===S.me.acc&&L.groups.some(g=>g.id===id&&g.plugins.some(i=>i.pid.includes('~')))},gid),T('the account link carries your groups and their plugins'));
+await ev(()=>plugLink());await W(600);ok(await p.isVisible('#plQ svg'),T('connect your account: a QR code'));await ev(()=>closeSheet());await W(300);
+
 // links
 await ev(async()=>{location.hash='#plugin='+encodeURIComponent(await PK.encode({...PK.STARTERS[3],id:'t.link',name:'Linked',starter:false}));plugBoot()});await W(900);ok(await ev(()=>route.k==='plugin'&&route.a[0]==='t.link'),T('a plugin link opens the plugin'));
 // group page and survival
-await go('group:'+gid);ok(await ev(()=>document.querySelectorAll('.plgrow').length===5),T('group page lists its plugins with switches'));
+await go('group:'+gid);ok(await ev(()=>document.querySelectorAll('.plgrow').length===6&&!!document.querySelector('.plgrow .plbot')),T('group page lists its plugins with switches, and the bots'));
 await p.click('.plgrow .switch input >> nth=0');await W(200);ok(await ev(id=>grp(id).plugins[0].on===false,gid),T('switch a plugin off'));
 await p.screenshot({path:D+'/shots/gplugins-'+theme+'.png'});
-const keep=await ev(id=>JSON.stringify(grp(id).plugins[0].store.m),gid);await p.reload({waitUntil:'load'});await W(1700);ok(await ev(([id,k])=>{const g=grp(id);return g.plugins.length===5&&JSON.stringify(g.plugins[0].store.m)===k&&S.plugins.length>=4},[gid,keep]),T('plugins, their coins and settings survive a reload'));
+const keep=await ev(id=>JSON.stringify(grp(id).plugins[0].store.m),gid);await p.reload({waitUntil:'load'});await W(1700);ok(await ev(([id,k])=>{const g=grp(id);return g.plugins.length===6&&JSON.stringify(g.plugins[0].store.m)===k&&S.plugins.length>=4},[gid,keep]),T('plugins, their coins and settings survive a reload'));
 ok(errs.length===0,T('no script errors'+(errs.length?': '+errs.slice(0,3).join(' | '):'')));
 await ctx.close()}
 await b.close();console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0)})();

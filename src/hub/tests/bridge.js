@@ -2,7 +2,7 @@
 // round trip through QR codes (drawn by one app, photographed, read by the other), including several codes.
 const {chromium}=require('playwright');const U='http://127.0.0.1:8814/';let pass=0,fail=0;const ok=(c,m)=>{c?pass++:fail++;console.log((c?'PASS ':'FAIL ')+m)};
 (async()=>{const b=await chromium.launch();const ctx=await b.newContext({viewport:{width:1440,height:900}});const hub=await ctx.newPage();const errs=[];hub.on('pageerror',e=>errs.push('hub: '+e.message));
-await hub.goto(U+'atelier-plugins/');await hub.waitForTimeout(700);await hub.fill('#siN','Nejc');await hub.fill('#siE','n@example.com');await hub.click('#siF button[type=submit]');await hub.waitForTimeout(1200);await hub.click('#licOk');await hub.waitForTimeout(400);
+await hub.goto(U+'atelier-plugins/');await hub.waitForTimeout(700);await hub.fill('#siN','Nejc');await hub.fill('#siE','n@example.com');await hub.click('#siF button[type=submit]');await hub.waitForTimeout(1200);await hub.evaluate(()=>go('lic'));await hub.waitForTimeout(300);await hub.click('#lcClaim');await hub.waitForTimeout(600);await hub.click('#licOk');await hub.waitForTimeout(400);
 await hub.evaluate(()=>useStarter('atelier.coins'));await hub.waitForTimeout(500);await hub.evaluate(()=>{curPl().name='Coins Plus';curPl().graph.nodes.find(n=>n.k==='add').p.amount='15'});
 await hub.click('.stbar .btn:has-text("Send to Atelier")');await hub.waitForTimeout(600);await hub.click('#sIn');await hub.waitForTimeout(200);
 const app=await ctx.newPage();app.on('pageerror',e=>errs.push('app: '+e.message));await app.setViewportSize({width:390,height:844});await app.goto(U+'atelier/');await app.waitForTimeout(1700);
