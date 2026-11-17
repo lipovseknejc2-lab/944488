@@ -94,3 +94,12 @@ No emojis. Short, warm, plain sentences. Empty states get a drawing, one serif l
 - **Group and person info:** members as a horizontal strip of avatar tiles at the top, then active projects with progress, pinned, a three-column photo grid and a file list.
 - **Agenda:** times in blue tabular sans on the left, a round check that fills green and draws its tick, the next item softly highlighted in blue. Buttons sit on the left so the quick panel never covers them.
 - **Posters:** 8 in `POSTERS` (`art.js`), each one figure, one accent and a short headline. Add new ones in the same way.
+
+## 4. Motion and depth, round two
+- Entrances use the separate `translate` and `scale` properties (`rise`, `msgIn`, `wpop`, `stgin`), so presses and hover lifts always work on top of them.
+- Lists and grids (`.grid2`, `.plgrid`, `.tiles`, `.card.list` and others) rise one after another when a page opens (`stagger()`, `--i`, 38 ms apart).
+- Presses go in fast (0.1 s) and spring back (`--spring`): buttons, chips and segments to .95, cards, rows and widgets to .975. Tab icons squeeze to .86.
+- Cards have a bright top edge, a hairline ring and a warm layered shadow; on a mouse they lift their shadow on hover.
+- Sheets rise with a small overshoot (centred dialogs on wide screens pop in), and leave quickly.
+- Numbers with `data-n` count up when a page opens and roll from their last value when they change, sliding in the direction of the change. Progress bars grow in.
+- Reduced motion stops all of it.

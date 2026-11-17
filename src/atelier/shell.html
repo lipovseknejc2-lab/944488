@@ -984,6 +984,38 @@ body.svl #rail,body.svr #rail,body.svl #mini,body.svr #mini{opacity:0;pointer-ev
 #ci.cmdin{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--violet);border-color:color-mix(in srgb,var(--violet) 50%,transparent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--violet) 14%,transparent)}
 .cmdpop b{color:var(--violet)}
 @media(prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}.drawn path,#splash path,.uline path,.ln{stroke-dashoffset:0!important}}
+/* ===== Motion and depth, round two =====
+   Entrances use the separate translate and scale properties, so they never fight the press and hover transforms.
+   Presses go in quickly and come back on a spring. Lists and grids rise with a short stagger. */
+@keyframes rise{from{opacity:0;translate:0 14px;scale:.985}}
+@keyframes msgIn{from{opacity:0;translate:0 10px;scale:.96}}
+@keyframes wpop{from{opacity:0;translate:0 8px;scale:.94}}
+@keyframes stgin{from{opacity:0;translate:0 12px;scale:.985}}
+#view.enter .stg>*{animation:stgin .5s var(--ease) both;animation-delay:calc(var(--i,0) * 38ms + 60ms)}
+/* presses: in fast, out on a spring */
+.btn,.chip,.icon-btn,a.card,.card[onclick],.li,.plcard,.wdg,.seg button,.fchip,.pill[onclick],.gpk,.tile{transition:transform .55s var(--spring),background-color .2s,box-shadow .3s var(--ease),border-color .2s,opacity .2s}
+.btn:active,.chip:active,.icon-btn:active,.seg button:active,.fchip:active,.pill[onclick]:active{transform:scale(.95);transition:transform .1s var(--ease)}
+a.card:active,.card[onclick]:active,.li:active,.plcard:active,.wdg:active,.gpk:active,.tile:active{transform:scale(.975);transition:transform .12s var(--ease)}
+.tab:active .ic,.tabs a:active .ic{transform:scale(.86);transition:transform .1s var(--ease)}
+.tab .ic,.tabs a .ic{transition:transform .5s var(--spring)}
+@media (hover:hover){a.card:hover,.card[onclick]:hover,.plcard:hover,.wdg:hover{box-shadow:inset 0 1px 0 var(--gl-hi),var(--sh),0 18px 34px -22px color-mix(in srgb,var(--text) 28%,transparent);border-color:var(--line2)}
+ .btn:hover{box-shadow:0 6px 16px -10px color-mix(in srgb,var(--text) 35%,transparent)}}
+/* glass: a brighter top edge, a hairline ring and a warm layered shadow */
+.card{box-shadow:inset 0 1px 0 var(--gl-hi),inset 0 0 0 .5px color-mix(in srgb,var(--text) 3%,transparent),0 1px 1px color-mix(in srgb,var(--text) 4%,transparent),var(--sh)}
+.sheet{box-shadow:inset 0 1px 0 var(--gl-hi),0 -24px 70px -10px rgba(0,0,0,.22)}
+/* sheets settle with a small overshoot and leave quickly */
+@keyframes sheetUp{0%{transform:translateY(100%)}68%{transform:translateY(-1.4%)}100%{transform:none}}
+@keyframes sheetDown{to{transform:translateY(70px);opacity:0}}
+.sheet{animation:sheetUp .52s var(--ease)}
+@media (min-width:900px){@keyframes sheetPop{0%{opacity:0;transform:translateY(16px) scale(.96)}70%{opacity:1;transform:translateY(-2px) scale(1.005)}100%{transform:none}}.sheet{animation:sheetPop .42s var(--ease)}}
+/* data: bars grow in, numbers that change slide into place */
+.pbar i{animation:growx .8s var(--ease) both}
+@keyframes numup{from{opacity:.25;translate:0 .35em}}@keyframes numdn{from{opacity:.25;translate:0 -.35em}}
+.numup{display:inline-block;animation:numup .45s var(--spring)}.numdn{display:inline-block;animation:numdn .45s var(--spring)}
+/* widgets: tactile, with a light that follows the press */
+.wdg{will-change:transform}.wdg:active{transform:scale(.97) translateY(1px)}
+/* reduced motion: everything holds still */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
