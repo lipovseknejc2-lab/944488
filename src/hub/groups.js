@@ -40,7 +40,7 @@ function addToGroup(gid){const A=groupSrc(),g=A.groups.find(x=>x.id===gid);if(!g
  <div class="gpick">${L.map(p=>`<button class="gpk" data-p="${esc(p.id)}">${PK.picHtml(p,'md')}<span class="grow"><b>${esc(p.name)}</b><em>${p.starter?'Atelier starter':'Yours'} · ${esc(p.desc||'').slice(0,70)}</em></span>${ic('plus',2)}</button>`).join('')}</div>`,'sm');
  $$('.gpk').forEach(b=>b.onclick=()=>{const p=plOf(b.dataset.p)||PK.STARTERS.find(x=>x.id===b.dataset.p);closeModal();privFor(g,p)})}
 /* the account link from a phone */
-async function linkTake(t){try{const L=await PK.decodeLink(t);H.links=L;(L.plugins||[]).forEach(p=>{H.bases[p.id]=p});if(H.acct&&!H.acct.acc&&L.acc){H.acct.acc=L.acc;acctWrite()}save();closeModal();go('groups');toast(`Linked ${plural(L.groups.length,'group')} from ${L.name||'your phone'}`);np('import')}catch(e){toast(e.message)}}
+async function linkTake(t,signin){try{const L=await PK.decodeLink(t);if(signin||!H.acct){H.acct={name:L.name||'Builder',email:'',studio:'',at:Date.now(),acc:L.acc,linked:true,phone:true};acctWrite()}H.links=L;(L.plugins||[]).forEach(p=>{H.bases[p.id]=p});if(H.acct&&!H.acct.acc&&L.acc){H.acct.acc=L.acc;acctWrite()}save();closeModal();go('groups');toast(`Linked ${plural(L.groups.length,'group')} from ${L.name||'your phone'}`);np('import')}catch(e){toast(e.message)}}
 /* how far a private edit has gone: for the studio meter and the checks */
 function privCheck(pl){if(!pl||!pl.priv||!pl.lock||licensed())return null;const fid=pl.from?.id;const base=fid&&(H.bases[fid]||PK.STARTERS.find(p=>p.id===fid));return PK.guard(pl,base)}
 const lockOn=pl=>!!(pl&&pl.priv&&pl.lock&&!licensed());

@@ -35,7 +35,7 @@ await p.fill('#bI','/he');ok(await ev(()=>document.querySelector('#bI').classLis
 await p.click('.bacts .btn:has-text("Someone joins")');await W(700);ok(await ev(()=>[...document.querySelectorAll('.bmsg.pl .plw')].some(x=>/Hi Nina/.test(x.textContent))),'someone joins: the plugin greets them');
 ok(await ev(()=>document.querySelectorAll('.blog .bl').length>=2),'the log shows what ran');await shot('bench');
 // coins starter
-await ev(()=>go('public'));await W(400);ok(await ev(()=>document.querySelectorAll('.pcard').length===9),'public plugins: nine starters');await shot('public');
+await ev(()=>go('public'));await W(400);ok(await ev(()=>document.querySelectorAll('.pcard').length===14),'public plugins: fourteen starters');await shot('public');
 await p.click('.pcard:has-text("Coins") .btn:has-text("Use as a start")');await W(700);ok(await ev(()=>V.view==='studio'&&curPl().graph.nodes.length===20),'Coins opens in the studio, 20 nodes');await ev(()=>fitView());await W(200);await shot('studio-coins');
 await p.click('.stbar .btn:has-text("Test")');await W(500);
 await p.fill('#bI','Morning');await p.press('#bI','Enter');await W(500);await p.fill('#bI','/coins');await p.press('#bI','Enter');await W(500);ok(await ev(()=>[...document.querySelectorAll('.bmsg.pl .plwv b')].some(x=>x.textContent==='10')),'coins on the bench');
@@ -61,9 +61,29 @@ await p.fill('#cedT',"on('command', { name: 'roll' }, a => {\n  a.random('dice',
 await p.fill('#cedT',"on('command', { name: 'x' }, a => {");await W(200);ok(await p.isVisible('.cedmsg.err'),'and shows mistakes');
 await p.fill('#cedT',"on('command', { name: 'roll' }, a => {\n  a.random('dice', 1, 6)\n  a.reply('{user} rolled {dice}')\n})\n");await shot('code');
 await p.click('.stbar .btn:has-text("Test")');await W(500);await p.fill('#bI','/roll');await p.press('#bI','Enter');await W(1200);ok(await ev(()=>[...document.querySelectorAll('.bmsg.pl .plw')].some(x=>/Nejc rolled [1-6]/.test(x.textContent))),'coded plugins run on the bench, sealed away');
-// node points
-ok(await ev(()=>H.np.total>=30&&+document.querySelector('#npP b').textContent.replace(/\D/g,'')===H.np.total),'node points count what you build: '+(await ev(()=>H.np.total)));
-await ev(()=>go('dash'));await W(500);ok(await p.isVisible('#npSec .npbig'),'node points on the dashboard');await shot('dash-np');
+// developer points: spent while building, back on undo, a daily allowance, a simulated shop, earned from Atelier
+ok(await ev(()=>H.dp&&H.dp.bal>0&&+document.querySelector('#dpP b').textContent.replace(/\D/g,'')===H.dp.bal),'developer points in the sidebar: '+(await ev(()=>H.dp.bal)));
+await ev(()=>go('studio',H.plugins.find(x=>x.name==='Greeter').id));await W(400);const b0=await ev(()=>H.dp.bal);await ev(()=>{V.sel=null;addNode('react',600,400)});await W(200);
+ok(await ev(b=>H.dp.bal===b-DPC.node&&curPl().dp>=DPC.node,b0),'a new block costs points');ok(await p.isVisible('#dpM'),'the studio shows what this plugin used');
+await p.keyboard.press('Control+z');await W(300);ok(await ev(b=>H.dp.bal===b,b0),'undo gives them back');
+await ev(()=>{H.dp.bal=1;render()});const n1=await ev(()=>curPl().graph.nodes.length);await ev(()=>{V.sel=null;addNode('react',600,400)});await W(500);
+ok(await ev(n=>curPl().graph.nodes.length===n&&!!document.querySelector('.dpshop'),n1),'out of points: the change is taken back and the shop opens');await shot('dp-shop');
+await p.click('.dppack:has-text("Studio")');await W(500);ok(await ev(()=>H.dp.bal===7001&&H.dp.bought===7000),'buy points (simulated, no payment)');
+const e0=await ev(()=>H.dp.bal);await ev(()=>{const id=H.plugins.find(x=>x.name==='Greeter').id;localStorage.setItem('atelier-plugin-stats',JSON.stringify({[id]:{installs:2,adds:1,likes:3,days:{}}}));V._dpt=0;dpTick()});
+ok(await ev(e=>H.dp.bal===e+2*8+12+3*5&&H.np.total>0,e0),'installs, group additions and likes from Atelier earn points');
+ok(await ev(()=>{const b=JSON.parse(localStorage.getItem('atelier-builder'));return b&&b.dp===H.dp.bal&&b.np===H.np.total}),'node and developer points are shared with Atelier');
+await ev(()=>{const p=H.plugins.find(x=>x.name==='Greeter');p.pub=true;H.dp.sim[p.id]={from:dDay(Date.now()-6*864e5),done:dDay(Date.now()-6*864e5),days:{}};dpTrend(p)});ok(await ev(()=>{const t=dpTrendNow(H.plugins.find(x=>x.name==='Greeter'));return t&&t.total>0&&t.m>0}),'published plugins earn from a download trend');
+await ev(()=>go('dev'));await W(500);ok(await p.isVisible('.dphero .dpbal')&&await p.isVisible('.dptr'),'the developer points wallet');await shot('dev-points');
+await ev(()=>{H.plugins.find(x=>x.name==='Greeter').pub=false});
+await ev(()=>go('dash'));await W(500);ok(await p.isVisible('#dpSec .dpbal'),'developer points on the dashboard');await shot('dash-np');
+// the widget designer
+await ev(()=>{go('studio',H.plugins.find(x=>x.name==='Greeter').id)});await W(300);await ev(()=>{V.sel=null;addNode('card',700,200)});await W(300);await p.click('.dsgbtn');await W(400);ok(await p.isVisible('.dsgrid .dsstage .plw'),'the widget designer opens with a preview');
+await p.click('[data-eye="text"]');await W(150);await p.click('#dsBA');await W(150);await p.fill('[data-bt="0"]','See coins');await p.selectOption('[data-bd="0"]','cmd');await W(150);await p.fill('[data-bv="0"]','/coins');await p.click('#dsBg [data-v="glow"]');await p.click('[data-tone2="blue"]');await p.click('#dsAl [data-v="center"]');await W(200);await shot('designer');
+await p.click('#dsS');await W(300);ok(await ev(()=>{const d=PK.design(curPl().graph.nodes.find(n=>n.k==='card'&&n.p.design).p.design,'card');return d.hide.includes('text')&&d.buttons[0].t==='See coins'&&d.buttons[0].v==='/coins'&&d.bg==='glow'&&d.align==='center'}),'the design is saved on the block');
+ok(await ev(()=>/data-pdo="cmd"/.test(PK.plCard({card:{title:'x',value:'1',design:curPl().graph.nodes.find(n=>n.k==='card'&&n.p.design).p.design},text:''},curPl()))),'widgets render the buttons');
+// the whole library at once
+await ev(()=>go('library'));await W(300);await p.click('.hdr .btn:has-text("Send the whole library")');await W(500);ok(await ev(()=>!!document.querySelector('#lQ svg path')&&document.querySelectorAll('.libl .pill').length===H.plugins.filter(p=>!p.priv).length),'send the whole library as codes');await shot('library-send');
+await p.click('#lIn');await W(200);ok(await ev(async()=>{const L=JSON.parse(localStorage.getItem('atelier-plugin-inbox'));const B=await PK.decodeBundle(L[L.length-1]);return B.plugins.length===H.plugins.filter(p=>!p.priv).length}),'the library goes to Atelier in one bundle');await ev(()=>closeModal());
 // license
 await p.click('.side .nv:has-text("License")');await W(500);ok(await ev(()=>V.view==='lic')&&await p.isVisible('.lplq .s-cheer'),'the license tab, illustrated');
 ok(await ev(()=>!document.querySelector('#lkV')||/•|\*/.test(document.querySelector('.lkey').textContent)),'the key is hidden');await p.click('#lkS');await W(300);ok(await ev(()=>document.querySelector('.lkey').textContent.includes(H.lic.no)),'show the key');
@@ -85,7 +105,7 @@ await p.reload();await W(800);ok(await ev(()=>H.plugins.length===2&&H.lic.ok&&V.
 // public plugins: search, filters, details
 await ev(()=>go('public'));await W(400);ok(await p.isVisible('.pubfeat'),'a featured plugin made of bots');
 await p.fill('#pq','/roll');await W(500);ok(await ev(()=>document.querySelectorAll('#pubR .pcard').length===1&&/Dice/.test(document.querySelector('#pubR').textContent)),'search finds commands');
-await p.fill('#pq','');await W(400);await p.click('.pbcat:has-text("Fun and games")');await W(300);ok(await ev(()=>document.querySelectorAll('.pcard').length===2),'filter by category');
+await p.fill('#pq','');await W(400);await p.click('.pbcat:has-text("Fun and games")');await W(300);ok(await ev(()=>document.querySelectorAll('.pcard').length===4),'filter by category');
 await ev(()=>{H.pf.cat='all';render()});await p.click('.fchip:has-text("Bots")');await W(300);ok(await ev(()=>document.querySelectorAll('.pcard').length===1),'filter: only plugins with bots');await ev(()=>{H.pf.bots=false;render()});
 await p.click('.pcard:has-text("Guard") .btn:has-text("Details")');await W(400);ok(await ev(()=>document.querySelectorAll('#modal .pibot').length===3&&/How to use it/.test(document.querySelector('#modal').textContent)),'details: bots, how to, rules');await shot('public-details');await ev(()=>closeModal());
 // bots in the studio
@@ -101,7 +121,7 @@ await p.fill('#bI','danes je lep dan in jaz sem doma');await p.press('#bI','Ente
 // one account: Atelier on the same computer, its groups, and a private edit without a license
 {const c2=await b.newContext({viewport:{width:1440,height:900}}),q=await c2.newPage();q.on('pageerror',e=>errs.push(e.message));q.on('dialog',d=>d.accept().catch(()=>{}));const qe=(f,a)=>q.evaluate(f,a);
  await q.goto(U);await qe(()=>{localStorage.clear();localStorage.setItem('atelier-account',JSON.stringify({id:'a1',name:'Nejc',at:1}));localStorage.setItem('atelier-v1',JSON.stringify({me:{id:'me',name:'Nejc',acc:'a1'},plugins:[],groups:[{id:'g1',name:'Studio crew',owner:'me',members:['me','b1'],roles:[],mroles:{},chs:[{id:'h1',name:'general',type:'talk'}],plugins:[{id:'i1',pid:'atelier.coins',on:true,store:{}}]}]}))});await q.reload();await q.waitForTimeout(600);
- ok(await q.isVisible('#siA')&&/Continue as Nejc/.test(await q.textContent('#siA')),'sign in: continue as the Atelier account');await q.screenshot({path:D+'/shots/signin-account.png'});
+ ok(await q.isVisible('#siA')&&/Continue as Nejc/.test(await q.textContent('#siA')),'sign in: continue as the Atelier account');ok(/1 group you manage/.test(await q.textContent('#siA')),'the Atelier account comes preloaded');await q.screenshot({path:D+'/shots/signin-account.png'});
  await q.click('#siA');await q.waitForTimeout(500);ok(await qe(()=>H.acct.acc==='a1'&&!licensed()),'the same account, no license yet');
  await qe(()=>go('groups'));await q.waitForTimeout(400);ok(await qe(()=>document.querySelectorAll('.gcard').length===1&&/Studio crew/.test(document.querySelector('.gcard').textContent)&&/Coins/.test(document.querySelector('.gcard').textContent)),'Your groups: the group and its Coins plugin');ok(await q.isVisible('.limc'),'the limits without a license');await q.screenshot({path:D+'/shots/groups.png'});
  await q.click('.gpl .btn:has-text("Edit for Studio crew")');await q.waitForTimeout(600);ok(await qe(()=>V.view==='studio'&&curPl().priv?.gid==='g1'&&!!curPl().lock&&curPl().from.id==='atelier.coins'),'a private edit for one group');
@@ -116,6 +136,10 @@ await p.fill('#bI','danes je lep dan in jaz sem doma');await p.press('#bI','Ente
  await qe(()=>go('test'));await q.waitForTimeout(300);await q.fill('#bI','/coins');await q.press('#bI','Enter');await q.waitForTimeout(600);ok(await qe(()=>[...document.querySelectorAll('.bmsg.pl .plwt')].some(x=>/rocks/i.test(x.textContent))),'the edit runs on the bench');
  const lk=await qe(async()=>PK.encodeLink({f:'atelier-link',acc:'a1',name:'Nejc',at:Date.now(),groups:[{id:'g9',name:'Phone club',plugins:[{iid:'i9',pid:'atelier.dice',on:true}]}],plugins:[]}));
  await qe(()=>importPlugin('link'));await q.fill('#iT',lk);await q.click('#iGo');await q.waitForTimeout(500);ok(await qe(()=>H.links&&V.view==='groups'&&document.querySelectorAll('.gcard').length===2&&/Phone club/.test(document.querySelector('.ggrid').textContent)),'connect a phone with its account link');
- await c2.close()}
+ await c2.close();
+ const c3=await b.newContext({viewport:{width:1440,height:900}}),r=await c3.newPage();r.on('pageerror',e=>errs.push(e.message));await r.goto(U);await r.evaluate(()=>localStorage.clear());await r.reload();await r.waitForTimeout(500);
+ const lk2=await r.evaluate(async()=>PK.encodeLink({f:'atelier-link',acc:'a7',name:'Nejc',at:Date.now(),groups:[{id:'g7',name:'Phone crew',plugins:[]}],plugins:[]}));
+ await r.click('#siQ');await r.waitForTimeout(300);ok(/Sign in with your phone/.test(await r.textContent('#modal')),'sign in with the phone: scan its code');await r.fill('#iT',lk2);await r.click('#iGo');await r.waitForTimeout(600);
+ ok(await r.evaluate(()=>H.acct&&H.acct.acc==='a7'&&H.acct.name==='Nejc'&&V.view==='groups'&&/Phone crew/.test(document.body.textContent)),'signed in with the phone account, groups and all');await c3.close()}
 ok(errs.length===0,'no script errors'+(errs.length?': '+errs.slice(0,3).join(' | '):''));
 await b.close();console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0)})();

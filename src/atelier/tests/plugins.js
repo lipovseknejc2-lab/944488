@@ -18,7 +18,7 @@ const gid=await ev(()=>S.groups[0].id);
 await go('groups');ok(await ev(()=>{const c=getComputedStyle(document.querySelector('.gtile .gav')).backgroundColor;return !/\/\s*0?\.\d|rgba\([^)]*,\s*0?\.\d+\)|transparent/.test(c)}),T('group pictures are solid, the banner does not show through'));
 ok(await p.isVisible('.ph a.btn:has-text("Plugins")'),T('Groups has a Plugins button'));
 // plugins page
-await p.click('.ph a.btn:has-text("Plugins")');await W(450);ok(await ev(()=>route.k==='plugins'&&document.querySelectorAll('.plcard').length===9),T('Plugins page with nine starter plugins'));
+await p.click('.ph a.btn:has-text("Plugins")');await W(450);ok(await ev(()=>route.k==='plugins'&&document.querySelectorAll('.plcard').length===14),T('Plugins page with fourteen starter plugins, five coded'));
 await p.screenshot({path:D+'/shots/plugins-'+theme+'.png'});
 await p.click('.plcard:has-text("Coins")');await W(450);ok(await p.isVisible('.plhero')&&await p.isVisible('.plcmd >> text=/coins'),T('plugin page: what it listens for, what it can do, commands'));
 await p.screenshot({path:D+'/shots/plugin-'+theme+'.png'});
@@ -103,15 +103,31 @@ await ev(id=>{const g=G(id),i=g.plugins.find(x=>x.pid==='atelier.guard');plugBot
 await ev(id=>botsHide(id),gid);ok(await ev(id=>!!S.settings.hideBots[id],gid),T('the Bots section can be hidden'));await ev(id=>botsHide(id),gid);
 // the account link for the hub on a computer
 ok(await ev(async id=>{const L=await PK.decodeLink(await PK.encodeLink(plugLinkData()));return L.acc===S.me.acc&&L.groups.some(g=>g.id===id&&g.plugins.some(i=>i.pid.includes('~')))},gid),T('the account link carries your groups and their plugins'));
-await ev(()=>plugLink());await W(600);ok(await p.isVisible('#plQ svg'),T('connect your account: a QR code'));await ev(()=>closeSheet());await W(300);
+await ev(()=>plugLink());await W(600);ok(await p.isVisible('#plQ svg'),T('sign in on a computer: a QR code'));await ev(()=>closeSheet());await W(300);
+// the whole library from the hub in one set of codes
+const bundle=await ev(async()=>PK.encodeBundle([{...PK.STARTERS[1],id:'hub.one',name:'Hub one',starter:false,author:'Nejc'},{...PK.STARTERS[10],id:'hub.two',name:'Hub two',starter:false,author:'Nejc'}],'Nejc'));
+const parts=await ev(t=>PK.parts(t,380),bundle);await ev(()=>plugScan());await W(400);await p.click('.pladv summary');await p.fill('#plT',bundle);await p.click('#plTB');await W(800);
+ok(await ev(()=>route.k==='plugins'&&S.plugins.some(x=>x.id==='hub.one'&&x.got)&&S.plugins.some(x=>x.id==='hub.two')),T('scan the hub library: every plugin lands in the library'));
+ok(await ev(()=>{const c=[...document.querySelectorAll('.plcard')].find(x=>/Hub one/.test(x.textContent));return c&&/Nejc/.test(c.textContent)&&!!c.querySelector('.pldoes')&&/From the hub/.test(c.textContent)}),T('library cards: who made it, what it does, where it came from'));
+await p.fill('#plQs','/vote');await W(300);ok(await ev(()=>document.querySelectorAll('#plRes .plcard').length===1&&/Poll/.test(document.querySelector('#plRes').textContent)),T('search the library by command'));await p.fill('#plQs','');await W(200);
+await ev(()=>{_plF='code';render()});await W(300);ok(await ev(()=>{const L=[...document.querySelectorAll('#plRes .plcard')];return L.length>=6&&L.every(c=>/Code/.test(c.textContent))}),T('filter: coded plugins'));await ev(()=>{_plF='all';render()});await W(200);await p.screenshot({path:D+'/shots/library-'+theme+'.png'});
+await go('plugin:hub.one');await p.click('.pllike');await W(300);ok(await ev(()=>!!S.plLikes['hub.one']&&JSON.parse(localStorage.getItem('atelier-plugin-stats'))['hub.one'].likes===1&&JSON.parse(localStorage.getItem('atelier-plugin-stats'))['hub.one'].installs===1),T('likes and installs are shared with the hub'));
+await ev(()=>localStorage.setItem('atelier-builder',JSON.stringify({acc:S.me.acc,name:'Nejc',np:120,dp:900,pub:2,at:Date.now()})));await go('plugins');ok(await ev(()=>/120/.test(document.querySelector('.plnp').textContent)&&/900/.test(document.querySelector('.plnp').textContent)),T('node points and developer points from the hub'));
+// a coded starter in the sealed box, and a designed widget with a button
+await ev(id=>plugAdd(id,'atelier.poll'),gid);await W(600);await go('g:'+gid);await W(400);await p.fill('#ci','/poll Lunch? | Pizza | Soup');await p.press('#ci','Enter');await W(2200);
+ok(await ev(()=>[...document.querySelectorAll('.plw')].some(x=>/Pizza/.test(x.textContent)&&x.querySelectorAll('.plwr div').length===2)),T('a coded plugin runs: a poll widget'));
+await ev(id=>{const c=S.chats.find(x=>x.kind==='group'&&x.with===id&&x.ch==='general');const m={id:uid(),from:'pl',pl:{id:'atelier.coins',name:'Coins',pic:{k:'coin'}},text:'',card:{title:'Balance',value:'10',unit:'coins',tone:'yellow',design:JSON.stringify({bg:'glow',tone2:'blue',align:'center',buttons:[{t:'See coins',do:'cmd',v:'/coins'}]})},at:Date.now()};c.msgs.push(m);appendMsgs(c)},gid);await W(500);
+ok(await p.isVisible('.plw.dz.bg-glow .plwbt button'),T('a designed widget with a button'));await p.screenshot({path:D+'/shots/designed-'+theme+'.png'});
+const nBefore=await ev(id=>S.chats.find(x=>x.kind==='group'&&x.with===id&&x.ch==='general').msgs.length,gid);await p.click('.plw.dz .plwbt button >> nth=-1');await W(800);
+ok(await ev(([id,n])=>{const c=S.chats.find(x=>x.kind==='group'&&x.with===id&&x.ch==='general');return c.msgs.slice(n).some(m=>m.from==='me'&&m.text==='/coins')},[gid,nBefore]),T('the widget button runs its command'));
 
 // links
 await ev(async()=>{location.hash='#plugin='+encodeURIComponent(await PK.encode({...PK.STARTERS[3],id:'t.link',name:'Linked',starter:false}));plugBoot()});await W(900);ok(await ev(()=>route.k==='plugin'&&route.a[0]==='t.link'),T('a plugin link opens the plugin'));
 // group page and survival
-await go('group:'+gid);ok(await ev(()=>document.querySelectorAll('.plgrow').length===6&&!!document.querySelector('.plgrow .plbot')),T('group page lists its plugins with switches, and the bots'));
+await go('group:'+gid);ok(await ev(()=>document.querySelectorAll('.plgrow').length===7&&!!document.querySelector('.plgrow .plbot')),T('group page lists its plugins with switches, and the bots'));
 await p.click('.plgrow .switch input >> nth=0');await W(200);ok(await ev(id=>grp(id).plugins[0].on===false,gid),T('switch a plugin off'));
 await p.screenshot({path:D+'/shots/gplugins-'+theme+'.png'});
-const keep=await ev(id=>JSON.stringify(grp(id).plugins[0].store.m),gid);await p.reload({waitUntil:'load'});await W(1700);ok(await ev(([id,k])=>{const g=grp(id);return g.plugins.length===6&&JSON.stringify(g.plugins[0].store.m)===k&&S.plugins.length>=4},[gid,keep]),T('plugins, their coins and settings survive a reload'));
+const keep=await ev(id=>JSON.stringify(grp(id).plugins[0].store.m),gid);await p.reload({waitUntil:'load'});await W(1700);ok(await ev(([id,k])=>{const g=grp(id);return g.plugins.length===7&&JSON.stringify(g.plugins[0].store.m)===k&&S.plugins.length>=4},[gid,keep]),T('plugins, their coins and settings survive a reload'));
 ok(errs.length===0,T('no script errors'+(errs.length?': '+errs.slice(0,3).join(' | '):'')));
 await ctx.close()}
 await b.close();console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0)})();

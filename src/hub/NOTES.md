@@ -24,3 +24,9 @@ A desktop web app for building plugins for Atelier groups. Published at `atelier
 - **Bench:** `PK.runAll`; bot messages carry `as`; blur and pop-ups show; a gallery channel; a hideable Bots list.
 - **Public plugins:** search over names, commands, tags, bots and authors; categories, build, size, Bots and Commands filters; sort; a featured plugin; `pubInfo` details.
 - **Tour:** objects only. `KF` writes the keyframes for one 9-second loop; `alt` marks later phases so a still scene never overlaps. A slide restarts when it comes into view.
+
+## Developer points, designer, library bundle (November 2026)
+- `dev.js`: `dpCost(pl)` from what a plugin holds now; `dpCharge(pl)` spends or refunds against `pl.dp` above the free start `pl.dpf`; `touch()` calls it and `dpBlock()` takes a change back when the balance is short. Code is charged per line in the editor's input handler. `dpTick()` adds the daily allowance, reads `atelier-plugin-stats`, and runs `dpTrend()` for published plugins (a rise, a peak, a fade; `dpMult` pays ×4 on a 30 % rise). `builderWrite()` shares node and developer points with Atelier. `vDev()` is the wallet, `dpSection()` the dashboard card, `dpShop()` the simulated shop.
+- `np()` no longer counts building: new plugins, publishing and sending earn developer points; node points come from publishing and downloads.
+- Designer: block parameters of type `design` open `designOpen(id)`; previews use `designPreview()` with sample values.
+- `libSend()` sends every non-private plugin as one `ATK1` bundle; `importPlugin()` also takes bundles and, with `'signin'`, the phone's sign-in code.

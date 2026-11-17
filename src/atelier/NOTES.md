@@ -89,3 +89,9 @@ JS build order: `art.js`, `core.js`, `people.js`, `today.js`, `focus.js`, `reset
 - `plugLink()` shows the account link (`ATL1`, `plugLinkData()`) for the hub: groups you manage, their plugins, and the plugins private edits came from.
 - Private plugins (`priv`) arrive by QR, paste or the inbox. `plugCheck()` checks the group, the right to manage it, and (without `lic`) `PK.guard` against the plugin in `from`; `plugApplyPriv()` swaps the instance and keeps its store.
 - Bots: `PK.runAll` in `plugRun`, `plugHere()` leaves out bots switched off in the group (`inst.botsOff`), `botRows()` in the member list, `plugBot()`, `botsHide()`. Blurred messages use `m.mod` (`modHtml`, `modText`, `modUndo`). Pop-ups: `plugPop()`.
+
+## Library, designs, coded starters (November 2026)
+- The Plugins page (`pPlugins`, `plugCard`, `plugResults`) searches and filters the library. `plugKeep()` stores any plugin that arrives with `got`; `plugTakeMany()` takes a bundle. `plugStat()` writes installs, additions and likes for the hub; `plugLike()` toggles a like (`S.plLikes`). `builderRead()` shows node and developer points.
+- Designed widgets and pop-ups: `PK.design`; buttons call `plugDo()` (run a command in that chat, react, close).
+- Coded starters: Poll, Streaks, Quiz, Levels, Countdown (`PK.STARTERS`, mode code, run in the sealed sandbox).
+- "Sign in on a computer" shows the account code the hub scans to sign in.

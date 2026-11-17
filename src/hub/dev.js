@@ -1,0 +1,71 @@
+/* ============ Developer points: the economy of Atelier Plugins ============
+   Building spends them: every block, wire, line of code and bot costs a little while you work. Undo or delete and the
+   points come back, because a plugin's cost is worked out from what it holds now (dpCost) against what it has paid
+   (pl.dp). A daily allowance tops the balance up; more can be bought (simulated in the test period). They are earned by
+   making and publishing plugins and by what others do with them: installs, additions to groups and likes, read from
+   Atelier on this site (localStorage "atelier-plugin-stats"), plus public downloads that follow a trend. A rising trend
+   pays a lot, a fading one very little. Node points are earned the same way and shown in Atelier. */
+const DPC={node:3,wire:1,line:1,bot:15};
+const DP_DAY=150,DP_START=400;
+const DP_PACKS=[['Handful',500,'$2'],['Workshop',3000,'$10'],['Studio',7000,'$20'],['Factory',30000,'$80'],['Foundry',40000,'$100']];
+const DP_EARN={plugin:['New plugins',20],public:['Published',60],send:['Sent to phones',5],install:['Installs',8],add:['Added to groups',12],like:['Likes',5],download:['Public downloads',2],day:['Daily allowance',DP_DAY],buy:['Bought',0],start:['Welcome',DP_START]};
+function dpFix(){if(!H.dp)H.dp={bal:DP_START,days:{},log:[{k:'start',n:DP_START,at:Date.now()}],by:{start:DP_START},seen:{},sim:{},spent:0,earned:DP_START,last:dDay()};H.dp.by=H.dp.by||{};H.dp.seen=H.dp.seen||{};H.dp.sim=H.dp.sim||{};H.dp.log=H.dp.log||[];H.dp.days=H.dp.days||{}}
+const dDay=(t=Date.now())=>new Date(t).toISOString().slice(0,10);
+/* the illustrated point: a six-sided token with angle brackets and a spark, in violet */
+const dpIcon=(s=18,cls='')=>`<svg class="dpi ${cls}" viewBox="0 0 32 32" width="${s}" height="${s}" aria-hidden="true"><path class="dpi-b" d="M16 2.6l11.6 6.7v13.4L16 29.4L4.4 22.7V9.3z"/><path class="dpi-r" d="M16 6.2l8.5 4.9v9.8L16 25.8l-8.5-4.9v-9.8z"/><path class="dpi-c" d="M13 12.4l-3.4 3.6l3.4 3.6M19 12.4l3.4 3.6L19 19.6"/><path class="dpi-s" d="M16.8 11.2l-1.6 9.6"/><circle class="dpi-d" cx="25.6" cy="6.4" r="2.2"/></svg>`;
+function dpLines(code){return String(code||'').split('\n').filter(l=>l.trim()&&!/^\s*\/\//.test(l)).length}
+function dpOne(t){if(!t)return 0;return t.mode==='code'?dpLines(t.code)*DPC.line:(t.graph?.nodes||[]).length*DPC.node+(t.graph?.links||[]).length*DPC.wire}
+function dpCost(pl){return dpOne(pl)+(pl.bots||[]).reduce((a,b)=>a+DPC.bot+dpOne(b),0)}
+function dpDay(k,n){const d=dDay(),o=H.dp.days[d]=H.dp.days[d]||{earn:0,spend:0};o[k]+=n;const ks=Object.keys(H.dp.days).sort();if(ks.length>60)ks.slice(0,ks.length-60).forEach(x=>delete H.dp.days[x])}
+function dpLog(k,n,pid){H.dp.log.unshift({k,n,pid,at:Date.now()});if(H.dp.log.length>120)H.dp.log.length=120}
+/* earn: the pill counts up with a small flying number */
+function dpEarn(k,n,pid,quiet){dpFix();n=Math.round(n);if(n<=0)return;H.dp.bal+=n;H.dp.earned=(H.dp.earned||0)+n;H.dp.by[k]=(H.dp.by[k]||0)+n;dpDay('earn',n);dpLog(k,n,pid);if(!quiet)dpFly('+'+n);builderWrite();saveSoon()}
+function dpFly(t,neg){const pill=$('#dpP');if(!pill)return;pill.querySelector('b').textContent=H.dp.bal.toLocaleString('en-GB');const f=document.createElement('span');f.className='npfly'+(neg?' neg':'');f.textContent=t;pill.appendChild(f);setTimeout(()=>f.remove(),900);const m=$('#dpM');if(m)m.innerHTML=dpMeter()}
+/* spend or refund what a plugin's change costs. false means there are not enough points: the change is taken back */
+function dpCharge(pl){dpFix();if(!pl)return true;if(pl.dpf==null){pl.dpf=dpCost(pl);pl.dp=0;return true}const need=Math.max(0,dpCost(pl)-pl.dpf),d=need-(pl.dp||0);if(!d)return true;
+ if(d>0&&H.dp.bal<d){V._need=d-H.dp.bal;return false}H.dp.bal-=d;pl.dp=need;if(d>0){H.dp.spent=(H.dp.spent||0)+d;dpDay('spend',d)}else dpDay('spend',d);dpFly((d>0?'-':'+')+Math.abs(d),d>0);builderWrite();return true}
+/* the plugin's cost if its code were this text: used before a keystroke is kept */
+function dpAfford(pl,extra){dpFix();return H.dp.bal>=extra}
+/* every day: the allowance, installs, likes and additions from Atelier, and the public trend */
+function dpTick(){if(!H.acct)return;dpFix();const d=dDay();if(H.dp.last!==d){H.dp.last=d;dpEarn('day',DP_DAY,null,true)}
+ if(Date.now()-(V._dpt||0)<20000)return;V._dpt=Date.now();let st={};try{st=JSON.parse(localStorage.getItem('atelier-plugin-stats')||'{}')||{}}catch(e){}
+ const mine=new Set(H.plugins.map(p=>p.id));Object.entries(st).forEach(([id,x])=>{if(!mine.has(id))return;const s=H.dp.seen[id]=H.dp.seen[id]||{installs:0,adds:0,likes:0};
+  [['installs','install'],['adds','add'],['likes','like']].forEach(([k,e])=>{const nw=Math.max(0,(x[k]||0)-(s[k]||0));if(nw){dpEarn(e,nw*DP_EARN[e][1],id,true);npGain(nw*({install:4,add:6,like:2})[e],e)}s[k]=Math.max(s[k]||0,x[k]||0)})});
+ H.plugins.filter(p=>p.pub&&!p.priv).forEach(dpTrend);builderWrite();saveSoon()}
+/* public downloads follow a trend: a climb, a peak, a slow fade. Simulated until Atelier Plugins goes online. */
+const dpHash=s=>{let h=2166136261;for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h};
+function dpCurve(pl,age){const h=dpHash(pl.id),A=3+(h%9),tau=4+((h>>>4)%8),inf=PK.info(pl),q=1+Math.min(1.5,(inf.cmds.length*.25+(pl.bots||[]).length*.3+(pl.howto?.2:0)+(pl.cat?.2:0)));return Math.max(0,Math.round(A*q*Math.pow(age+1,1.4)*Math.exp(-age/tau)))}
+const dpMult=g=>g>=1.3?4:g>=1.1?2.5:g>=.9?1.2:.4;
+function dpTrend(pl){const S=H.dp.sim[pl.id]=H.dp.sim[pl.id]||{from:dDay(),done:dDay(Date.now()-864e5),days:{}};const today=dDay();let t=new Date(S.done+'T12:00:00Z').getTime()+864e5,n=0;
+ while(dDay(t)<=today&&n<30){const day=dDay(t),age=Math.round((t-new Date(S.from+'T12:00:00Z').getTime())/864e5),dl=dpCurve(pl,age),prev=S.days[dDay(t-864e5)]?.dl||Math.max(1,dpCurve(pl,age-1)),g=prev?dl/prev:2,m=dpMult(g);
+  S.days[day]={dl,g:+g.toFixed(2),m};if(dl){dpEarn('download',dl*DP_EARN.download[1]*m,pl.id,true);npGain(dl,'download')}S.done=day;t+=864e5;n++}
+ const ks=Object.keys(S.days).sort();if(ks.length>30)ks.slice(0,ks.length-30).forEach(x=>delete S.days[x])}
+const dpTrendNow=pl=>{const S=H.dp.sim[pl.id];if(!S)return null;const ks=Object.keys(S.days).sort(),x=S.days[ks[ks.length-1]];return x?{...x,total:ks.reduce((a,k)=>a+S.days[k].dl,0)}:null};
+/* node points: earned by publishing and downloads, shown in Atelier on the phone */
+function npGain(n,k){if(!H.np||n<=0)return;H.np.total+=n;H.np.by[k]=(H.np.by[k]||0)+n;const d=dDay();H.np.days[d]=(H.np.days[d]||0)+n}
+function builderWrite(){if(!H.acct)return;try{localStorage.setItem('atelier-builder',JSON.stringify({acc:H.acct.acc||'',name:H.acct.name.split(' ')[0],np:H.np?.total||0,dp:H.dp?.bal||0,pub:H.plugins.filter(p=>p.pub).length,at:Date.now()}))}catch(e){}}
+/* not enough points: the shop, simulated in the test period */
+function dpShop(need){dpFix();modal(`<div class="mh"><div class="row" style="gap:12px;align-items:center">${dpIcon(42,'big')}<div><h2>${need?'Out of developer points':'Developer points'}</h2><span class="sub sm">${need?`This needs ${need} more. `:''}You have ${H.dp.bal.toLocaleString('en-GB')}. Every day brings ${DP_DAY} more.</span></div></div><button class="icon-btn" data-close aria-label="Close">${ic('close')}</button></div>
+ <div class="dpsim">${ic('info',2)}<span>Test period: buying is simulated. No payment is taken, and points are added for free.</span></div>
+ <div class="dpshop">${DP_PACKS.map(([n,p,$],i)=>`<button class="dppack ${i===2?'best':''}" data-dp="${p}" data-n="${esc(n)}"><span class="dppic">${dpIcon(i<2?30:i<4?38:46)}</span><b>${p.toLocaleString('en-GB')}</b><em>${esc(n)}</em><span class="dpprice">${$}</span>${i===2?'<i>Most picked</i>':''}</button>`).join('')}</div>
+ <p class="sub sm">A small plugin uses about ${DPC.node*8+DPC.wire*7} points, a big one with bots ${DPC.node*40+DPC.wire*40+DPC.bot*3} or more. Publish to earn them back: installs, likes and a rising trend pay well.</p>`,'wide');
+ $$('.dppack').forEach(b=>b.onclick=()=>{const n=+b.dataset.dp;if(!confirm(`Add ${n.toLocaleString('en-GB')} developer points? This is simulated: no money is charged.`))return;dpFix();H.dp.bal+=n;H.dp.by.buy=(H.dp.by.buy||0)+n;H.dp.bought=(H.dp.bought||0)+n;dpDay('earn',n);dpLog('buy',n);builderWrite();save();closeModal();render();dpFly('+'+n);toast(`${n.toLocaleString('en-GB')} developer points added (simulated)`)})}
+/* the studio meter: what this plugin has used, and what is left */
+function dpMeter(){const pl=curPl();if(!pl)return'';return`${dpIcon(16)}<b>${(pl.dp||0).toLocaleString('en-GB')}</b><span>used here</span><i></i><b>${H.dp.bal.toLocaleString('en-GB')}</b><span>left</span>`}
+/* the wallet page */
+function vDev(){dpFix();const L=H.dp,d=dDay(),td=L.days[d]||{earn:0,spend:0},days=Array.from({length:14},(_,i)=>{const t=dDay(Date.now()-(13-i)*864e5);return L.days[t]||{earn:0,spend:0}}),mx=Math.max(1,...days.map(x=>Math.max(x.earn,x.spend)));
+ const pubs=H.plugins.filter(p=>p.pub&&!p.priv),invest=H.plugins.map(p=>({p,c:p.dp||0})).filter(x=>x.c>0).sort((a,b)=>b.c-a.c).slice(0,8),by=Object.entries(L.by).filter(([k,v])=>v>0&&k!=='start').sort((a,b)=>b[1]-a[1]),bmx=Math.max(1,...by.map(x=>x[1]));
+ return`<div class="pg"><header class="hd"><div><span class="tag">Economy</span><h1>Developer points</h1></div><div class="hdr"><button class="btn primary" onclick="dpShop()">${ic('plus',2)} Get more points</button></div></header>
+ <section class="card dphero"><div class="dpart">${dpIcon(96,'big')}</div><div class="grow"><div class="lab" style="--lc:var(--violet)">${ic('bolt',2)}<span>Balance</span></div><b class="dpbal">${L.bal.toLocaleString('en-GB')}</b><span class="sub">developer points · ${DP_DAY} more every day</span>
+  <div class="dpstats"><div><span>Spent today</span><b>${Math.max(0,td.spend).toLocaleString('en-GB')}</b></div><div><span>Earned today</span><b>${td.earn.toLocaleString('en-GB')}</b></div><div><span>Node points</span><b>${(H.np?.total||0).toLocaleString('en-GB')}</b></div><div><span>All time earned</span><b>${(L.earned||0).toLocaleString('en-GB')}</b></div></div></div>
+  <div class="dpbars" aria-label="Fourteen days of points">${days.map((x,i)=>`<div title="${x.earn} earned, ${Math.max(0,x.spend)} spent"><i class="e" style="height:${Math.round(x.earn/mx*100)}%"></i><i class="s" style="height:${Math.round(Math.max(0,x.spend)/mx*100)}%"></i></div>`).join('')}<span class="dpl"><i class="e"></i>Earned <i class="s"></i>Spent</span></div></section>
+ <div class="dpgrid"><section class="card"><div class="sh"><h2>What costs points</h2></div><div class="dpcost">${[['nodes','A block',DPC.node],['dot','A wire',DPC.wire],['code','A line of code',DPC.line],['bolt','A bot',DPC.bot]].map(([i,t,n])=>`<div>${ic(i,1.8)}<span>${t}</span><b>${n}</b></div>`).join('')}</div><p class="sub sm">Points are used while you build and come back when you undo or delete. Copies of starters and imports start free.</p></section>
+  <section class="card"><div class="sh"><h2>How to earn them</h2></div><div class="dpcost">${['plugin','public','install','add','like','download'].map(k=>`<div>${dpIcon(16)}<span>${DP_EARN[k][0]}</span><b>+${DP_EARN[k][1]}${k==='download'?' × trend':''}</b></div>`).join('')}</div><p class="sub sm">Installs, additions to groups and likes come from Atelier. A rising trend multiplies downloads by up to four.</p></section></div>
+ <div class="dpgrid"><section class="card"><div class="sh"><h2>Published plugins and their trend</h2></div>${pubs.length?pubs.map(p=>{const t=dpTrendNow(p);return`<div class="dptr">${PK.picHtml(p,'md')}<div class="grow"><b>${esc(p.name)}</b><span class="sub sm">${t?`${t.dl} downloads today · ${t.total} in 30 days`:'Starts tomorrow'}</span></div>${t?`<span class="dptrend ${t.m>=2.5?'up':t.m>=1.2?'flat':'down'}">${ic(t.m>=2.5?'chart':'dot',2)} ×${t.m}</span>`:''}</div>`}).join('')+`<p class="sub sm dpnote">${ic('info',2)} Public downloads are simulated until Atelier Plugins is online. Installs, groups and likes from Atelier are real.</p>`:`<div class="empty sm"><p class="sub">Publish a plugin to start earning from downloads.</p><button class="btn sm" onclick="go('library')">${ic('lib',2)} Open the library</button></div>`}</section>
+  <section class="card"><div class="sh"><h2>Where they came from</h2></div><div class="npby">${by.map(([k,v])=>`<div><i style="width:${Math.round(v/bmx*100)}%"></i><span>${esc(DP_EARN[k]?.[0]||k)}</span><b class="mono">${v.toLocaleString('en-GB')}</b></div>`).join('')||'<p class="sub sm">Nothing yet.</p>'}</div>
+  <div class="flabel" style="margin-top:16px">Used in your plugins</div><div class="npby">${invest.map(({p,c})=>`<div><i style="width:${Math.round(c/Math.max(1,invest[0].c)*100)}%;background:color-mix(in srgb,var(--violet) 14%,transparent)"></i><span>${esc(p.name)}</span><b class="mono">${c.toLocaleString('en-GB')}</b></div>`).join('')||'<p class="sub sm">No plugins yet.</p>'}</div></section></div>
+ <section class="card"><div class="sh"><h2>Log</h2></div><div class="llog">${L.log.slice(0,16).map(e=>`<div><span class="mono">${new Date(e.at).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span><b>${esc(DP_EARN[e.k]?.[0]||e.k)}${e.pid&&plOf(e.pid)?' · '+esc(plOf(e.pid).name):''}</b><em class="mono">+${e.n.toLocaleString('en-GB')}</em></div>`).join('')}</div></section></div>`}
+/* the dashboard section */
+function dpSection(){dpFix();const td=H.dp.days[dDay()]||{earn:0,spend:0};return`<section class="card dpcard" id="dpSec"><div class="dpart sm">${dpIcon(64,'big')}</div><div class="grow"><div class="lab" style="--lc:var(--violet)">${ic('bolt',2)}<span>Developer points</span></div><b class="dpbal sm">${H.dp.bal.toLocaleString('en-GB')}</b><span class="sub sm">${Math.max(0,td.spend)} spent and ${td.earn} earned today · ${(H.np?.total||0).toLocaleString('en-GB')} node points</span></div><div class="row"><button class="btn sm" onclick="go('dev')">${ic('chart',2)} Wallet</button><button class="btn sm primary" onclick="dpShop()">${ic('plus',2)} Get more</button></div></section>`}
+/* a change that costs more than the balance is taken back, and the shop opens */
+function dpBlock(){const need=V._need||1;if(V.hist.length){const s=JSON.parse(V.hist.pop()),t=tgt();t.graph=s.g;t.code=s.c;t.mode=s.m}V.sel=null;V.selL=null;render();dpShop(need)}
